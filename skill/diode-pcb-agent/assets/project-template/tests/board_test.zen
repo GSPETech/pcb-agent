@@ -1,0 +1,16 @@
+TemplateBoard = Module("../src/board.zen")
+
+def component_value(module, inputs):
+    check(module["R1"].type == "resistor", "R1 must be a resistor")
+    check(module["R1"].resistance.matches("1kohm"), "R1 must be 1kohm")
+
+def connectivity(module, inputs):
+    check("LED_ANODE" in module.nets, "LED_ANODE net is missing")
+    check(len(module.nets["LED_ANODE"]) == 2, "LED_ANODE must have two pins")
+
+TestBench(
+    name = "BoardTest",
+    module = TemplateBoard,
+    test_cases = {"default": {}},
+    checks = [component_value, connectivity],
+)

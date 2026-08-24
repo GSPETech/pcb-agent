@@ -1,0 +1,25 @@
+contract_version = 1
+default_backend = "none"
+max_iterations = 5
+
+# Adapter flags remain unconfigured until each installed CLI version and
+# noninteractive contract are empirically verified.
+[backends.codex]
+enabled = false
+status = "BLOCKED"
+reason = "CLI invocation and permission flags not verified"
+
+[backends.claude]
+enabled = false
+status = "BLOCKED"
+reason = "CLI invocation and permission flags not verified"
+
+[backends.gemini]
+enabled = false
+status = "BLOCKED"
+reason = "CLI invocation and permission flags not verified"
+
+[backends.aider]
+enabled = false
+status = "BLOCKED"
+reason = "CLI invocation and auto-commit behavior not verified"

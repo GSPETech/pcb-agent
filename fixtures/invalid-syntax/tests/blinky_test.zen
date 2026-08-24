@@ -1,0 +1,11 @@
+BrokenBlinky = Module("../src/blinky.zen")
+
+def should_not_evaluate(module, inputs):
+    error("source parse should fail before this check runs")
+
+TestBench(
+    name = "InvalidSyntaxTest",
+    module = BrokenBlinky,
+    test_cases = {"default": {}},
+    checks = [should_not_evaluate],
+)

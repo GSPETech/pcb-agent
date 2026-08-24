@@ -1,0 +1,18 @@
+Blinky = Module("../src/blinky.zen")
+
+def component_value(module, inputs):
+    check(module["R1"].type == "resistor", "R1 must be a resistor")
+    check(module["R1"].resistance.matches("1kohm"), "R1 must be 1kohm")
+
+def connectivity(module, inputs):
+    check("VCC" in module.nets, "VCC net is missing")
+    check("GND" in module.nets, "GND net is missing")
+    check("LED_ANODE" in module.nets, "LED_ANODE net is missing")
+    check(len(module.nets["LED_ANODE"]) == 2, "LED_ANODE must have two pins")
+
+TestBench(
+    name = "BlinkyTest",
+    module = Blinky,
+    test_cases = {"default": {}},
+    checks = [component_value, connectivity],
+)

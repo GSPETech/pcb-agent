@@ -1,0 +1,8 @@
+{
+  "schema_version": "1",
+  "project": {"name": "template-board", "pcb_version": "0.4", "layers": 4, "description": "Replace with board intent"},
+  "requirements": [
+    {"id": "REQ-001", "type": "component", "description": "R1 shall be 1kohm in package 0402", "subject": "R1", "constraints": {"value": "1kohm", "package": "0402"}, "severity": "error", "evidence_required": ["zener_test"]}
+  ],
+  "fabrication": {"automatic_approval": false, "human_approval_required": true}
+}

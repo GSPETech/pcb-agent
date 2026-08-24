@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PCB verification report (documentation only)",
+  "type": "object",
+  "required": ["schema_version", "run_id", "status", "profile", "project", "production_ready", "fabrication_approved", "human_review_required", "checks", "hashes", "artifacts"],
+  "properties": {
+    "schema_version": {"const": "1"},
+    "run_id": {"type": "string"},
+    "timestamp": {"type": "string"},
+    "status": {"enum": ["PASS", "FAIL", "BLOCKED", "SKIPPED", "HUMAN_REVIEW"]},
+    "profile": {"enum": ["schematic", "layout"]},
+    "project": {"type": "string"},
+    "production_ready": {"const": false},
+    "fabrication_approved": {"const": false},
+    "human_review_required": {"type": "boolean"},
+    "source_dirty": {"type": "boolean"},
+    "versions": {"type": "object"},
+    "hashes": {"type": "object"},
+    "artifacts": {"type": "array"},
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "status", "severity", "provenance", "message", "command", "exit_code", "duration", "evidence", "required"],
+        "properties": {
+          "id": {"type": "string"},
+          "status": {"enum": ["PASS", "FAIL", "BLOCKED", "SKIPPED", "HUMAN_REVIEW"]},
+          "severity": {"enum": ["error", "warning", "info"]},
+          "provenance": {"enum": ["tool", "harness", "ai_inference", "unverified_claim", "human_approval"]},
+          "message": {"type": "string"},
+          "command": {"type": "array"},
+          "exit_code": {"type": ["integer", "null"]},
+          "duration": {"type": ["number", "null"]},
+          "evidence": {"type": "object"},
+          "required": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}

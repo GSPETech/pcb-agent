@@ -1,0 +1,6 @@
+{
+  "schema_version": "1",
+  "checks": [{"id": "ACC-001", "requirement": "REQ-001", "kind": "zener_test", "expected": "PASS", "test": "BoardTest.component_value"}],
+  "production_ready": false,
+  "fabrication_approved": false
+}

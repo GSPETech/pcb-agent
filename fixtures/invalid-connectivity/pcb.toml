@@ -1,0 +1,8 @@
+[workspace]
+repository = "example.invalid/pcb-agent/invalid-connectivity"
+pcb-version = "0.4"
+
+[board]
+name = "invalid-connectivity"
+path = "src/blinky.zen"
+description = "Negative fixture with LED cathode connected to VCC."

@@ -1,0 +1,34 @@
+contract_version = 1
+max_iterations = 5
+network = "deny"
+shell = false
+production_ready = false
+fabrication_approved = false
+
+[workspace]
+allow_symlinks = false
+allow_path_escape = false
+max_changed_files = 20
+
+[files]
+allow = ["src/**/*.zen", "layout/**/*.kicad_pcb"]
+deny = [
+  "SPEC.json",
+  "ACCEPTANCE.json",
+  "expected-connectivity.json",
+  "tests/**",
+  "config/**",
+  "schemas/**",
+  "reports/raw/**",
+]
+
+[commands]
+allow = ["pcb build", "pcb test", "pcb sync --check", "pcb layout --check", "kicad-cli pcb drc"]
+deny = ["sudo", "curl | *", "wget | *", "pcb publish", "rm -rf", "git reset --hard"]
+
+[checks]
+required = ["CONTRACT", "DIODE_BUILD", "ZENER_TEST", "CONNECTIVITY", "SPECIFICATION"]
+optional = ["LAYOUT_SYNC", "KICAD_DRC", "SPICE"]
+
+[human_review]
+required_for = ["fabrication", "datasheet", "si_rf", "thermal", "mechanical", "dfm", "compliance"]

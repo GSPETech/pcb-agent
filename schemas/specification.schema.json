@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pcb-agent.local/schemas/specification.schema.json",
+  "title": "PCB project specification (documentation only)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project", "requirements", "fabrication"],
+  "properties": {
+    "schema_version": {"const": "1"},
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "pcb_version", "layers"],
+      "properties": {
+        "name": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"},
+        "pcb_version": {"type": "string", "pattern": "^(0\\.4|nightly)$"},
+        "layers": {"enum": [2, 4, 6, 8, 10]},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "power": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rails": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "voltage"],
+            "properties": {
+              "name": {"type": "string", "minLength": 1},
+              "voltage": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "type", "description", "severity"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^REQ-[0-9]{3,}$"},
+          "type": {"type": "string", "minLength": 1},
+          "description": {"type": "string", "minLength": 1},
+          "subject": {"type": "string"},
+          "constraints": {"type": "object"},
+          "severity": {"enum": ["error", "warning", "info"]},
+          "evidence_required": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+        }
+      }
+    },
+    "fabrication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["automatic_approval", "human_approval_required"],
+      "properties": {
+        "automatic_approval": {"const": false},
+        "human_approval_required": {"const": true}
+      }
+    }
+  }
+}

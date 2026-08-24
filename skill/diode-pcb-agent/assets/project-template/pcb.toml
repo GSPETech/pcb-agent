@@ -1,0 +1,8 @@
+[workspace]
+repository = "example.invalid/replace-me/template-board"
+pcb-version = "0.4"
+
+[board]
+name = "template-board"
+path = "src/board.zen"
+description = "Replace repository, name, and requirements before use."

@@ -1,0 +1,13 @@
+Blinky = Module("../src/blinky.zen")
+
+def connectivity(module, inputs):
+    check("GND" in module.nets, "GND net is missing")
+    check(len(module.nets["GND"]) == 1, "GND must contain D1.K")
+    check(len(module.nets["VCC"]) == 1, "VCC must contain only R1.P1")
+
+TestBench(
+    name = "ConnectivityTest",
+    module = Blinky,
+    test_cases = {"default": {}},
+    checks = [connectivity],
+)
