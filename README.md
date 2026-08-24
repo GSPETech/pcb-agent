@@ -86,10 +86,20 @@ format was verified.
 
 ## External Integration Status
 
-On implementation machine, `pcb`, `pcbc`, and `kicad-cli` were unavailable.
-Unit/fake-tool tests run; real Diode and KiCad integration remain `BLOCKED`, not
-reported as passing. Fixture Zener syntax follows public Diode docs and source
-snapshot `ee4e7e2b90fbe5f787d165a0780eba42664449ab`, but requires empirical compile.
+Empirical run on 2026-08-24:
+
+- Diode `pcbc 0.4.34` on WSL2 accepted `valid-blinky` build and both locked
+  TestBench checks.
+- `invalid-syntax` failed build; `invalid-connectivity` and `invalid-value`
+  built successfully then failed their locked tests as intended.
+- Windows-native Diode remained `BLOCKED` by Windows privilege error 1314.
+- KiCad CLI 10.0.3 ran JSON DRC against an official Diode board fixture; it
+  returned exit 5 for three violations, matching harness mapping.
+- Diode layout generation in WSL remained `BLOCKED` because Linux `pcbnew`
+  Python module was unavailable. Windows/WSL KiCad mixing was not attempted.
+
+Fixture syntax and TestBench APIs were corrected against real Diode 0.4.34 and
+source snapshot `ee4e7e2b90fbe5f787d165a0780eba42664449ab`.
 
 ## Human Limitation
 

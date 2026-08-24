@@ -84,7 +84,10 @@ def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None
             raise ValueError("pcb test returned malformed JSON") from error
         if not isinstance(payload, dict) or not isinstance(payload.get("results"), list) or not isinstance(payload.get("summary"), dict):
             raise ValueError("pcb test JSON lacks results/summary contract")
-        expected = [item["test"] for item in project.acceptance["checks"]]
+        expected = [item["test"] for item in project.acceptance["checks"]
+                    if item["kind"] == "zener_test" and item["expected"] == "PASS"]
+        if any(item["expected"] == "FAIL" for item in project.acceptance["checks"]):
+            raise ValueError("negative fixture unexpectedly passed its locked acceptance")
         def records(value: object):
             if isinstance(value, dict):
                 yield value
@@ -97,20 +100,30 @@ def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None
         for name in expected:
             matches = [record for record in all_records if name in {
                 record.get("name"), record.get("test"),
-                f"{record.get('test')}.{record.get('check')}",
+                f"{record.get('test_bench_name')}.{record.get('check_name')}",
             }]
             if not matches or not all(str(record.get("status", "")).upper() in {"PASS", "PASSED", "OK"}
                                       for record in matches):
                 raise ValueError(f"pcb test JSON lacks passing acceptance result: {name}")
         summary = payload["summary"]
+        if (any(not isinstance(summary.get(key), int) for key in ("total", "passed", "failed"))
+                or summary["total"] != len(payload["results"])
+                or summary["passed"] + summary["failed"] != summary["total"]):
+            raise ValueError("pcb test JSON summary is inconsistent")
         if any(isinstance(summary.get(key), int) and summary[key] > 0 for key in ("failed", "failures", "errors")):
             raise ValueError("pcb test JSON reports failures despite zero exit")
     return result
 
 
 def result_check(check_id: str, result: ProcessResult, *, required: bool = True) -> Check:
-    status = CheckStatus.BLOCKED if result.timed_out else (CheckStatus.PASS if result.returncode == 0 else CheckStatus.FAIL)
-    message = "command timed out" if result.timed_out else f"command exited {result.returncode}"
+    environment_error = any(text in result.stderr.lower() for text in (
+        "a required privilege is not held by the client",
+    ))
+    status = (CheckStatus.BLOCKED if result.timed_out or environment_error else
+              (CheckStatus.PASS if result.returncode == 0 else CheckStatus.FAIL))
+    message = ("command timed out" if result.timed_out else
+               "command blocked by environment" if environment_error else
+               f"command exited {result.returncode}")
     return Check(
         check_id,
         status,

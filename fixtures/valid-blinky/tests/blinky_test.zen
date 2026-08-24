@@ -1,14 +1,22 @@
 Blinky = Module("../src/blinky.zen")
 
 def component_value(module, inputs):
-    check(module["R1"].type == "resistor", "R1 must be a resistor")
-    check(module["R1"].resistance.matches("1kohm"), "R1 must be 1kohm")
+    components = module.components()
+    check("R1.R" in components, "R1 resistor must exist")
+    check("D1.LED" in components, "D1 LED must exist")
+    check(len(components) == 2, "Blinky must contain exactly R1 and D1")
+    check(components["R1.R"].type == "resistor", "R1 must be a resistor")
+    check(components["D1.LED"].type == "led", "D1 must be an LED")
+    check(components["R1.R"].resistance.matches("1kohm"), "R1 must be 1kohm")
+    check(components["R1.R"].properties["package"].value == "0402", "R1 package must be 0402")
+    check(components["D1.LED"].properties["package"].value == "0402", "D1 package must be 0402")
 
 def connectivity(module, inputs):
-    check("VCC" in module.nets, "VCC net is missing")
-    check("GND" in module.nets, "GND net is missing")
-    check("LED_ANODE" in module.nets, "LED_ANODE net is missing")
-    check(len(module.nets["LED_ANODE"]) == 2, "LED_ANODE must have two pins")
+    nets = module.nets()
+    check(len(nets) == 3, "Blinky must contain exactly three nets")
+    check(nets.get("VCC", []) == [("BlinkyTest__default.R1.R", "1")], "VCC must contain R1.P1")
+    check(nets.get("GND", []) == [("BlinkyTest__default.D1.LED", "K")], "GND must contain D1.K")
+    check(nets.get("LED_ANODE", []) == [("BlinkyTest__default.R1.R", "2"), ("BlinkyTest__default.D1.LED", "A")], "LED_ANODE members are wrong")
 
 TestBench(
     name = "BlinkyTest",

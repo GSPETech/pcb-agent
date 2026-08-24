@@ -3,6 +3,7 @@ name = "invalid-connectivity"
 profile = "schematic"
 source = "src/blinky.zen"
 test = "tests/blinky_test.zen"
+negative_fixture = true
 
 [toolchain]
 pcb_version = "0.4"

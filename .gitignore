@@ -27,6 +27,7 @@ verify-report.md
 # Diode transient state
 .pcb/cache/
 .pcb/tmp/
+.pcb/
 
 # KiCad transient files; maintained .kicad_pcb files stay tracked
 *-backups/

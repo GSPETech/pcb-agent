@@ -1,9 +1,10 @@
 Blinky = Module("../src/blinky.zen")
 
 def connectivity(module, inputs):
-    check("GND" in module.nets, "GND net is missing")
-    check(len(module.nets["GND"]) == 1, "GND must contain D1.K")
-    check(len(module.nets["VCC"]) == 1, "VCC must contain only R1.P1")
+    nets = module.nets()
+    check(nets.get("VCC", []) == [("ConnectivityTest__default.R1.R", "1")], "VCC must contain only R1.P1")
+    check(nets.get("GND", []) == [("ConnectivityTest__default.D1.LED", "K")], "GND must contain D1.K")
+    check(nets.get("LED_ANODE", []) == [("ConnectivityTest__default.R1.R", "2"), ("ConnectivityTest__default.D1.LED", "A")], "LED_ANODE members are wrong")
 
 TestBench(
     name = "ConnectivityTest",

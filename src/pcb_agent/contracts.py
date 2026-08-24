@@ -69,9 +69,21 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
         raise ContractError(f"invalid project contract: {error}") from error
     if not all(isinstance(value, dict) for value in (specification, acceptance, connectivity)):
         raise ContractError("JSON contract roots must be objects")
+    project = config.get("project")
+    if not isinstance(project, dict):
+        raise ContractError("project.toml requires [project]")
+    name, profile = project.get("name"), project.get("profile")
+    source, test = project.get("source"), project.get("test")
+    negative_fixture = project.get("negative_fixture", False)
+    if not isinstance(negative_fixture, bool):
+        raise ContractError("project.negative_fixture must be boolean")
     if not isinstance(connectivity.get("components"), dict) or not isinstance(connectivity.get("nets"), dict):
         raise ContractError("connectivity requires object fields: components and nets")
-    if not connectivity["components"] or not connectivity["nets"]:
+    build_negative = (negative_fixture and any(
+        isinstance(item, dict) and item.get("kind") == "diode_build" and item.get("expected") == "FAIL"
+        for item in acceptance.get("checks", [])
+    ))
+    if (not connectivity["components"] or not connectivity["nets"]) and not build_negative:
         raise ContractError("connectivity components and nets must not be empty")
     for reference, component in connectivity["components"].items():
         if not isinstance(reference, str) or not reference or not isinstance(component, dict) or not isinstance(component.get("kind"), str):
@@ -80,11 +92,6 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
         members = definition.get("members") if isinstance(definition, dict) else None
         if not isinstance(net, str) or not net or not isinstance(members, list) or not members or any(not isinstance(item, str) or "." not in item for item in members):
             raise ContractError("connectivity nets require non-empty pin members")
-    project = config.get("project")
-    if not isinstance(project, dict):
-        raise ContractError("project.toml requires [project]")
-    name, profile = project.get("name"), project.get("profile")
-    source, test = project.get("source"), project.get("test")
     toolchain, layout = config.get("toolchain"), config.get("layout")
     if not isinstance(name, str) or not name.strip():
         raise ContractError("project.name must be a non-empty string")
@@ -122,12 +129,15 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
         raise ContractError("acceptance IDs must be unique non-empty strings")
     covered: set[str] = set()
     for item in checks:
-        requirement, test_name = item.get("requirement"), item.get("test")
-        if (requirement not in requirement_ids or not isinstance(test_name, str) or not test_name
-                or item.get("kind") != "zener_test"):
-            raise ContractError("each acceptance check needs known requirement and test")
-        if item.get("expected") != "PASS":
-            raise ContractError("MVP acceptance expected value must be PASS")
+        requirement, test_name, kind = item.get("requirement"), item.get("test"), item.get("kind")
+        if requirement not in requirement_ids or kind not in {"zener_test", "diode_build"}:
+            raise ContractError("each acceptance check needs known requirement and supported kind")
+        if kind == "zener_test" and (not isinstance(test_name, str) or not test_name):
+            raise ContractError("zener_test acceptance requires test name")
+        if item.get("expected") not in {"PASS", "FAIL"}:
+            raise ContractError("acceptance expected value must be PASS or FAIL")
+        if item.get("expected") == "FAIL" and not negative_fixture:
+            raise ContractError("expected FAIL is allowed only for an explicit negative fixture")
         covered.add(requirement)
     if covered != set(requirement_ids):
         raise ContractError("acceptance checks must cover every requirement")
