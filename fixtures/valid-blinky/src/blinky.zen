@@ -9,3 +9,8 @@ LED_ANODE = Net()
 Resistor(name="R1", value="1kohm", package="0402", P1=VCC, P2=LED_ANODE)
 Led(name="D1", package="0402", color="red", A=LED_ANODE, K=GND)
 Board(name="valid_blinky", layers=4, layout_path="layout/valid_blinky")
+
+# pcb:sch VCC.1 x=200.0000 y=250.0000 rot=0
+# pcb:sch R1.R x=300.0000 y=250.0000 rot=0
+# pcb:sch D1.LED x=450.0000 y=250.0000 rot=0
+# pcb:sch GND.1 x=550.0000 y=250.0000 rot=0
