@@ -9,3 +9,4 @@ pcb_version = "0.4"
 
 [layout]
 required = false
+board = "src/layout/valid_blinky/layout.kicad_pcb"

@@ -11,6 +11,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Mapping, Sequence
+from dataclasses import field
 
 from .paths import resolve_workspace_path, validate_executable
 
@@ -34,6 +35,7 @@ class ProcessResult:
     duration_seconds: float
     timed_out: bool
     output_truncated: bool
+    input_hashes: Mapping[str, str] = field(default_factory=dict)
 
 
 def redact_secrets(value: str) -> str:

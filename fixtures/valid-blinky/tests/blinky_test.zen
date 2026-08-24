@@ -16,7 +16,10 @@ def connectivity(module, inputs):
     check(len(nets) == 3, "Blinky must contain exactly three nets")
     check(nets.get("VCC", []) == [("BlinkyTest__default.R1.R", "1")], "VCC must contain R1.P1")
     check(nets.get("GND", []) == [("BlinkyTest__default.D1.LED", "K")], "GND must contain D1.K")
-    check(nets.get("LED_ANODE", []) == [("BlinkyTest__default.R1.R", "2"), ("BlinkyTest__default.D1.LED", "A")], "LED_ANODE members are wrong")
+    led_anode = nets.get("LED_ANODE", [])
+    check(len(led_anode) == 2, "LED_ANODE must have exactly two members")
+    check(("BlinkyTest__default.R1.R", "2") in led_anode, "LED_ANODE must contain R1.P2")
+    check(("BlinkyTest__default.D1.LED", "A") in led_anode, "LED_ANODE must contain D1.A")
 
 TestBench(
     name = "BlinkyTest",

@@ -95,8 +95,12 @@ Empirical run on 2026-08-24:
 - Windows-native Diode remained `BLOCKED` by Windows privilege error 1314.
 - KiCad CLI 10.0.3 ran JSON DRC against an official Diode board fixture; it
   returned exit 5 for three violations, matching harness mapping.
-- Diode layout generation in WSL remained `BLOCKED` because Linux `pcbnew`
-  Python module was unavailable. Windows/WSL KiCad mixing was not attempted.
+- KiCad Linux 10.0.5 and `pcbnew` were installed from signed official KiCad
+  PPA. End-to-end layout harness generated a board, ran Diode layout check,
+  and ran direct KiCad JSON DRC.
+- Generated `valid-blinky` layout correctly remained `FAIL`: missing board
+  outline, five silkscreen warnings, and one unconnected item. No routing or
+  fabrication artifact was generated.
 
 Fixture syntax and TestBench APIs were corrected against real Diode 0.4.34 and
 source snapshot `ee4e7e2b90fbe5f787d165a0780eba42664449ab`.

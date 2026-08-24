@@ -98,6 +98,16 @@ class FakeBackendTests(unittest.TestCase):
                 self.assertEqual(kicad.result_check(process(returncode)).status, status)
         self.assertEqual(kicad.result_check(process(1, timed_out=True)).status, CheckStatus.BLOCKED)
 
+    def test_drc_runs_after_layout_check_failure(self) -> None:
+        passed = Check("STEP", CheckStatus.PASS)
+        failed = Check("LAYOUT_SYNC", CheckStatus.FAIL)
+        with patch("pcb_agent.cli._diode_command", side_effect=[passed, passed, passed, failed]), \
+                patch("pcb_agent.cli.kicad.drc", return_value=process(5)), \
+                patch("pcb_agent.cli.kicad.result_check", return_value=Check("KICAD_DRC", CheckStatus.FAIL)):
+            checks = cli._verify(self.project, self.run, "layout")
+        self.assertEqual(next(check for check in checks if check.id == "LAYOUT_SYNC").status, CheckStatus.FAIL)
+        self.assertEqual(next(check for check in checks if check.id == "KICAD_DRC").status, CheckStatus.FAIL)
+
     def test_fake_pcb_accepts_valid_fixture_and_rejects_invalid_fixture(self) -> None:
         if os.name == "nt":
             self.skipTest("Windows fake batch executable rejected by security policy")

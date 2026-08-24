@@ -149,7 +149,10 @@ def _diode_command(project: ProjectState, key: str, check_id: str,
                                  indent=2) + "\n"
             evidence_path.write_text(payload, encoding="utf-8", newline="\n")
             digest = "sha256:" + hashlib.sha256(evidence_path.read_bytes()).hexdigest()
-            check = replace(check, evidence={"path": str(evidence_path), "sha256": digest})
+            evidence = {"path": str(evidence_path), "sha256": digest}
+            if key == "test-command":
+                evidence["testbench_sha256"] = result.input_hashes["testbench"]
+            check = replace(check, evidence=evidence)
         return check
     except ConfigurationError as error:
         return _check(check_id, CheckStatus.BLOCKED, str(error))
@@ -185,9 +188,10 @@ def _verify(project: ProjectState, run: RunState, profile: str) -> list[Check]:
         generation = _diode_command(project, "layout-command", "LAYOUT_GENERATE")
         checks.append(generation)
         layout = (_diode_command(project, "layout-check-command", "LAYOUT_SYNC")
-                  if generation.status == CheckStatus.PASS else generation)
+                  if generation.status == CheckStatus.PASS else
+                  _check("LAYOUT_SYNC", CheckStatus.BLOCKED, "layout generation did not pass"))
         checks.append(layout)
-        if layout.status == CheckStatus.PASS:
+        if generation.status == CheckStatus.PASS:
             try:
                 checks.append(kicad.result_check(kicad.drc(project, run), run.raw_directory / "kicad-drc.json"))
             except (ConfigurationError, FileNotFoundError, OSError, ValueError) as error:

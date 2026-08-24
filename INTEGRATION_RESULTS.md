@@ -9,6 +9,9 @@ Date: 2026-08-24
 - WSL installer SHA-256: `cbd878d54d1cb01377eba95fb98402a6240f956559d16a8e87220126061c4c85`
 - Diode: `pcbc 0.4.34`, shim `0.2.6`
 - KiCad CLI runtime: `10.0.3`
+- KiCad Linux: `10.0.5~ubuntu24.04.1` from signed
+  `ppa:kicad/kicad-10.0-releases`
+- PPA signing fingerprint: `FDA854F61C4D0D9572BB95E5245D5502FAD7A805`
 
 ## Diode Fixtures
 
@@ -36,14 +39,33 @@ Direct `kicad-cli pcb drc --format json --severity-all
 - Raw JSON SHA-256: `40204b9fbd90f3224fb6e43f79f656fe005b1200a8a48fdd4fb3cb6d2ffcbd0f`
 - Expected harness interpretation: deterministic `FAIL`, not environment
   `BLOCKED`. Direct CLI mapping was exercised; end-to-end harness layout report
-  remains blocked because no project layout was generated.
+  was subsequently exercised on KiCad Linux 10.0.5.
+
+## End-to-End Layout Harness
+
+Harness ran from a WSL ext4 repository copy with Diode 0.4.34 and KiCad 10.0.5:
+
+| Gate | Result |
+|---|---|
+| Contract | PASS |
+| Diode build | PASS |
+| Locked TestBench snapshot | PASS, 2/2 |
+| Layout generation | PASS |
+| Diode layout check | FAIL, invalid outline + 5 warnings |
+| Direct KiCad JSON DRC | FAIL, exit 5 |
+| Overall | FAIL, exit 1 |
+
+Generated board was not routed and no Gerber/manufacturing action ran. Direct
+DRC JSON evidence SHA-256 from harness run:
+`05db4b5df47dbf2b9fd4873aff7e67a0172f3ee35e4a254cf79cdeda94e5798d`.
 
 ## Blocked
 
 - Windows-native Diode: OS error 1314, required symlink privilege unavailable.
-- WSL Diode layout: `ModuleNotFoundError: No module named 'pcbnew'`.
-- End-to-end layout profile remains `BLOCKED`; direct DRC adapter contract is
-  empirically verified.
+- Clean layout PASS remains unavailable because fixture intentionally lacks
+  outline, placement cleanup, and routing.
+- Windows-native Diode remains blocked by symlink privilege; WSL ext4 is the
+  verified end-to-end environment.
 
 Verification PASS never means production-ready. Fabrication still requires
 human engineering review and approval.

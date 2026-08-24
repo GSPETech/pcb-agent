@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 import json
+import hashlib
 import shutil
 import tempfile
-import uuid
 from typing import Any, Mapping, Sequence
 
 from .models import Check, CheckStatus, Severity
@@ -62,19 +62,23 @@ def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None
         raise FileNotFoundError(f"{command[0]} capability probe failed")
     if key != "test-command" or trusted_root is None:
         return run_process(project.root, command, timeout=300)
-    snapshot = trusted_root / f"trusted-test-{uuid.uuid4().hex}"
-    snapshot.mkdir(parents=True, exist_ok=False)
-    closure = [path.relative_to(project.root).as_posix() for path in (project.root / "src").rglob("*") if path.is_file()]
-    closure.extend((project.test, "pcb.toml", "pcb-version"))
-    for relative in dict.fromkeys(closure):
-        source = project.root / relative
-        if source.exists():
-            target = snapshot / relative
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source, target)
-    snapshot_command = list(command)
-    snapshot_command[snapshot_command.index(project.test)] = project.test
-    result = run_process(snapshot, snapshot_command, timeout=300)
+    with tempfile.TemporaryDirectory(prefix="pcb-agent-trusted-test-") as temporary:
+        snapshot = Path(temporary)
+        closure = [path.relative_to(project.root).as_posix() for path in (project.root / "src").rglob("*") if path.is_file()]
+        closure.extend((project.test, "pcb.toml", "pcb-version"))
+        for relative in dict.fromkeys(closure):
+            source = project.root / relative
+            if source.exists():
+                target = snapshot / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source, target)
+        snapshot_command = list(command)
+        snapshot_command[snapshot_command.index(project.test)] = project.test
+        result = run_process(snapshot, snapshot_command, timeout=300)
+        snapshot_test_hash = "sha256:" + hashlib.sha256((snapshot / project.test).read_bytes()).hexdigest()
+        result = ProcessResult(result.argv, result.returncode, result.stdout, result.stderr,
+                               result.duration_seconds, result.timed_out, result.output_truncated,
+                               {"testbench": snapshot_test_hash})
     if result.returncode == 0:
         if result.output_truncated:
             raise ValueError("pcb test JSON output was truncated")
