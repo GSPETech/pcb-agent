@@ -47,7 +47,37 @@ class ContractTests(unittest.TestCase):
                 with self.assertRaises(ContractError):
                     load_project_contract(root)
 
-    def test_source_traversal_is_rejected(self) -> None:
+    def test_duplicate_requirement_ids_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_contract(root)
+            spec = json.loads((root / "SPEC.json").read_text())
+            spec["requirements"].append(spec["requirements"][0])
+            (root / "SPEC.json").write_text(json.dumps(spec))
+            with self.assertRaises(ContractError) as ctx:
+                load_project_contract(root)
+            self.assertIn("requirement IDs must be unique", str(ctx.exception))
+
+    def test_invalid_project_name_in_toml_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_contract(root)
+            config = (root / "project.toml").read_text()
+            (root / "project.toml").write_text(config.replace('name = "test-project"', 'name = "123"'))
+            with self.assertRaises(ContractError) as ctx:
+                load_project_contract(root)
+            self.assertIn("project.name must be a valid string", str(ctx.exception))
+
+    def test_project_name_mismatch_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_contract(root)
+            spec = json.loads((root / "SPEC.json").read_text())
+            spec["project"]["name"] = "different-name"
+            (root / "SPEC.json").write_text(json.dumps(spec))
+            with self.assertRaises(ContractError) as ctx:
+                load_project_contract(root)
+            self.assertIn("project name mismatch", str(ctx.exception))
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / "project"
             root.mkdir()

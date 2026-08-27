@@ -88,6 +88,13 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
     if not isinstance(project, dict):
         raise ContractError("project.toml requires [project]")
     name, profile = project.get("name"), project.get("profile")
+    import re
+    if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,63}", name):
+        raise ContractError("project.name must be a valid string")
+    spec_name = specification.get("project", {}).get("name")
+    if name != spec_name:
+        raise ContractError(f"project name mismatch: project.toml={name!r}, SPEC.json={spec_name!r}")
+    
     source, test = project.get("source"), project.get("test")
     negative_fixture = project.get("negative_fixture", False)
     if not isinstance(negative_fixture, bool):
@@ -118,6 +125,8 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
     requirements = specification["requirements"]
     checks = acceptance["checks"]
     requirement_ids = [item.get("id") for item in requirements if isinstance(item, dict)]
+    if len(set(requirement_ids)) != len(requirement_ids):
+        raise ContractError("requirement IDs must be unique")
     acceptance_ids = [item.get("id") for item in checks if isinstance(item, dict)]
     if len(set(acceptance_ids)) != len(acceptance_ids):
         raise ContractError("acceptance IDs must be unique")
