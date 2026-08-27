@@ -179,16 +179,16 @@ def _connectivity_check(project: ProjectState, test: Check, run: RunState | None
         return _check("CONNECTIVITY", CheckStatus.SKIPPED,
                       "build-negative fixture declares no expected connectivity",
                       required=False)
-    
+
     from .generated_testbench import render_connectivity_testbench, GeneratorError
     try:
         source = render_connectivity_testbench(project)
     except GeneratorError as error:
         return _check("CONNECTIVITY", CheckStatus.BLOCKED, f"cannot generate evidence: {error}")
-    
+
     if run is None:
         return _check("CONNECTIVITY", CheckStatus.BLOCKED, "run state required for generated tests")
-        
+
     try:
         result = diode.execute_generated_test(project, source, run.raw_directory, "CONNECTIVITY")
     except (ConfigurationError, FileNotFoundError, OSError, ValueError) as error:
@@ -197,7 +197,7 @@ def _connectivity_check(project: ProjectState, test: Check, run: RunState | None
     check = diode.result_check("CONNECTIVITY", result)
     if check.status == CheckStatus.PASS:
         check = replace(check, message="generated connectivity assertions passed")
-    
+
     evidence_path = run.raw_directory / "connectivity-result.json"
     evidence_path.write_text(json.dumps({"argv": result.argv, "stdout": result.stdout, "stderr": result.stderr,
                                          "exit_code": result.returncode, "duration": result.duration_seconds},
@@ -210,7 +210,7 @@ def _connectivity_check(project: ProjectState, test: Check, run: RunState | None
 def _specification_check(project: ProjectState, test: Check, run: RunState | None) -> Check:
     if test.status != CheckStatus.PASS:
         return _check("SPECIFICATION", test.status, "Zener TestBench did not pass")
-    
+
     from .generated_testbench import render_specification_testbench, GeneratorError
     try:
         source = render_specification_testbench(project)
@@ -228,7 +228,7 @@ def _specification_check(project: ProjectState, test: Check, run: RunState | Non
     check = diode.result_check("SPECIFICATION", result)
     if check.status == CheckStatus.PASS:
         check = replace(check, message="generated specification assertions passed")
-    
+
     evidence_path = run.raw_directory / "specification-result.json"
     evidence_path.write_text(json.dumps({"argv": result.argv, "stdout": result.stdout, "stderr": result.stderr,
                                          "exit_code": result.returncode, "duration": result.duration_seconds},

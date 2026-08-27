@@ -94,7 +94,7 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
     spec_name = specification.get("project", {}).get("name")
     if name != spec_name:
         raise ContractError(f"project name mismatch: project.toml={name!r}, SPEC.json={spec_name!r}")
-    
+
     source, test = project.get("source"), project.get("test")
     negative_fixture = project.get("negative_fixture", False)
     if not isinstance(negative_fixture, bool):

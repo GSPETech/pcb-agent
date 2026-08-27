@@ -32,7 +32,7 @@ Gerber generation, manufacturing, and order commands are absent.
 ## Profiles
 
 - `schematic`: contract, Diode build, immutable-snapshot TestBench, report.
-  The harness extracts deterministic testing code from `SPEC.json` and 
+  The harness extracts deterministic testing code from `SPEC.json` and
   `expected-connectivity.json`, rendering a generated TestBench and evaluating
   it strictly against `tests/.pcb-agent-connectivity.generated.zen`. Static
   coverage and unverified mappings return `BLOCKED`.

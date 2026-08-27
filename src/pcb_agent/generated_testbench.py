@@ -77,7 +77,7 @@ def render_specification_testbench(
 
         if not isinstance(subject, str) or not subject:
             raise GeneratorError(f"requirement {rid} has constraints but lacks subject")
-            
+
         comp = components.get(subject)
         if not isinstance(comp, dict):
             raise GeneratorError(f"subject {subject} in {rid} is not defined in expected connectivity components")
@@ -92,7 +92,7 @@ def render_specification_testbench(
 
         diode_ref = f"{bench_name}__{case_name}.{subject}.{adapter.instance_suffix}"
         lines.append(f"    check({_zener_string(diode_ref)} in components, 'missing {diode_ref}')")
-        
+
         for key, expected_value in constraints.items():
             if key == "value":
                 lines.append(f"    check(components[{_zener_string(diode_ref)}].resistance.matches({_zener_string(str(expected_value))}), 'wrong value for {subject}')")
@@ -147,7 +147,7 @@ def render_connectivity_testbench(
             diode_pin = adapter.pins.get(pin)
             if not diode_pin:
                 raise GeneratorError(f"unsupported pin {pin} for kind {kind}")
-            
+
             diode_ref = f"{bench_name}__{case_name}.{ref}.{adapter.instance_suffix}"
             tuples.append(f"({_zener_string(diode_ref)}, {_zener_string(diode_pin)})")
         expected_members_by_net[net_name] = tuples

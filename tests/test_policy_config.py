@@ -124,7 +124,7 @@ class LoadTests(unittest.TestCase):
         self.assertFalse(any(matches("source/a.zen", p) for p in policy.allow_files))
         self.assertFalse(any(matches("testsx/a.py", p) for p in policy.allow_files))
         self.assertFalse(any(matches("reports/rawx/data.json", p) for p in policy.allow_files))
-        
+
         self.assertFalse(any(matches("../src/a.zen", p) for p in policy.allow_files))
         self.assertFalse(any(matches("src/../a.zen", p) for p in policy.allow_files))
         self.assertFalse(any(matches("/src/a.zen", p) for p in policy.allow_files))
