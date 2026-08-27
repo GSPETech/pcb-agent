@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sys
 import platform
 import shutil
@@ -67,6 +68,10 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--max-iterations", type=int, default=5)
     run.add_argument("--timeout", type=float, default=600.0)
     run.add_argument("--format", choices=("human", "json"), default="human")
+    init = sub.add_parser("init")
+    init.add_argument("name")
+    init.add_argument("--into", default=".")
+    init.add_argument("--format", choices=("human", "json"), default="human")
     return parser
 
 
@@ -364,8 +369,94 @@ def _run_backend(args: argparse.Namespace, project: ProjectState, run: RunState,
         lock.release()
 
 
+def _init(args: argparse.Namespace) -> int:
+    name = args.name
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", name):
+        print(f"pcb-agent: invalid project name: {name!r}", file=sys.stderr)
+        return 3
+    try:
+        into = Path(args.into).resolve(strict=True)
+    except (OSError, RuntimeError) as error:
+        print(f"pcb-agent: cannot resolve --into: {error}", file=sys.stderr)
+        return 3
+    if not into.is_dir():
+        print(f"pcb-agent: --into is not a directory: {into}", file=sys.stderr)
+        return 3
+    target = into / name
+    if target.exists():
+        try:
+            contents = list(target.iterdir())
+        except OSError:
+            contents = None
+        if contents:
+            print(f"pcb-agent: target not empty: {target}", file=sys.stderr)
+            return 3
+    if target.is_symlink():
+        print(f"pcb-agent: target is a symlink: {target}", file=sys.stderr)
+        return 3
+
+    template_root = (Path(__file__).resolve().parent.parent.parent
+                     / "skill" / "diode-pcb-agent" / "assets" / "project-template")
+    template_files = (
+        "src/board.zen",
+        "tests/board_test.zen",
+        "SPEC.json",
+        "ACCEPTANCE.json",
+        "expected-connectivity.json",
+        "project.toml",
+        "pcb.toml",
+    )
+
+    target.mkdir(parents=False, exist_ok=False)
+    created: list[str] = []
+    try:
+        for relative in template_files:
+            source = template_root / relative
+            destination = target / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, destination)
+            created.append(relative)
+
+        replacements = {
+            "template-board": name,
+            "template_board": name.replace("-", "_"),
+        }
+        for relative in created:
+            path = target / relative
+            if path.suffix not in {".json", ".toml", ".zen"}:
+                continue
+            text = path.read_text(encoding="utf-8")
+            for old, new in replacements.items():
+                text = text.replace(old, new)
+            path.write_text(text, encoding="utf-8", newline="\n")
+
+        load_project(target)
+    except Exception as error:
+        shutil.rmtree(target, ignore_errors=True)
+        print(f"pcb-agent: init failed: {error}", file=sys.stderr)
+        return 3
+
+    if args.format == "json":
+        payload = {
+            "project": name,
+            "root": str(target),
+            "created": sorted(created),
+            "production_ready": False,
+            "fabrication_approved": False,
+        }
+        print(json.dumps(payload, sort_keys=True))
+    else:
+        print(f"created {name} at {target}")
+        for relative in sorted(created):
+            print(f"  {relative}")
+        print("production_ready: false; fabrication_approved: false")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
+    if args.command == "init":
+        return _init(args)
     try:
         policy = Policy.load()
         project = load_project(getattr(args, "project_option", None) or args.project)
