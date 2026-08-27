@@ -350,7 +350,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             elif args.profile == "connectivity":
                 checks = [checks[1]]
         elif args.command == "layout":
-            checks = [_diode_command(project, "layout-command", "LAYOUT_SYNC")]
+            generation = _diode_command(project, "layout-command", "LAYOUT_GENERATE")
+            checks = [generation]
+            if generation.status == CheckStatus.PASS:
+                checks.append(_diode_command(project, "layout-check-command", "LAYOUT_SYNC"))
+            else:
+                checks.append(_check("LAYOUT_SYNC", CheckStatus.BLOCKED,
+                                     "layout generation did not pass"))
         elif args.command == "drc":
             try:
                 checks = [kicad.result_check(kicad.drc(project, run), run.raw_directory / "kicad-drc.json")]
