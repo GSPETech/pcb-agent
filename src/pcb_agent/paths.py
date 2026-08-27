@@ -54,11 +54,10 @@ def validate_executable(
     located = shutil.which(executable)
     if located is None:
         raise FileNotFoundError(f"executable not found: {executable}")
-    path = Path(located)
-    if path.is_symlink():
-        path = path.resolve(strict=True)
-    else:
-        path = path.absolute()
+    # Always canonicalise. On Windows shutil.which can return an 8.3 short path
+    # (for example RUNNER~1) while workspace and trusted roots resolve to long
+    # paths, which would make containment checks silently pass.
+    path = Path(located).resolve(strict=True)
     require_regular_file(path, reject_symlink=False)
 
     root = Path(workspace).resolve(strict=True)
