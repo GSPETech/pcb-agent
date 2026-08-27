@@ -32,15 +32,44 @@ Gerber generation, manufacturing, and order commands are absent.
 ## Profiles
 
 - `schematic`: contract, Diode build, immutable-snapshot TestBench, report.
-  The harness extracts deterministic testing code from `SPEC.json` and
-  `expected-connectivity.json`, rendering a generated TestBench and evaluating
-  it strictly against `tests/.pcb-agent-connectivity.generated.zen`. Static
-  coverage and unverified mappings return `BLOCKED`.
 - `layout`: all schematic gates, Diode layout generation/check, direct KiCad 10
   JSON DRC. Missing required KiCad is `BLOCKED`.
 
 Layout and SPICE checks are `SKIPPED` under schematic profile. SPICE execution
 is deferred in MVP.
+
+## Deterministic Schematic Evidence
+
+`CONNECTIVITY` and `SPECIFICATION` are decided only by generated TestBenches
+that the harness owns. The harness renders Zener source from the immutable
+`expected-connectivity.json` and `SPEC.json`, writes it into a trusted
+snapshot as `tests/.pcb-agent-connectivity.generated.zen` or
+`tests/.pcb-agent-specification.generated.zen`, runs `pcb test -f json`, and
+requires the expected TestBench and check record to be present and passing.
+
+Rules:
+
+- Component kinds are resolved through a versioned adapter registry. Each
+  adapter records the exact verified `pcbc` versions and the SHA-256 of the
+  captured evidence that established the mapping.
+- The registry is currently empty. No mapping has been verified against
+  captured Diode output, so every generated check reports `BLOCKED`. See
+  `docs/spike-diode-net-naming.md`.
+- Unsupported component kind, unsupported pin, unverified toolchain version,
+  unsupported constraint, or unsupported contract semantics all raise a
+  generator error and become `BLOCKED`. They never become `PASS`.
+- Contract-controlled values never become Zener identifiers and are always
+  emitted through a single escaping helper.
+- Exit code zero alone is not sufficient. Empty results, inconsistent summary
+  counts, malformed JSON, truncated output, or a missing expected record are
+  all `BLOCKED`.
+- A structured assertion failure for the expected generated check is `FAIL`.
+  Compiler, environment, and evidence problems are `BLOCKED`.
+- Source-level coverage scanners remain available as advisory diagnostics only
+  and cannot determine a required check status.
+
+Every generated run records both the generated source and the raw result JSON
+with their SHA-256 digests in the report evidence.
 
 ## Status And Exit
 
