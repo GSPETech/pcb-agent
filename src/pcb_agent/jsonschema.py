@@ -49,7 +49,7 @@ def load_schema(name: str) -> dict[str, Any]:
 
 def _json_equal(left: Any, right: Any) -> bool:
     if isinstance(left, bool) or isinstance(right, bool):
-        return type(left) is type(right) and left == right
+        return isinstance(left, bool) and isinstance(right, bool) and left == right
 
     if left is None or right is None:
         return left is None and right is None
@@ -62,8 +62,8 @@ def _json_equal(left: Any, right: Any) -> bool:
     ):
         return left == right
 
-    if type(left) is not type(right):
-        return False
+    if isinstance(left, str) and isinstance(right, str):
+        return str(left) == str(right)
 
     if isinstance(left, list) and isinstance(right, list):
         return (
@@ -76,6 +76,9 @@ def _json_equal(left: Any, right: Any) -> bool:
             left.keys() == right.keys()
             and all(_json_equal(left[key], right[key]) for key in left)
         )
+
+    if type(left) is not type(right):
+        return False
 
     return left == right
 

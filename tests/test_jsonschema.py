@@ -51,6 +51,35 @@ class KeywordSupportTests(unittest.TestCase):
                 self.assertTrue(used, msg=f"no used keywords found in {name}")
 
 
+def _generated_report_dict() -> dict:
+    from pcb_agent.models import Check, CheckStatus, Severity, VerificationReport
+
+    checks = (
+        Check(
+            "CONTRACT",
+            CheckStatus.PASS,
+            Severity.ERROR,
+            "project contracts loaded and hashed",
+            "harness",
+            (),
+            None,
+            None,
+            {},
+            True,
+        ),
+    )
+    report = VerificationReport(
+        "schema-test",
+        checks,
+        profile="schematic",
+        run_id="20260101T000000.000000Z-1",
+        source_dirty=False,
+        hashes={"SPEC.json": "sha256:" + "0" * 64},
+        artifacts=(),
+    )
+    return json.loads(json.dumps(report.to_dict()))
+
+
 class AcceptTests(unittest.TestCase):
     def test_valid_specification(self) -> None:
         schema = load_schema("specification.schema.json")
@@ -64,10 +93,7 @@ class AcceptTests(unittest.TestCase):
 
     def test_valid_verification_report(self) -> None:
         schema = load_schema("verification-report.schema.json")
-        instance = json.loads((ROOT / "fixtures" / "valid-blinky" / "reports" /
-                               "20260824T061834.487651Z-1176" / "verify-report.json").read_text())
-        instance["exit_code"] = None
-        instance["duration"] = None
+        instance = _generated_report_dict()
         validate(instance, schema)
 
 
@@ -106,8 +132,7 @@ class RejectTests(unittest.TestCase):
 
     def test_production_ready_true_rejected(self) -> None:
         schema = load_schema("verification-report.schema.json")
-        report = json.loads((ROOT / "fixtures" / "valid-blinky" / "reports" /
-                             "20260824T061834.487651Z-1176" / "verify-report.json").read_text())
+        report = _generated_report_dict()
         report["production_ready"] = True
         with self.assertRaises(SchemaError):
             validate(report, schema)

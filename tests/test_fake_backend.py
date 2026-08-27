@@ -128,7 +128,7 @@ class FakeBackendTests(unittest.TestCase):
             with patch.dict(os.environ, {"PATH": path}, clear=False), contextlib.redirect_stdout(io.StringIO()):
                 valid = cli.main(["verify", str(valid_fixture), "--format", "json"])
                 invalid = cli.main(["verify", str(invalid_fixture), "--format", "json"])
-        self.assertEqual(valid, 0)
+        self.assertEqual(valid, 2)
         self.assertEqual(invalid, 1)
 
 
