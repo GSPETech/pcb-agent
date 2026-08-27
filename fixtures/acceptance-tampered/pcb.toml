@@ -1,0 +1,8 @@
+[workspace]
+repository = "example.invalid/pcb-agent/acceptance-tampered"
+pcb-version = "0.4"
+
+[board]
+name = "acceptance-tampered"
+path = "src/blinky.zen"
+description = "Negative fixture: harness must detect tampered acceptance during a run."
