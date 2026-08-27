@@ -1,0 +1,10 @@
+{
+  "schema_version": "1",
+  "project": {"name": "path-traversal", "pcb_version": "0.4", "layers": 4, "description": "Negative fixture: source points outside project root"},
+  "power": {"rails": [{"name": "VCC", "voltage": "unspecified"}, {"name": "GND", "voltage": "0V"}]},
+  "requirements": [
+    {"id": "REQ-001", "type": "component", "description": "R1 shall be 1kohm in package 0402", "subject": "R1", "constraints": {"value": "1kohm", "package": "0402"}, "severity": "error", "evidence_required": ["zener_test"]},
+    {"id": "REQ-002", "type": "connectivity", "description": "R1 and D1 shall share LED_ANODE", "subject": "LED_ANODE", "constraints": {"members": ["R1.P2", "D1.A"]}, "severity": "error", "evidence_required": ["zener_test"]}
+  ],
+  "fabrication": {"automatic_approval": false, "human_approval_required": true}
+}

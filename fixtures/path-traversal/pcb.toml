@@ -1,0 +1,8 @@
+[workspace]
+repository = "example.invalid/pcb-agent/valid-blinky"
+pcb-version = "0.4"
+
+[board]
+name = "valid-blinky"
+path = "src/blinky.zen"
+description = "Positive LED blinky contract fixture."
