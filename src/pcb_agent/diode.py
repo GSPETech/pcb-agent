@@ -142,9 +142,26 @@ def _validate_test_payload(payload: object) -> Mapping[str, Any]:
         raise GeneratedEvidenceError("pcb test JSON summary passed+failed mismatches total")
     for key in ("failures", "errors"):
         value = _int_or_none(summary.get(key))
-        if value is not None and value > 0:
-            raise GeneratedEvidenceError(f"pcb test JSON reports {key}")
+        if value is not None and value < 0:
+            raise GeneratedEvidenceError(f"pcb test JSON summary {key} is negative")
     return payload
+
+
+def _payload_has_failure(payload: Mapping[str, Any]) -> bool:
+    summary = payload["summary"]
+    if not isinstance(summary, dict):
+        return True
+    for key in ("failed", "failures", "errors"):
+        value = _int_or_none(summary.get(key))
+        if value is not None and value > 0:
+            return True
+    for record in payload["results"]:
+        if not isinstance(record, dict):
+            return True
+        status = str(record.get("status", "")).upper()
+        if status in {"FAIL", "FAILED", "ERROR"}:
+            return True
+    return False
 
 
 def _record_identity(record: Mapping[str, Any]) -> tuple[str | None, str | None]:
@@ -341,6 +358,8 @@ def _classify_generated_check(check_id: str, outcome: GeneratedTestResult, bench
     try:
         _validate_test_payload(payload)
     except GeneratedEvidenceError:
+        return CheckStatus.BLOCKED
+    if _payload_has_failure(payload):
         return CheckStatus.BLOCKED
     record = _find_record(payload, bench_name, check_name)
     if record is None:
