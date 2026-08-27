@@ -78,6 +78,8 @@ class ContractTests(unittest.TestCase):
             with self.assertRaises(ContractError) as ctx:
                 load_project_contract(root)
             self.assertIn("project name mismatch", str(ctx.exception))
+
+    def test_source_parent_traversal_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / "project"
             root.mkdir()
@@ -86,7 +88,20 @@ class ContractTests(unittest.TestCase):
             outside.write_text("Board()", encoding="utf-8")
             config = (root / "project.toml").read_text(encoding="utf-8")
             (root / "project.toml").write_text(config.replace("src/board.zen", "../outside.zen"), encoding="utf-8")
-            with self.assertRaises(ValueError):
+            with self.assertRaises((ContractError, ValueError)):
+                load_project_contract(root)
+
+    def test_testbench_parent_traversal_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "project"
+            root.mkdir()
+            write_contract(root)
+            config = (root / "project.toml").read_text(encoding="utf-8")
+            (root / "project.toml").write_text(
+                config.replace("tests/board_test.zen", "tests/../src/board.zen"),
+                encoding="utf-8",
+            )
+            with self.assertRaises((ContractError, ValueError)):
                 load_project_contract(root)
 
 
