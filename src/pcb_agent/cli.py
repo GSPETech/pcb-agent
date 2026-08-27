@@ -168,7 +168,7 @@ def _diode_command(project: ProjectState, key: str, check_id: str,
 
 def _schematic_checks(project: ProjectState, run: RunState | None = None) -> list[Check]:
     test = _diode_command(project, "test-command", "ZENER_TEST", run.raw_directory if run else None)
-    return [test, _connectivity_check(project, test, run), _specification_check(project, test)]
+    return [test, _connectivity_check(project, test, run), _specification_check(project, test, run)]
 
 
 def _connectivity_check(project: ProjectState, test: Check, run: RunState | None) -> Check:
@@ -207,16 +207,35 @@ def _connectivity_check(project: ProjectState, test: Check, run: RunState | None
     return replace(check, evidence=evidence)
 
 
-def _specification_check(project: ProjectState, test: Check) -> Check:
+def _specification_check(project: ProjectState, test: Check, run: RunState | None) -> Check:
     if test.status != CheckStatus.PASS:
         return _check("SPECIFICATION", test.status, "Zener TestBench did not pass")
     
-    return _check(
-        "SPECIFICATION",
-        CheckStatus.BLOCKED,
-        "deterministic component-property evidence is unavailable; "
-        "source coverage is advisory only",
-    )
+    from .generated_testbench import render_specification_testbench, GeneratorError
+    try:
+        source = render_specification_testbench(project)
+    except GeneratorError as error:
+        return _check("SPECIFICATION", CheckStatus.BLOCKED, f"cannot generate evidence: {error}")
+
+    if run is None:
+        return _check("SPECIFICATION", CheckStatus.BLOCKED, "run state required for generated tests")
+
+    try:
+        result = diode.execute_generated_test(project, source, run.raw_directory, "SPECIFICATION")
+    except (ConfigurationError, FileNotFoundError, OSError, ValueError) as error:
+        return _check("SPECIFICATION", CheckStatus.BLOCKED, f"generated test execution blocked: {error}")
+
+    check = diode.result_check("SPECIFICATION", result)
+    if check.status == CheckStatus.PASS:
+        check = replace(check, message="generated specification assertions passed")
+    
+    evidence_path = run.raw_directory / "specification-result.json"
+    evidence_path.write_text(json.dumps({"argv": result.argv, "stdout": result.stdout, "stderr": result.stderr,
+                                         "exit_code": result.returncode, "duration": result.duration_seconds},
+                                        indent=2) + "\n", encoding="utf-8")
+    digest = "sha256:" + hashlib.sha256(evidence_path.read_bytes()).hexdigest()
+    evidence = {"path": str(evidence_path), "sha256": digest, "testbench_sha256": result.input_hashes.get("testbench", "")}
+    return replace(check, evidence=evidence)
 
 
 def _verify(project: ProjectState, run: RunState, profile: str) -> list[Check]:
