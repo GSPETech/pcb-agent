@@ -44,7 +44,7 @@ class LoadSchemaTests(unittest.TestCase):
 class KeywordSupportTests(unittest.TestCase):
     def test_all_used_keywords_are_supported(self) -> None:
         for name in ("connectivity.schema.json", "specification.schema.json",
-                     "verification-report.schema.json"):
+                     "verification-report.schema.json", "acceptance.schema.json"):
             with self.subTest(schema=name):
                 schema = load_schema(name)
                 used = collect_used_keywords(schema)
@@ -60,6 +60,14 @@ class AcceptTests(unittest.TestCase):
     def test_valid_connectivity(self) -> None:
         schema = load_schema("connectivity.schema.json")
         instance = json.loads((ROOT / "fixtures" / "valid-blinky" / "expected-connectivity.json").read_text())
+        validate(instance, schema)
+
+    def test_valid_verification_report(self) -> None:
+        schema = load_schema("verification-report.schema.json")
+        instance = json.loads((ROOT / "fixtures" / "valid-blinky" / "reports" /
+                               "20260824T061834.487651Z-1176" / "verify-report.json").read_text())
+        instance["exit_code"] = None
+        instance["duration"] = None
         validate(instance, schema)
 
 
@@ -119,6 +127,45 @@ class RejectTests(unittest.TestCase):
         schema = {"type": "string", "enum": ["PASS", "FAIL"]}
         with self.assertRaises(SchemaError):
             validate("BLOCKED", schema)
+
+    def test_enum_strict_boolean_type(self) -> None:
+        schema = {"enum": [1]}
+        with self.assertRaises(SchemaError):
+            validate(True, schema)
+        schema2 = {"enum": [True]}
+        with self.assertRaises(SchemaError):
+            validate(1, schema2)
+
+    def test_ref_sibling_keywords_apply(self) -> None:
+        schema = {
+            "$defs": {"base": {"type": "string"}},
+            "$ref": "#/$defs/base",
+            "const": "expected"
+        }
+        validate("expected", schema)
+        with self.assertRaises(SchemaError):
+            validate("other", schema)
+        with self.assertRaises(SchemaError):
+            validate(1, schema)
+
+    def test_unique_items_strict_numbers(self) -> None:
+        schema = {"type": "array", "uniqueItems": True}
+        with self.assertRaises(SchemaError):
+            validate([1, 1.0], schema)
+        validate([True, 1], schema)
+
+    def test_malformed_schemas_are_rejected(self) -> None:
+        cases = [
+            ({"required": "x"}, {}),
+            ({"minItems": "1"}, []),
+            ({"patternProperties": []}, {}),
+            ({"minLength": True}, "a"),
+            ({"enum": {}}, 1),
+        ]
+        for schema, instance in cases:
+            with self.subTest(schema=schema):
+                with self.assertRaises(SchemaError):
+                    validate(instance, schema)
 
 
 if __name__ == "__main__":
