@@ -104,6 +104,8 @@ class FakeBackendTests(unittest.TestCase):
         passed = Check("STEP", CheckStatus.PASS)
         failed = Check("LAYOUT_SYNC", CheckStatus.FAIL)
         with patch("pcb_agent.cli._diode_command", side_effect=[passed, passed, passed, failed]), \
+                patch("pcb_agent.cli._connectivity_check", return_value=passed), \
+                patch("pcb_agent.cli._specification_check", return_value=passed), \
                 patch("pcb_agent.cli.kicad.drc", return_value=process(5)), \
                 patch("pcb_agent.cli.kicad.result_check", return_value=Check("KICAD_DRC", CheckStatus.FAIL)):
             checks = cli._verify(self.project, self.run, "layout")

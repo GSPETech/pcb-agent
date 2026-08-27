@@ -119,6 +119,54 @@ def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None
     return result
 
 
+def execute_generated_test(
+    project: ProjectState,
+    generated_source: str,
+    evidence_root: Path,
+    check_id: str,
+) -> ProcessResult:
+    command = ["pcb", "test", "tests/.pcb-agent-connectivity.generated.zen", "-f", "json"]
+    capability = probe(project, command[0], command[1])
+    if capability.timed_out or capability.returncode != 0:
+        raise FileNotFoundError(f"{command[0]} capability probe failed")
+    
+    with tempfile.TemporaryDirectory(prefix=f"pcb-agent-{check_id.lower()}-") as temporary:
+        snapshot = Path(temporary)
+        closure = [path.relative_to(project.root).as_posix() for path in (project.root / "src").rglob("*") if path.is_file()]
+        closure.extend(("pcb.toml", "pcb-version"))
+        for relative in dict.fromkeys(closure):
+            source = project.root / relative
+            if source.exists():
+                target = snapshot / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source, target)
+        
+        test_path = snapshot / "tests" / ".pcb-agent-connectivity.generated.zen"
+        test_path.parent.mkdir(parents=True, exist_ok=True)
+        test_path.write_text(generated_source, encoding="utf-8")
+        
+        result = run_process(snapshot, command, timeout=300)
+        snapshot_test_hash = "sha256:" + hashlib.sha256(generated_source.encode("utf-8")).hexdigest()
+        
+        evidence_source = evidence_root / f"{check_id.lower()}-testbench.zen"
+        evidence_source.write_text(generated_source, encoding="utf-8")
+        
+        result = ProcessResult(result.argv, result.returncode, result.stdout, result.stderr,
+                               result.duration_seconds, result.timed_out, result.output_truncated,
+                               {"testbench": snapshot_test_hash})
+        
+        if result.returncode == 0:
+            if result.output_truncated:
+                raise ValueError("pcb test JSON output was truncated")
+            try:
+                payload = json.loads(result.stdout)
+            except json.JSONDecodeError as error:
+                raise ValueError("pcb test returned malformed JSON") from error
+            if not isinstance(payload, dict) or not isinstance(payload.get("results"), list):
+                raise ValueError("pcb test JSON lacks results contract")
+            
+        return result
+
 def result_check(check_id: str, result: ProcessResult, *, required: bool = True) -> Check:
     environment_error = any(text in result.stderr.lower() for text in (
         "a required privilege is not held by the client",
