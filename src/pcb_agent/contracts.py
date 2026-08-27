@@ -48,6 +48,14 @@ class ProjectContract:
     hashes: Mapping[str, str]
 
 
+def _reject_unsafe_relative_path(value: str, field: str) -> PurePosixPath:
+    from pathlib import PurePosixPath
+    normalized = value.replace("\\", "/")
+    path = PurePosixPath(normalized)
+    if path.is_absolute() or any(part in {"", ".", ".."} for part in path.parts):
+        raise ContractError(f"{field} must be a canonical workspace-relative path")
+    return path
+
 def _read_required(root: Path, name: str) -> bytes:
     if (root / name).is_symlink():
         raise ContractError(f"required contract file must not be a symlink: {name}")
@@ -111,7 +119,15 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
     for key, value in (("project.source", source), ("project.test", test)):
         if not isinstance(value, str) or not value.strip():
             raise ContractError(f"{key} must be a non-empty string")
+        lexical = _reject_unsafe_relative_path(value, key)
+        if key == "project.test":
+            if not lexical.parts or lexical.parts[0] != "tests" or lexical.suffix != ".zen":
+                raise ContractError("project.test must be a protected tests/*.zen file")
         path = resolve_workspace_path(root, value, must_exist=True)
+        if key == "project.test":
+            canonical_tests = resolve_workspace_path(root, "tests", must_exist=True, allow_root=False)
+            if canonical_tests not in path.parents:
+                raise ContractError("project.test resolved outside tests/ directory")
         require_regular_file(path)
     if not isinstance(toolchain, dict) or not isinstance(toolchain.get("pcb_version"), str):
         raise ContractError("project.toml requires [toolchain].pcb_version")
@@ -144,8 +160,29 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
         covered.add(requirement)
     if covered != set(requirement_ids):
         raise ContractError("acceptance checks must cover every requirement")
-    if not Path(test).as_posix().startswith("tests/") or not test.endswith(".zen"):
-        raise ContractError("project.test must be a protected tests/*.zen file")
+
+    for net_name, definition in connectivity.get("nets", {}).items():
+        if isinstance(definition, dict):
+            for member in definition.get("members", []):
+                if isinstance(member, str) and "." in member:
+                    ref = member.split(".", 1)[0]
+                    if ref not in connectivity.get("components", {}):
+                        raise ContractError(f"connectivity net member {member} references unknown component")
+            pullup = definition.get("required_pullup")
+            if isinstance(pullup, dict):
+                comp = pullup.get("component")
+                rail = pullup.get("rail")
+                if comp not in connectivity.get("components", {}):
+                    raise ContractError(f"connectivity required_pullup references unknown component {comp}")
+                if rail not in connectivity.get("nets", {}):
+                    raise ContractError(f"connectivity required_pullup references unknown net {rail}")
+    
+    rules = connectivity.get("rules")
+    if isinstance(rules, dict):
+        for net in rules.get("required_power_nets", []):
+            if net not in connectivity.get("nets", {}):
+                raise ContractError(f"connectivity required_power_nets references unknown net {net}")
+
     hashes = {
         name: "sha256:" + hashlib.sha256(data).hexdigest() for name, data in raw.items()
     }

@@ -90,5 +90,50 @@ class ContractTests(unittest.TestCase):
                 load_project_contract(root)
 
 
+    def test_unknown_connectivity_component_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_contract(root)
+            conn = json.loads((root / "expected-connectivity.json").read_text())
+            conn["nets"]["N1"]["members"].append("MISSING.P1")
+            (root / "expected-connectivity.json").write_text(json.dumps(conn))
+            with self.assertRaises(ContractError) as ctx:
+                load_project_contract(root)
+            self.assertIn("unknown component", str(ctx.exception))
+
+    def test_unknown_required_power_net_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_contract(root)
+            conn = json.loads((root / "expected-connectivity.json").read_text())
+            conn["rules"]["required_power_nets"] = ["GHOST"]
+            (root / "expected-connectivity.json").write_text(json.dumps(conn))
+            with self.assertRaises(ContractError) as ctx:
+                load_project_contract(root)
+            self.assertIn("GHOST", str(ctx.exception))
+
+    def test_unknown_pullup_component_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_contract(root)
+            conn = json.loads((root / "expected-connectivity.json").read_text())
+            conn["nets"]["N1"]["required_pullup"] = {"component": "MISSING", "rail": "N1"}
+            (root / "expected-connectivity.json").write_text(json.dumps(conn))
+            with self.assertRaises(ContractError) as ctx:
+                load_project_contract(root)
+            self.assertIn("MISSING", str(ctx.exception))
+
+    def test_unknown_pullup_rail_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_contract(root)
+            conn = json.loads((root / "expected-connectivity.json").read_text())
+            conn["nets"]["N1"]["required_pullup"] = {"component": "U1", "rail": "MISSING"}
+            (root / "expected-connectivity.json").write_text(json.dumps(conn))
+            with self.assertRaises(ContractError) as ctx:
+                load_project_contract(root)
+            self.assertIn("MISSING", str(ctx.exception))
+
+
 if __name__ == "__main__":
     unittest.main()
