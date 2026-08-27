@@ -163,12 +163,47 @@ def _diode_command(project: ProjectState, key: str, check_id: str,
 
 def _schematic_checks(project: ProjectState, run: RunState | None = None) -> list[Check]:
     test = _diode_command(project, "test-command", "ZENER_TEST", run.raw_directory if run else None)
-    status = test.status
-    return [
-        test,
-        _check("CONNECTIVITY", status, "connectivity covered by trusted Zener TestBench result"),
-        _check("SPECIFICATION", status, "specification covered by trusted Zener TestBench result"),
-    ]
+    return [test, _connectivity_check(project, test), _specification_check(project, test)]
+
+
+def _connectivity_check(project: ProjectState, test: Check) -> Check:
+    if test.status != CheckStatus.PASS:
+        return _check("CONNECTIVITY", test.status, "Zener TestBench did not pass")
+    connectivity = project.connectivity
+    if not connectivity.get("components") and not connectivity.get("nets"):
+        return _check("CONNECTIVITY", CheckStatus.SKIPPED,
+                      "build-negative fixture declares no expected connectivity",
+                      required=False)
+    try:
+        source = (project.root / project.test).read_text(encoding="utf-8")
+    except OSError as error:
+        return _check("CONNECTIVITY", CheckStatus.BLOCKED, str(error))
+    from .connectivity import coverage_failures
+    failures = coverage_failures(connectivity, source)
+    if failures:
+        return _check("CONNECTIVITY", CheckStatus.FAIL, "; ".join(failures))
+    return _check(
+        "CONNECTIVITY", CheckStatus.PASS,
+        "every expected net and component reference is asserted by the locked TestBench; "
+        "pin-level netlist comparison is not yet implemented",
+    )
+
+
+def _specification_check(project: ProjectState, test: Check) -> Check:
+    if test.status != CheckStatus.PASS:
+        return _check("SPECIFICATION", test.status, "Zener TestBench did not pass")
+    from .specification_check import specification_failures
+    try:
+        source = (project.root / project.test).read_text(encoding="utf-8")
+    except OSError as error:
+        return _check("SPECIFICATION", CheckStatus.BLOCKED, str(error))
+    failures = specification_failures(project.specification, project.acceptance, source)
+    if failures:
+        return _check("SPECIFICATION", CheckStatus.FAIL, "; ".join(failures))
+    return _check(
+        "SPECIFICATION", CheckStatus.PASS,
+        "every requirement with constraints is asserted by the locked TestBench",
+    )
 
 
 def _verify(project: ProjectState, run: RunState, profile: str) -> list[Check]:

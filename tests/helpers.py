@@ -18,7 +18,18 @@ def write_contract(root: Path, *, name: str = "test-project") -> None:
     (root / "src").mkdir(parents=True)
     (root / "tests").mkdir()
     (root / "src" / "board.zen").write_text("Board()\n", encoding="utf-8")
-    (root / "tests" / "board_test.zen").write_text("Test()\n", encoding="utf-8")
+    (root / "tests" / "board_test.zen").write_text(
+        "Module = Module('src/board.zen')\n"
+        "def default(module, inputs):\n"
+        "    components = module.components()\n"
+        "    nets = module.nets()\n"
+        "    check('U1' in components)\n"
+        "    check('N1' in nets)\n"
+        "TestBench(name='BoardTest', module=Module,\n"
+        "          test_cases={'default': {}},\n"
+        "          checks=[default])\n",
+        encoding="utf-8",
+    )
     (root / "SPEC.json").write_text(
         json.dumps({
             "schema_version": "1",

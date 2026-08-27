@@ -31,6 +31,8 @@ class ProjectState:
     test: str
     board: str | None
     acceptance: Mapping[str, Any]
+    specification: Mapping[str, Any]
+    connectivity: Mapping[str, Any]
 
 
 def source_is_dirty(root: Path) -> bool:
@@ -59,7 +61,7 @@ def load_project(project: Path | str) -> ProjectState:
         raise ConfigurationError(str(error)) from error
     return ProjectState(contract.root, contract.name, contract.config, contract.hashes,
                         contract.profile, contract.source, contract.test, contract.board,
-                        contract.acceptance)
+                        contract.acceptance, contract.specification, contract.connectivity)
 
 
 def new_run(project: ProjectState, reports_root: Path | str | None = None) -> RunState:
