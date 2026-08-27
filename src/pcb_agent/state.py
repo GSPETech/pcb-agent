@@ -50,19 +50,7 @@ class RunState:
     raw_directory: Path
 
 
-def _read_file(root: Path, name: str) -> bytes:
-    candidate = root / name
-    if candidate.is_symlink():
-        raise ConfigurationError(f"contract file must not be a symlink: {name}")
-    try:
-        path = resolve_workspace_path(root, name, must_exist=True)
-        require_regular_file(path)
-        data = path.read_bytes()
-    except (OSError, ValueError) as error:
-        raise ConfigurationError(f"cannot read {name}: {error}") from error
-    if not data.strip():
-        raise ConfigurationError(f"contract file is empty: {name}")
-    return data
+
 
 
 def load_project(project: Path | str) -> ProjectState:
