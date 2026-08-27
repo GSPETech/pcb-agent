@@ -1,16 +1,16 @@
-"""Specification constraint coverage checks against the locked TestBench."""
+"""Advisory source coverage only. Must never determine SPECIFICATION PASS."""
 
 from __future__ import annotations
 
 from typing import Any, Mapping
 
 
-def specification_failures(
+def advisory_specification_findings(
     specification: Mapping[str, Any],
     acceptance: Mapping[str, Any],
     testbench_source: str,
 ) -> tuple[str, ...]:
-    """Return sorted failure messages; empty tuple means fully covered."""
+    """Return sorted advisory messages; empty tuple means statically covered."""
     failures: list[str] = []
     requirements = specification.get("requirements", [])
     checks = acceptance.get("checks", [])

@@ -8,7 +8,7 @@ import textwrap
 import unittest
 from pathlib import Path
 
-from pcb_agent.connectivity import coverage_failures
+from pcb_agent.connectivity import advisory_coverage_findings
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -22,9 +22,9 @@ VALID_BLINKY_TEST = (
 ).read_text(encoding="utf-8")
 
 
-class CoverageTests(unittest.TestCase):
+class AdvisoryCoverageTests(unittest.TestCase):
     def test_valid_blinky_fixture_is_fully_covered(self) -> None:
-        self.assertEqual(coverage_failures(VALID_BLINKY, VALID_BLINKY_TEST), ())
+        self.assertEqual(advisory_coverage_findings(VALID_BLINKY, VALID_BLINKY_TEST), ())
 
     def test_missing_net_reports_failure(self) -> None:
         contract = {
@@ -41,7 +41,7 @@ class CoverageTests(unittest.TestCase):
             end])
             """
         )
-        failures = coverage_failures(contract, source)
+        failures = advisory_coverage_findings(contract, source)
         self.assertEqual(len(failures), 1)
         self.assertIn("GHOST", failures[0])
 
@@ -52,8 +52,8 @@ class CoverageTests(unittest.TestCase):
             "rules": {"required_power_nets": []},
         }
         source = "R1 is here. R3 is here."
-        failures = coverage_failures(contract, source)
-        self.assertIn(any("R2" in f for f in failures), [True])
+        failures = advisory_coverage_findings(contract, source)
+        self.assertTrue(any("R2" in f for f in failures))
 
     def test_required_power_nets_must_be_declared(self) -> None:
         contract = {
@@ -61,7 +61,7 @@ class CoverageTests(unittest.TestCase):
             "nets": {"VCC": {"members": ["R1.P1"]}},
             "rules": {"required_power_nets": ["VCC", "GROUND"]},
         }
-        failures = coverage_failures(contract, "")
+        failures = advisory_coverage_findings(contract, "")
         self.assertTrue(any("GROUND" in f for f in failures))
 
     def test_empty_contract_plus_empty_source_returns_no_failures(self) -> None:
@@ -70,7 +70,7 @@ class CoverageTests(unittest.TestCase):
             "nets": {},
             "rules": {"required_power_nets": []},
         }
-        self.assertEqual(coverage_failures(contract, ""), ())
+        self.assertEqual(advisory_coverage_findings(contract, ""), ())
 
     def test_failures_are_sorted(self) -> None:
         contract = {
@@ -78,8 +78,23 @@ class CoverageTests(unittest.TestCase):
             "nets": {"zeta": {"members": ["Z.1"]}, "alpha": {"members": ["A.1"]}},
             "rules": {"required_power_nets": []},
         }
-        failures = coverage_failures(contract, "")
+        failures = advisory_coverage_findings(contract, "")
         self.assertEqual(failures, tuple(sorted(failures)))
+
+    def test_advisory_is_satisfied_by_comments_and_substrings_showing_it_cannot_gate(self) -> None:
+        contract = {
+            "components": {"R1": {"kind": "resistor"}, "LED1": {"kind": "led"}},
+            "nets": {"VCC": {"members": ["R1.P1"]}, "GND": {"members": ["LED1.K"]}},
+            "rules": {"required_power_nets": []},
+        }
+        source = textwrap.dedent(
+            """
+            # R1 and LED1 should connect to VCC and GND respectively
+            def some_function():
+                pass
+            """
+        )
+        self.assertEqual(advisory_coverage_findings(contract, source), ())
 
 
 if __name__ == "__main__":

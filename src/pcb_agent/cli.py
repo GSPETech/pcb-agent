@@ -179,35 +179,24 @@ def _connectivity_check(project: ProjectState, test: Check) -> Check:
         return _check("CONNECTIVITY", CheckStatus.SKIPPED,
                       "build-negative fixture declares no expected connectivity",
                       required=False)
-    try:
-        source = (project.root / project.test).read_text(encoding="utf-8")
-    except OSError as error:
-        return _check("CONNECTIVITY", CheckStatus.BLOCKED, str(error))
-    from .connectivity import coverage_failures
-    failures = coverage_failures(connectivity, source)
-    if failures:
-        return _check("CONNECTIVITY", CheckStatus.FAIL, "; ".join(failures))
+    
     return _check(
-        "CONNECTIVITY", CheckStatus.PASS,
-        "every expected net and component reference is asserted by the locked TestBench; "
-        "pin-level netlist comparison is not yet implemented",
+        "CONNECTIVITY",
+        CheckStatus.BLOCKED,
+        "pin-level deterministic connectivity evidence is unavailable; "
+        "source coverage is advisory only",
     )
 
 
 def _specification_check(project: ProjectState, test: Check) -> Check:
     if test.status != CheckStatus.PASS:
         return _check("SPECIFICATION", test.status, "Zener TestBench did not pass")
-    from .specification_check import specification_failures
-    try:
-        source = (project.root / project.test).read_text(encoding="utf-8")
-    except OSError as error:
-        return _check("SPECIFICATION", CheckStatus.BLOCKED, str(error))
-    failures = specification_failures(project.specification, project.acceptance, source)
-    if failures:
-        return _check("SPECIFICATION", CheckStatus.FAIL, "; ".join(failures))
+    
     return _check(
-        "SPECIFICATION", CheckStatus.PASS,
-        "every requirement with constraints is asserted by the locked TestBench",
+        "SPECIFICATION",
+        CheckStatus.BLOCKED,
+        "deterministic component-property evidence is unavailable; "
+        "source coverage is advisory only",
     )
 
 
