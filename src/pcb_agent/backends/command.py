@@ -28,8 +28,6 @@ class CommandBackend:
         self.transport = transport
 
     def probe(self, workspace: Path) -> ProcessResult:
-        from ..process import run_process
-
         return run_process(workspace, [self.argv[0], "--help"], timeout=30)
 
     def execute(self, task: str, workspace: Path, timeout: float) -> BackendResult:
