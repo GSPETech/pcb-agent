@@ -8,6 +8,13 @@ dependencies = []
 [project.scripts]
 pcb-agent = "pcb_agent.cli:main"
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"
+
 [tool.pyright]
 pythonVersion = "3.11"
 include = ["src"]
+typeCheckingMode = "standard"
+reportUnusedImport = "error"
