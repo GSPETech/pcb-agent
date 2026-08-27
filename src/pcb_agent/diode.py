@@ -8,7 +8,7 @@ import hashlib
 import shutil
 import tempfile
 from dataclasses import dataclass
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping
 
 from .models import Check, CheckStatus, Severity
 from .process import ProcessResult, run_process
@@ -54,7 +54,7 @@ class GeneratedAssertionFailure(GeneratedEvidenceError):
     pass
 
 
-def configured_command(project: ProjectState, key: str) -> tuple[str, ...] | None:
+def configured_command(project: ProjectState, key: str) -> tuple[str, ...]:
     if key not in _COMMAND_KEYS:
         raise ConfigurationError(f"unsupported Diode command key: {key}")
     defaults = {
@@ -87,7 +87,10 @@ def doctor_probes(project: ProjectState) -> tuple[ProcessResult, ...]:
         ("pcb", "help", "test"), ("pcb", "help", "layout"),
         ("pcb", "help", "simulate"), ("pcb", "toolchain", "show"),
     )
-    return tuple(run_process(project.root, list(command), timeout=30) for command in commands)
+    results: list[ProcessResult] = []
+    for command in commands:
+        results.append(run_process(project.root, list(command), timeout=30))
+    return tuple(results)
 
 
 def _records(value: object) -> list[Mapping[str, Any]]:
@@ -162,11 +165,12 @@ def _find_record(payload: Mapping[str, Any], bench_name: str, check_name: str) -
 
 def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None) -> ProcessResult:
     command = configured_command(project, key)
-    if command is None:
+    if len(command) == 0:
         raise ConfigurationError(f"project.toml does not define {key}")
-    capability = probe(project, command[0], command[1] if len(command) > 1 else None)
+    exe = command[0]
+    capability = probe(project, exe, command[1] if len(command) > 1 else None)
     if capability.timed_out or capability.returncode != 0:
-        raise FileNotFoundError(f"{command[0]} capability probe failed")
+        raise FileNotFoundError(f"{exe} capability probe failed")
     if key != "test-command" or trusted_root is None:
         return run_process(project.root, command, timeout=300)
     with tempfile.TemporaryDirectory(prefix="pcb-agent-trusted-test-") as temporary:

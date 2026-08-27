@@ -69,7 +69,7 @@ def _child_environment(
     return result
 
 
-def _kill_process_tree(process: subprocess.Popen[str]) -> None:
+def _kill_process_tree(process: subprocess.Popen) -> None:
     if process.poll() is not None:
         return
     if os.name == "nt":

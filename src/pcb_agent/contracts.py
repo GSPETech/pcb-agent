@@ -6,7 +6,7 @@ import hashlib
 import json
 import tomllib
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Mapping
 
 from .jsonschema import SchemaError, load_schema, validate
@@ -157,9 +157,12 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
             raise ContractError("acceptance expected value must be PASS or FAIL")
         if item.get("expected") == "FAIL" and not negative_fixture:
             raise ContractError("expected FAIL is allowed only for an explicit negative fixture")
-        covered.add(requirement)
+        covered.add(str(requirement))
     if covered != set(requirement_ids):
         raise ContractError("acceptance checks must cover every requirement")
+
+    if not isinstance(source, str) or not isinstance(test, str):
+        raise ContractError("source and test must be strings")
 
     for net_name, definition in connectivity.get("nets", {}).items():
         if isinstance(definition, dict):

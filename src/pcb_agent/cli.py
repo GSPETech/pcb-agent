@@ -11,7 +11,6 @@ import sys
 import platform
 import shutil
 from dataclasses import replace
-from fnmatch import fnmatch
 from pathlib import Path
 from typing import Callable, Sequence
 
@@ -95,13 +94,16 @@ def _persist(project: ProjectState, run: RunState, checks: Sequence[Check], outp
             print(f"{check.id}: {check.status} - {check.message}")
         print(f"report: {path}")
         print("production_ready: false; fabrication_approved: false")
-    return exit_override if exit_override is not None else EXIT_CODES[report.status]
+    status = report.status
+    if status is None:
+        raise ValueError("report status was not aggregated")
+    return exit_override if exit_override is not None else EXIT_CODES[status]
 
 
 def _tool_check(
     project: ProjectState,
     executable: str,
-    probe: Callable[[ProjectState], object],
+    probe: Callable[[ProjectState], diode.ProcessResult],
     *,
     required: bool,
 ) -> Check:
@@ -368,9 +370,11 @@ def _run_backend_unlocked(args: argparse.Namespace, project: ProjectState, run: 
             raise PolicyViolation(
                 f"backend changed more than {policy.max_changed_files} editable files"
             )
-        if result.process.timed_out or result.process.returncode != 0:
+        proc = getattr(result, "process", None)
+        if proc is None or getattr(proc, "timed_out", False) or getattr(proc, "returncode", 1) != 0:
             snapshot.seal_backend_changes().restore_backend_changes()
-            return [_check("BACKEND", CheckStatus.BLOCKED, f"backend exited {result.process.returncode}")]
+            exit_code = getattr(proc, "returncode", 4)
+            return [_check("BACKEND", CheckStatus.BLOCKED, f"backend exited {exit_code}")]
         checks = _verify(project, run, args.profile)
         if VerificationReport(project.name, tuple(checks)).status == CheckStatus.PASS:
             return [_check("BACKEND", CheckStatus.PASS, f"backend iteration {iteration} completed"), *checks]

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import math
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 
 SCHEMA_ROOT = Path(__file__).resolve().parent.parent.parent / "schemas"
@@ -65,13 +65,13 @@ def _json_equal(left: Any, right: Any) -> bool:
     if type(left) is not type(right):
         return False
 
-    if isinstance(left, list):
+    if isinstance(left, list) and isinstance(right, list):
         return (
             len(left) == len(right)
             and all(_json_equal(a, b) for a, b in zip(left, right))
         )
 
-    if isinstance(left, dict):
+    if isinstance(left, dict) and isinstance(right, dict):
         return (
             left.keys() == right.keys()
             and all(_json_equal(left[key], right[key]) for key in left)
