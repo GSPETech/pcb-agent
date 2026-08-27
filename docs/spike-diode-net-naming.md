@@ -1,7 +1,14 @@
 # Diode net-naming spike
 
-Status: `DEFERRED`. Spike not yet executed; awaiting Diode toolchain on a
-Linux ext4 filesystem.
+Status: `BLOCKED`. Spike not yet executed; requires Diode toolchain on a
+Linux ext4 filesystem. Windows-native Diode remains blocked by OS error 1314
+(symlink privilege).
+
+Consequence for the harness: the adapter registry in
+`src/pcb_agent/generated_testbench.py` is intentionally **empty**. Every
+component kind therefore raises `GeneratorError`, and both `CONNECTIVITY` and
+`SPECIFICATION` return `BLOCKED`. This is the correct fail-closed behaviour
+until the mappings below are verified against captured Diode output.
 
 ## Question
 
@@ -14,25 +21,38 @@ Diode actually emits in its TestBench `module.nets()` output (e.g.
 Both the instance-path suffix and the pin name change depending on the
 underlying generic module.
 
-## Empirical observation (informal)
+## Candidate mapping (NOT VERIFIED)
 
 The harness repository carries
-`fixtures/valid-blinky/tests/blinky_test.zen` which contains assertions against
-the actual output of Diode 0.4.34 against this project's reference schematic.
+`fixtures/valid-blinky/tests/blinky_test.zen` which contains assertions
+believed to reflect Diode 0.4.34 output for this project's reference schematic.
+No captured raw JSON with a recorded SHA-256 exists in the repository, so none
+of these rows may be treated as evidence.
 
-Observed mapping (status `LIKELY BUT NOT VERIFIED` for the LED half):
+| Component kind | Pin in contract | Candidate path suffix | Candidate pin name | Status |
+|---|---|---|---|---|
+| `resistor` (`@stdlib/generics/Resistor.zen`) | `P1` | `R` | `"1"` | `REQUIRES TEST` |
+| `resistor` | `P2` | `R` | `"2"` | `REQUIRES TEST` |
+| `led` (`@stdlib/generics/Led.zen`) | `A` | `LED` | `"A"` | `REQUIRES TEST` |
+| `led` | `K` | `LED` | `"K"` | `REQUIRES TEST` |
+| `capacitor` | unknown | unknown | unknown | `REQUIRES TEST` |
+| `crystal` | unknown | unknown | unknown | `REQUIRES TEST` |
 
-| Component kind | Pin in contract | Path suffix Diode emits | Pin name Diode emits |
-|---|---|---|---|
-| `resistor` (`@stdlib/generics/Resistor.zen`) | `P1` | `R` | `"1"` |
-| `resistor` | `P2` | `R` | `"2"` |
-| `led` (`@stdlib/generics/Led.zen`) | `A` | `LED` | `"A"` |
-| `led` | `K` | `LED` | `"K"` |
+The TestBench name prefix `BlinkyTest__default.` appears to be composed from the
+TestBench `name` (`BlinkyTest`) and the test case key (`default`). This is also
+`REQUIRES TEST` until confirmed by varying both values.
 
-The TestBench name prefix `BlinkyTest__default.` is composed from the
-TestBench `name` (`BlinkyTest`) and the test case key (`default`). Both are
-declared in `tests/*.zen`, so the prefix is fully predictable from the
-TestBench source.
+## Property access API (NOT VERIFIED)
+
+`render_specification_testbench` currently emits:
+
+```text
+components[REF].resistance.matches(VALUE)
+components[REF].properties['package'].value == VALUE
+```
+
+Both forms are `REQUIRES TEST`. Neither has been observed against captured
+output. `mpn` has no candidate accessor at all and must remain unsupported.
 
 ## Required experiment
 
@@ -65,7 +85,7 @@ A document under `docs/` that includes:
   `expected-connectivity.json` is feasible, or whether the harness should
   keep phase A as the permanent strategy.
 
-## Why this is deferred
+## Why this is blocked
 
 Two blockers:
 
@@ -77,16 +97,38 @@ Two blockers:
    fixture only exercises Resistor and Led. Pin mappings for Capacitor,
    Crystal, and any future generic are unknown.
 
-## What phase A already covers
+## Current harness behaviour
 
-Until this spike resolves, the harness still enforces the contract-coverage
-invariant: every net name and component reference declared in
-`expected-connectivity.json` must appear as a literal in the locked TestBench
-source. A test that changes the contract without updating the TestBench is
-caught with status `FAIL`. This is implemented in
-`src/pcb_agent/connectivity.py` and covered by
-`tests/test_connectivity.py`.
+Because no mapping is verified, the adapter registry is empty and every
+generated check fails closed:
 
-Phase A deliberately stops short of generating a TestBench. Inventing the
-pin mapping table is exactly the kind of "guess the netlist schema"
-behavior the agent protocol forbids.
+| Gate | Status while spike is blocked |
+|---|---|
+| `CONTRACT` | PASS when contracts are valid |
+| `DIODE_BUILD` | PASS or FAIL from the compiler |
+| `ZENER_TEST` | PASS or FAIL from the locked TestBench |
+| `CONNECTIVITY` | `BLOCKED` — unsupported component kind |
+| `SPECIFICATION` | `BLOCKED` — unsupported component kind |
+
+`src/pcb_agent/connectivity.py` and `src/pcb_agent/specification_check.py`
+still compute source-level coverage, but only as advisory diagnostics. They
+never determine a required check status. Their function names carry the
+`advisory_` prefix to make this explicit.
+
+## Unblocking procedure
+
+1. Run the experiment above on WSL ext4.
+2. Store each raw JSON under `tests/evidence/diode-<version>/` with a SHA-256
+   manifest.
+3. Register adapters via `set_adapter_registry` with:
+   - the exact `pcbc` version in `verified_pcbc_versions`
+   - the evidence SHA-256 in `evidence_sha256`
+4. Verify `fixtures/valid-blinky` reaches `CONNECTIVITY: PASS` and
+   `SPECIFICATION: PASS`.
+5. Verify `fixtures/invalid-connectivity` and `fixtures/invalid-value` reach
+   `FAIL` and not `BLOCKED`.
+6. Replace every `REQUIRES TEST` row above with `VERIFIED`.
+
+Registering an adapter without captured evidence is exactly the kind of "guess
+the netlist schema" behaviour the agent protocol forbids. Leave the registry
+empty rather than populating it from inference.

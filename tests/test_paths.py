@@ -54,7 +54,7 @@ class PathTests(unittest.TestCase):
                 validate_executable(str(inside), workspace=workspace)
             self.assertEqual(
                 validate_executable(str(outside), workspace=workspace, trusted_roots=(trusted,)),
-                outside.absolute(),
+                outside.resolve(),
             )
             with self.assertRaises(PathViolation):
                 validate_executable(str(outside), workspace=workspace, trusted_roots=(other,))

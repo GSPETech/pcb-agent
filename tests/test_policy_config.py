@@ -42,13 +42,12 @@ class LoadTests(unittest.TestCase):
         self.assertFalse(policy.allow_path_escape)
         self.assertEqual(policy.network, "deny")
 
-    def test_normalize_starstar(self) -> None:
+    def test_normalize_validates_segments(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "policies.toml"
             write_toml(path, SAMPLE)
             policy = Policy.load(path)
         self.assertIn("src/**/*.zen", policy.allow_files)
-        self.assertIn("src/*/*.zen", policy.allow_files)
 
     def test_invalid_max_iterations(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -115,10 +114,20 @@ class LoadTests(unittest.TestCase):
             policy = Policy.load(path)
 
         self.assertTrue(any(matches("src/blinky.zen", p) for p in policy.allow_files))
+        self.assertTrue(any(matches("src/a/blinky.zen", p) for p in policy.allow_files))
         self.assertTrue(any(matches("src/a/b/blinky.zen", p) for p in policy.allow_files))
         self.assertTrue(any(matches("layout/foo.kicad_pcb", p) for p in policy.allow_files))
         self.assertTrue(any(matches("layout/a/b.kicad_pcb", p) for p in policy.allow_files))
+
         self.assertFalse(any(matches("SPEC.json", p) for p in policy.allow_files))
+        self.assertFalse(any(matches("srcx/a.zen", p) for p in policy.allow_files))
+        self.assertFalse(any(matches("source/a.zen", p) for p in policy.allow_files))
+        self.assertFalse(any(matches("testsx/a.py", p) for p in policy.allow_files))
+        self.assertFalse(any(matches("reports/rawx/data.json", p) for p in policy.allow_files))
+
+        self.assertFalse(any(matches("../src/a.zen", p) for p in policy.allow_files))
+        self.assertFalse(any(matches("src/../a.zen", p) for p in policy.allow_files))
+        self.assertFalse(any(matches("/src/a.zen", p) for p in policy.allow_files))
 
 
 if __name__ == "__main__":

@@ -11,7 +11,6 @@ import sys
 import platform
 import shutil
 from dataclasses import replace
-from fnmatch import fnmatch
 from pathlib import Path
 from typing import Callable, Sequence
 
@@ -95,13 +94,16 @@ def _persist(project: ProjectState, run: RunState, checks: Sequence[Check], outp
             print(f"{check.id}: {check.status} - {check.message}")
         print(f"report: {path}")
         print("production_ready: false; fabrication_approved: false")
-    return exit_override if exit_override is not None else EXIT_CODES[report.status]
+    status = report.status
+    if status is None:
+        raise ValueError("report status was not aggregated")
+    return exit_override if exit_override is not None else EXIT_CODES[status]
 
 
 def _tool_check(
     project: ProjectState,
     executable: str,
-    probe: Callable[[ProjectState], object],
+    probe: Callable[[ProjectState], diode.ProcessResult],
     *,
     required: bool,
 ) -> Check:
@@ -168,10 +170,10 @@ def _diode_command(project: ProjectState, key: str, check_id: str,
 
 def _schematic_checks(project: ProjectState, run: RunState | None = None) -> list[Check]:
     test = _diode_command(project, "test-command", "ZENER_TEST", run.raw_directory if run else None)
-    return [test, _connectivity_check(project, test), _specification_check(project, test)]
+    return [test, _connectivity_check(project, test, run), _specification_check(project, test, run)]
 
 
-def _connectivity_check(project: ProjectState, test: Check) -> Check:
+def _connectivity_check(project: ProjectState, test: Check, run: RunState | None) -> Check:
     if test.status != CheckStatus.PASS:
         return _check("CONNECTIVITY", test.status, "Zener TestBench did not pass")
     connectivity = project.connectivity
@@ -179,35 +181,56 @@ def _connectivity_check(project: ProjectState, test: Check) -> Check:
         return _check("CONNECTIVITY", CheckStatus.SKIPPED,
                       "build-negative fixture declares no expected connectivity",
                       required=False)
+
+    from .generated_testbench import render_connectivity_testbench, GeneratorError
     try:
-        source = (project.root / project.test).read_text(encoding="utf-8")
-    except OSError as error:
-        return _check("CONNECTIVITY", CheckStatus.BLOCKED, str(error))
-    from .connectivity import coverage_failures
-    failures = coverage_failures(connectivity, source)
-    if failures:
-        return _check("CONNECTIVITY", CheckStatus.FAIL, "; ".join(failures))
-    return _check(
-        "CONNECTIVITY", CheckStatus.PASS,
-        "every expected net and component reference is asserted by the locked TestBench; "
-        "pin-level netlist comparison is not yet implemented",
+        source = render_connectivity_testbench(project)
+    except GeneratorError as error:
+        return _check("CONNECTIVITY", CheckStatus.BLOCKED, f"cannot generate evidence: {error}")
+
+    if run is None:
+        return _check("CONNECTIVITY", CheckStatus.BLOCKED, "run state required for generated tests")
+
+    try:
+        outcome = diode.execute_generated_test(
+            project, source, run.raw_directory, "CONNECTIVITY",
+            "PcbAgentConnectivity", "contract",
+        )
+    except diode.GeneratedCompatibilityError as error:
+        return _check("CONNECTIVITY", CheckStatus.BLOCKED, f"generated test blocked: {error}")
+    except (ConfigurationError, FileNotFoundError, OSError, ValueError) as error:
+        return _check("CONNECTIVITY", CheckStatus.BLOCKED, f"generated test execution blocked: {error}")
+
+    return diode.generated_check(
+        "CONNECTIVITY", outcome, "PcbAgentConnectivity", "_check_connectivity"
     )
 
 
-def _specification_check(project: ProjectState, test: Check) -> Check:
+def _specification_check(project: ProjectState, test: Check, run: RunState | None) -> Check:
     if test.status != CheckStatus.PASS:
         return _check("SPECIFICATION", test.status, "Zener TestBench did not pass")
-    from .specification_check import specification_failures
+
+    from .generated_testbench import render_specification_testbench, GeneratorError
     try:
-        source = (project.root / project.test).read_text(encoding="utf-8")
-    except OSError as error:
-        return _check("SPECIFICATION", CheckStatus.BLOCKED, str(error))
-    failures = specification_failures(project.specification, project.acceptance, source)
-    if failures:
-        return _check("SPECIFICATION", CheckStatus.FAIL, "; ".join(failures))
-    return _check(
-        "SPECIFICATION", CheckStatus.PASS,
-        "every requirement with constraints is asserted by the locked TestBench",
+        source = render_specification_testbench(project)
+    except GeneratorError as error:
+        return _check("SPECIFICATION", CheckStatus.BLOCKED, f"cannot generate evidence: {error}")
+
+    if run is None:
+        return _check("SPECIFICATION", CheckStatus.BLOCKED, "run state required for generated tests")
+
+    try:
+        outcome = diode.execute_generated_test(
+            project, source, run.raw_directory, "SPECIFICATION",
+            "PcbAgentSpecification", "contract",
+        )
+    except diode.GeneratedCompatibilityError as error:
+        return _check("SPECIFICATION", CheckStatus.BLOCKED, f"generated test blocked: {error}")
+    except (ConfigurationError, FileNotFoundError, OSError, ValueError) as error:
+        return _check("SPECIFICATION", CheckStatus.BLOCKED, f"generated test execution blocked: {error}")
+
+    return diode.generated_check(
+        "SPECIFICATION", outcome, "PcbAgentSpecification", "_check_specification"
     )
 
 
@@ -347,9 +370,11 @@ def _run_backend_unlocked(args: argparse.Namespace, project: ProjectState, run: 
             raise PolicyViolation(
                 f"backend changed more than {policy.max_changed_files} editable files"
             )
-        if result.process.timed_out or result.process.returncode != 0:
+        proc = getattr(result, "process", None)
+        if proc is None or getattr(proc, "timed_out", False) or getattr(proc, "returncode", 1) != 0:
             snapshot.seal_backend_changes().restore_backend_changes()
-            return [_check("BACKEND", CheckStatus.BLOCKED, f"backend exited {result.process.returncode}")]
+            exit_code = getattr(proc, "returncode", 4)
+            return [_check("BACKEND", CheckStatus.BLOCKED, f"backend exited {exit_code}")]
         checks = _verify(project, run, args.profile)
         if VerificationReport(project.name, tuple(checks)).status == CheckStatus.PASS:
             return [_check("BACKEND", CheckStatus.PASS, f"backend iteration {iteration} completed"), *checks]
@@ -383,16 +408,8 @@ def _init(args: argparse.Namespace) -> int:
         print(f"pcb-agent: --into is not a directory: {into}", file=sys.stderr)
         return 3
     target = into / name
-    if target.exists():
-        try:
-            contents = list(target.iterdir())
-        except OSError:
-            contents = None
-        if contents:
-            print(f"pcb-agent: target not empty: {target}", file=sys.stderr)
-            return 3
-    if target.is_symlink():
-        print(f"pcb-agent: target is a symlink: {target}", file=sys.stderr)
+    if target.exists() or target.is_symlink():
+        print(f"pcb-agent: target already exists: {target}", file=sys.stderr)
         return 3
 
     template_root = (Path(__file__).resolve().parent.parent.parent
@@ -407,9 +424,21 @@ def _init(args: argparse.Namespace) -> int:
         "pcb.toml",
     )
 
-    target.mkdir(parents=False, exist_ok=False)
+    if not template_root.is_dir():
+        print("pcb-agent: template directory not found", file=sys.stderr)
+        return 3
+    for relative in template_files:
+        source = template_root / relative
+        if source.is_symlink() or not source.is_file():
+            print(f"pcb-agent: invalid template file: {relative}", file=sys.stderr)
+            return 3
+
+    created_target = False
     created: list[str] = []
     try:
+        target.mkdir(parents=False, exist_ok=False)
+        created_target = True
+
         for relative in template_files:
             source = template_root / relative
             destination = target / relative
@@ -431,8 +460,9 @@ def _init(args: argparse.Namespace) -> int:
             path.write_text(text, encoding="utf-8", newline="\n")
 
         load_project(target)
-    except Exception as error:
-        shutil.rmtree(target, ignore_errors=True)
+    except (OSError, UnicodeDecodeError, ConfigurationError, ValueError) as error:
+        if created_target:
+            shutil.rmtree(target, ignore_errors=True)
         print(f"pcb-agent: init failed: {error}", file=sys.stderr)
         return 3
 

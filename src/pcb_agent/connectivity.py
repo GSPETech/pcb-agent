@@ -1,20 +1,14 @@
-"""Contract coverage checks against the locked TestBench source.
-
-Phase A. Confirms every net and component reference declared in the expected
-contract is actually asserted by the testbench that the harness treats as the
-source of truth for schematic verification. Pin-level netlist comparison is
-not yet implemented; see IMPLEMENTATION_PLAN.md task 14.
-"""
+"""Advisory source coverage only. Must never determine CONNECTIVITY PASS."""
 
 from __future__ import annotations
 
 from typing import Any, Mapping
 
 
-def coverage_failures(
+def advisory_coverage_findings(
     connectivity: Mapping[str, Any], testbench_source: str
 ) -> tuple[str, ...]:
-    """Return sorted failure messages; empty tuple means fully covered."""
+    """Return sorted advisory messages; empty tuple means statically covered."""
     failures: list[str] = []
     components = connectivity.get("components", {})
     nets = connectivity.get("nets", {})

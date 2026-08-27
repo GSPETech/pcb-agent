@@ -6,7 +6,7 @@ import hashlib
 import json
 import tomllib
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Mapping
 
 from .jsonschema import SchemaError, load_schema, validate
@@ -48,6 +48,14 @@ class ProjectContract:
     hashes: Mapping[str, str]
 
 
+def _reject_unsafe_relative_path(value: str, field: str) -> PurePosixPath:
+    from pathlib import PurePosixPath
+    normalized = value.replace("\\", "/")
+    path = PurePosixPath(normalized)
+    if path.is_absolute() or any(part in {"", ".", ".."} for part in path.parts):
+        raise ContractError(f"{field} must be a canonical workspace-relative path")
+    return path
+
 def _read_required(root: Path, name: str) -> bytes:
     if (root / name).is_symlink():
         raise ContractError(f"required contract file must not be a symlink: {name}")
@@ -88,6 +96,13 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
     if not isinstance(project, dict):
         raise ContractError("project.toml requires [project]")
     name, profile = project.get("name"), project.get("profile")
+    import re
+    if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,63}", name):
+        raise ContractError("project.name must be a valid string")
+    spec_name = specification.get("project", {}).get("name")
+    if name != spec_name:
+        raise ContractError(f"project name mismatch: project.toml={name!r}, SPEC.json={spec_name!r}")
+
     source, test = project.get("source"), project.get("test")
     negative_fixture = project.get("negative_fixture", False)
     if not isinstance(negative_fixture, bool):
@@ -104,7 +119,15 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
     for key, value in (("project.source", source), ("project.test", test)):
         if not isinstance(value, str) or not value.strip():
             raise ContractError(f"{key} must be a non-empty string")
+        lexical = _reject_unsafe_relative_path(value, key)
+        if key == "project.test":
+            if not lexical.parts or lexical.parts[0] != "tests" or lexical.suffix != ".zen":
+                raise ContractError("project.test must be a protected tests/*.zen file")
         path = resolve_workspace_path(root, value, must_exist=True)
+        if key == "project.test":
+            canonical_tests = resolve_workspace_path(root, "tests", must_exist=True, allow_root=False)
+            if canonical_tests not in path.parents:
+                raise ContractError("project.test resolved outside tests/ directory")
         require_regular_file(path)
     if not isinstance(toolchain, dict) or not isinstance(toolchain.get("pcb_version"), str):
         raise ContractError("project.toml requires [toolchain].pcb_version")
@@ -118,6 +141,8 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
     requirements = specification["requirements"]
     checks = acceptance["checks"]
     requirement_ids = [item.get("id") for item in requirements if isinstance(item, dict)]
+    if len(set(requirement_ids)) != len(requirement_ids):
+        raise ContractError("requirement IDs must be unique")
     acceptance_ids = [item.get("id") for item in checks if isinstance(item, dict)]
     if len(set(acceptance_ids)) != len(acceptance_ids):
         raise ContractError("acceptance IDs must be unique")
@@ -132,11 +157,35 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
             raise ContractError("acceptance expected value must be PASS or FAIL")
         if item.get("expected") == "FAIL" and not negative_fixture:
             raise ContractError("expected FAIL is allowed only for an explicit negative fixture")
-        covered.add(requirement)
+        covered.add(str(requirement))
     if covered != set(requirement_ids):
         raise ContractError("acceptance checks must cover every requirement")
-    if not Path(test).as_posix().startswith("tests/") or not test.endswith(".zen"):
-        raise ContractError("project.test must be a protected tests/*.zen file")
+
+    if not isinstance(source, str) or not isinstance(test, str):
+        raise ContractError("source and test must be strings")
+
+    for net_name, definition in connectivity.get("nets", {}).items():
+        if isinstance(definition, dict):
+            for member in definition.get("members", []):
+                if isinstance(member, str) and "." in member:
+                    ref = member.split(".", 1)[0]
+                    if ref not in connectivity.get("components", {}):
+                        raise ContractError(f"connectivity net member {member} references unknown component")
+            pullup = definition.get("required_pullup")
+            if isinstance(pullup, dict):
+                comp = pullup.get("component")
+                rail = pullup.get("rail")
+                if comp not in connectivity.get("components", {}):
+                    raise ContractError(f"connectivity required_pullup references unknown component {comp}")
+                if rail not in connectivity.get("nets", {}):
+                    raise ContractError(f"connectivity required_pullup references unknown net {rail}")
+    
+    rules = connectivity.get("rules")
+    if isinstance(rules, dict):
+        for net in rules.get("required_power_nets", []):
+            if net not in connectivity.get("nets", {}):
+                raise ContractError(f"connectivity required_power_nets references unknown net {net}")
+
     hashes = {
         name: "sha256:" + hashlib.sha256(data).hexdigest() for name, data in raw.items()
     }

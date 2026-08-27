@@ -47,7 +47,39 @@ class ContractTests(unittest.TestCase):
                 with self.assertRaises(ContractError):
                     load_project_contract(root)
 
-    def test_source_traversal_is_rejected(self) -> None:
+    def test_duplicate_requirement_ids_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_contract(root)
+            spec = json.loads((root / "SPEC.json").read_text())
+            spec["requirements"].append(spec["requirements"][0])
+            (root / "SPEC.json").write_text(json.dumps(spec))
+            with self.assertRaises(ContractError) as ctx:
+                load_project_contract(root)
+            self.assertIn("requirement IDs must be unique", str(ctx.exception))
+
+    def test_invalid_project_name_in_toml_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_contract(root)
+            config = (root / "project.toml").read_text()
+            (root / "project.toml").write_text(config.replace('name = "test-project"', 'name = "123"'))
+            with self.assertRaises(ContractError) as ctx:
+                load_project_contract(root)
+            self.assertIn("project.name must be a valid string", str(ctx.exception))
+
+    def test_project_name_mismatch_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_contract(root)
+            spec = json.loads((root / "SPEC.json").read_text())
+            spec["project"]["name"] = "different-name"
+            (root / "SPEC.json").write_text(json.dumps(spec))
+            with self.assertRaises(ContractError) as ctx:
+                load_project_contract(root)
+            self.assertIn("project name mismatch", str(ctx.exception))
+
+    def test_source_parent_traversal_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / "project"
             root.mkdir()
@@ -56,8 +88,66 @@ class ContractTests(unittest.TestCase):
             outside.write_text("Board()", encoding="utf-8")
             config = (root / "project.toml").read_text(encoding="utf-8")
             (root / "project.toml").write_text(config.replace("src/board.zen", "../outside.zen"), encoding="utf-8")
-            with self.assertRaises(ValueError):
+            with self.assertRaises((ContractError, ValueError)):
                 load_project_contract(root)
+
+    def test_testbench_parent_traversal_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "project"
+            root.mkdir()
+            write_contract(root)
+            config = (root / "project.toml").read_text(encoding="utf-8")
+            (root / "project.toml").write_text(
+                config.replace("tests/board_test.zen", "tests/../src/board.zen"),
+                encoding="utf-8",
+            )
+            with self.assertRaises((ContractError, ValueError)):
+                load_project_contract(root)
+
+
+    def test_unknown_connectivity_component_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_contract(root)
+            conn = json.loads((root / "expected-connectivity.json").read_text())
+            conn["nets"]["N1"]["members"].append("MISSING.P1")
+            (root / "expected-connectivity.json").write_text(json.dumps(conn))
+            with self.assertRaises(ContractError) as ctx:
+                load_project_contract(root)
+            self.assertIn("unknown component", str(ctx.exception))
+
+    def test_unknown_required_power_net_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_contract(root)
+            conn = json.loads((root / "expected-connectivity.json").read_text())
+            conn["rules"]["required_power_nets"] = ["GHOST"]
+            (root / "expected-connectivity.json").write_text(json.dumps(conn))
+            with self.assertRaises(ContractError) as ctx:
+                load_project_contract(root)
+            self.assertIn("GHOST", str(ctx.exception))
+
+    def test_unknown_pullup_component_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_contract(root)
+            conn = json.loads((root / "expected-connectivity.json").read_text())
+            conn["nets"]["N1"]["required_pullup"] = {"component": "MISSING", "rail": "N1"}
+            (root / "expected-connectivity.json").write_text(json.dumps(conn))
+            with self.assertRaises(ContractError) as ctx:
+                load_project_contract(root)
+            self.assertIn("MISSING", str(ctx.exception))
+
+    def test_unknown_pullup_rail_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_contract(root)
+            conn = json.loads((root / "expected-connectivity.json").read_text())
+            conn["nets"]["N1"]["required_pullup"] = {"component": "U1", "rail": "MISSING"}
+            (root / "expected-connectivity.json").write_text(json.dumps(conn))
+            with self.assertRaises(ContractError) as ctx:
+                load_project_contract(root)
+            self.assertIn("MISSING", str(ctx.exception))
 
 
 if __name__ == "__main__":
