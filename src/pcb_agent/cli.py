@@ -190,21 +190,18 @@ def _connectivity_check(project: ProjectState, test: Check, run: RunState | None
         return _check("CONNECTIVITY", CheckStatus.BLOCKED, "run state required for generated tests")
 
     try:
-        result = diode.execute_generated_test(project, source, run.raw_directory, "CONNECTIVITY")
+        outcome = diode.execute_generated_test(
+            project, source, run.raw_directory, "CONNECTIVITY",
+            "PcbAgentConnectivity", "contract",
+        )
+    except diode.GeneratedCompatibilityError as error:
+        return _check("CONNECTIVITY", CheckStatus.BLOCKED, f"generated test blocked: {error}")
     except (ConfigurationError, FileNotFoundError, OSError, ValueError) as error:
         return _check("CONNECTIVITY", CheckStatus.BLOCKED, f"generated test execution blocked: {error}")
 
-    check = diode.result_check("CONNECTIVITY", result)
-    if check.status == CheckStatus.PASS:
-        check = replace(check, message="generated connectivity assertions passed")
-
-    evidence_path = run.raw_directory / "connectivity-result.json"
-    evidence_path.write_text(json.dumps({"argv": result.argv, "stdout": result.stdout, "stderr": result.stderr,
-                                         "exit_code": result.returncode, "duration": result.duration_seconds},
-                                        indent=2) + "\n", encoding="utf-8")
-    digest = "sha256:" + hashlib.sha256(evidence_path.read_bytes()).hexdigest()
-    evidence = {"path": str(evidence_path), "sha256": digest, "testbench_sha256": result.input_hashes.get("testbench", "")}
-    return replace(check, evidence=evidence)
+    return diode.generated_check(
+        "CONNECTIVITY", outcome, "PcbAgentConnectivity", "_check_connectivity"
+    )
 
 
 def _specification_check(project: ProjectState, test: Check, run: RunState | None) -> Check:
@@ -221,21 +218,18 @@ def _specification_check(project: ProjectState, test: Check, run: RunState | Non
         return _check("SPECIFICATION", CheckStatus.BLOCKED, "run state required for generated tests")
 
     try:
-        result = diode.execute_generated_test(project, source, run.raw_directory, "SPECIFICATION")
+        outcome = diode.execute_generated_test(
+            project, source, run.raw_directory, "SPECIFICATION",
+            "PcbAgentSpecification", "contract",
+        )
+    except diode.GeneratedCompatibilityError as error:
+        return _check("SPECIFICATION", CheckStatus.BLOCKED, f"generated test blocked: {error}")
     except (ConfigurationError, FileNotFoundError, OSError, ValueError) as error:
         return _check("SPECIFICATION", CheckStatus.BLOCKED, f"generated test execution blocked: {error}")
 
-    check = diode.result_check("SPECIFICATION", result)
-    if check.status == CheckStatus.PASS:
-        check = replace(check, message="generated specification assertions passed")
-
-    evidence_path = run.raw_directory / "specification-result.json"
-    evidence_path.write_text(json.dumps({"argv": result.argv, "stdout": result.stdout, "stderr": result.stderr,
-                                         "exit_code": result.returncode, "duration": result.duration_seconds},
-                                        indent=2) + "\n", encoding="utf-8")
-    digest = "sha256:" + hashlib.sha256(evidence_path.read_bytes()).hexdigest()
-    evidence = {"path": str(evidence_path), "sha256": digest, "testbench_sha256": result.input_hashes.get("testbench", "")}
-    return replace(check, evidence=evidence)
+    return diode.generated_check(
+        "SPECIFICATION", outcome, "PcbAgentSpecification", "_check_specification"
+    )
 
 
 def _verify(project: ProjectState, run: RunState, profile: str) -> list[Check]:

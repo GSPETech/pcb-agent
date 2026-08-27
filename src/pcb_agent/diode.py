@@ -7,6 +7,7 @@ import json
 import hashlib
 import shutil
 import tempfile
+from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 from .models import Check, CheckStatus, Severity
@@ -15,6 +16,42 @@ from .state import ConfigurationError, ProjectState
 
 
 _COMMAND_KEYS = {"build-command", "test-command", "layout-command", "layout-check-command"}
+
+GENERATED_TESTS: Mapping[str, tuple[str, str]] = {
+    "CONNECTIVITY": (
+        "tests/.pcb-agent-connectivity.generated.zen",
+        "connectivity-testbench.zen",
+    ),
+    "SPECIFICATION": (
+        "tests/.pcb-agent-specification.generated.zen",
+        "specification-testbench.zen",
+    ),
+}
+
+_GENERATED_TEST_ENVIRONMENT_FRAGMENTS = (
+    "a required privilege is not held by the client",
+)
+
+
+@dataclass(frozen=True)
+class GeneratedTestResult:
+    process: ProcessResult
+    generated_path: Path
+    generated_sha256: str
+    result_path: Path
+    result_sha256: str
+
+
+class GeneratedEvidenceError(ValueError):
+    pass
+
+
+class GeneratedCompatibilityError(GeneratedEvidenceError):
+    pass
+
+
+class GeneratedAssertionFailure(GeneratedEvidenceError):
+    pass
 
 
 def configured_command(project: ProjectState, key: str) -> tuple[str, ...] | None:
@@ -50,7 +87,77 @@ def doctor_probes(project: ProjectState) -> tuple[ProcessResult, ...]:
         ("pcb", "help", "test"), ("pcb", "help", "layout"),
         ("pcb", "help", "simulate"), ("pcb", "toolchain", "show"),
     )
-    return tuple(run_process(project.root, command, timeout=30) for command in commands)
+    return tuple(run_process(project.root, list(command), timeout=30) for command in commands)
+
+
+def _records(value: object) -> list[Mapping[str, Any]]:
+    out: list[Mapping[str, Any]] = []
+
+    def walk(item: object) -> None:
+        if isinstance(item, dict):
+            out.append(item)
+            for child in item.values():
+                walk(child)
+        elif isinstance(item, list):
+            for child in item:
+                walk(child)
+
+    walk(value)
+    return out
+
+
+def _int_or_none(value: object) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    return None
+
+
+def _validate_test_payload(payload: object) -> Mapping[str, Any]:
+    if not isinstance(payload, dict):
+        raise GeneratedEvidenceError("pcb test JSON root is not an object")
+    results = payload.get("results")
+    if not isinstance(results, list):
+        raise GeneratedEvidenceError("pcb test JSON results is not an array")
+    summary = payload.get("summary")
+    if not isinstance(summary, dict):
+        raise GeneratedEvidenceError("pcb test JSON summary is not an object")
+    if not results:
+        raise GeneratedEvidenceError("pcb test JSON results is empty")
+    for record in results:
+        if not isinstance(record, dict):
+            raise GeneratedEvidenceError("pcb test JSON contains non-object record")
+    total = _int_or_none(summary.get("total"))
+    passed = _int_or_none(summary.get("passed"))
+    failed = _int_or_none(summary.get("failed"))
+    if total is None or passed is None or failed is None:
+        raise GeneratedEvidenceError("pcb test JSON summary is incomplete")
+    if total != len(results):
+        raise GeneratedEvidenceError("pcb test JSON summary total mismatches results length")
+    if passed + failed != total:
+        raise GeneratedEvidenceError("pcb test JSON summary passed+failed mismatches total")
+    for key in ("failures", "errors"):
+        value = _int_or_none(summary.get(key))
+        if value is not None and value > 0:
+            raise GeneratedEvidenceError(f"pcb test JSON reports {key}")
+    return payload
+
+
+def _record_identity(record: Mapping[str, Any]) -> tuple[str | None, str | None]:
+    bench = record.get("test_bench_name") or record.get("test_bench")
+    check = record.get("check_name") or record.get("name")
+    if isinstance(bench, str) and isinstance(check, str):
+        return bench, check
+    return None, None
+
+
+def _find_record(payload: Mapping[str, Any], bench_name: str, check_name: str) -> Mapping[str, Any] | None:
+    for record in _records(payload["results"]):
+        rb, rc = _record_identity(record)
+        if rb == bench_name and rc == check_name:
+            return record
+    return None
 
 
 def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None) -> ProcessResult:
@@ -124,15 +231,27 @@ def execute_generated_test(
     generated_source: str,
     evidence_root: Path,
     check_id: str,
-) -> ProcessResult:
-    command = ["pcb", "test", "tests/.pcb-agent-connectivity.generated.zen", "-f", "json"]
+    bench_name: str,
+    case_name: str,
+) -> GeneratedTestResult:
+    if check_id not in GENERATED_TESTS:
+        raise ConfigurationError(f"unknown generated check_id: {check_id}")
+    if not isinstance(generated_source, str) or not generated_source:
+        raise ConfigurationError("generated_source must be non-empty string")
+    rel_path, evidence_name = GENERATED_TESTS[check_id]
+
+    command = ["pcb", "test", rel_path, "-f", "json"]
     capability = probe(project, command[0], command[1])
     if capability.timed_out or capability.returncode != 0:
-        raise FileNotFoundError(f"{command[0]} capability probe failed")
+        raise GeneratedCompatibilityError(f"{command[0]} capability probe failed")
 
     with tempfile.TemporaryDirectory(prefix=f"pcb-agent-{check_id.lower()}-") as temporary:
         snapshot = Path(temporary)
-        closure = [path.relative_to(project.root).as_posix() for path in (project.root / "src").rglob("*") if path.is_file()]
+        closure = [
+            path.relative_to(project.root).as_posix()
+            for path in (project.root / "src").rglob("*")
+            if path.is_file()
+        ]
         closure.extend(("pcb.toml", "pcb-version"))
         for relative in dict.fromkeys(closure):
             source = project.root / relative
@@ -141,31 +260,137 @@ def execute_generated_test(
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(source, target)
 
-        test_path = snapshot / "tests" / ".pcb-agent-connectivity.generated.zen"
+        test_rel = rel_path.replace("\\", "/")
+        test_path = snapshot / test_rel
         test_path.parent.mkdir(parents=True, exist_ok=True)
         test_path.write_text(generated_source, encoding="utf-8")
 
         result = run_process(snapshot, command, timeout=300)
-        snapshot_test_hash = "sha256:" + hashlib.sha256(generated_source.encode("utf-8")).hexdigest()
 
-        evidence_source = evidence_root / f"{check_id.lower()}-testbench.zen"
+        evidence_root.mkdir(parents=True, exist_ok=True)
+        evidence_source = evidence_root / evidence_name
         evidence_source.write_text(generated_source, encoding="utf-8")
+        retained_hash = hashlib.sha256(evidence_source.read_bytes()).hexdigest()
+        if retained_hash != hashlib.sha256(generated_source.encode("utf-8")).hexdigest():
+            raise GeneratedCompatibilityError("retained generated source hash mismatch")
 
-        result = ProcessResult(result.argv, result.returncode, result.stdout, result.stderr,
-                               result.duration_seconds, result.timed_out, result.output_truncated,
-                               {"testbench": snapshot_test_hash})
+        raw_path = evidence_root / f"{check_id.lower()}-result.json"
+        raw_path.write_text(result.stdout, encoding="utf-8")
+        raw_hash = hashlib.sha256(raw_path.read_bytes()).hexdigest()
 
-        if result.returncode == 0:
-            if result.output_truncated:
-                raise ValueError("pcb test JSON output was truncated")
-            try:
-                payload = json.loads(result.stdout)
-            except json.JSONDecodeError as error:
-                raise ValueError("pcb test returned malformed JSON") from error
-            if not isinstance(payload, dict) or not isinstance(payload.get("results"), list):
-                raise ValueError("pcb test JSON lacks results contract")
+        input_hashes = {
+            "testbench": f"sha256:{retained_hash}",
+            "result": f"sha256:{raw_hash}",
+        }
 
-        return result
+        process = ProcessResult(
+            result.argv,
+            result.returncode,
+            result.stdout,
+            result.stderr,
+            result.duration_seconds,
+            result.timed_out,
+            result.output_truncated,
+            input_hashes,
+        )
+
+    return GeneratedTestResult(
+        process=process,
+        generated_path=evidence_source,
+        generated_sha256=f"sha256:{retained_hash}",
+        result_path=raw_path,
+        result_sha256=f"sha256:{raw_hash}",
+    )
+
+
+def _classify_generated_check(check_id: str, outcome: GeneratedTestResult, bench_name: str, check_name: str) -> CheckStatus:
+    proc = outcome.process
+    if proc.timed_out:
+        return CheckStatus.BLOCKED
+    lower = proc.stderr.lower()
+    if any(fragment in lower for fragment in _GENERATED_TEST_ENVIRONMENT_FRAGMENTS):
+        return CheckStatus.BLOCKED
+    if proc.returncode != 0:
+        if proc.output_truncated:
+            return CheckStatus.BLOCKED
+        try:
+            payload = json.loads(proc.stdout)
+        except json.JSONDecodeError:
+            return CheckStatus.BLOCKED
+        try:
+            _validate_test_payload(payload)
+        except GeneratedEvidenceError as error:
+            return CheckStatus.BLOCKED
+        record = _find_record(payload, bench_name, check_name)
+        if record is None:
+            return CheckStatus.BLOCKED
+        status_text = str(record.get("status", "")).upper()
+        if status_text in {"PASS", "PASSED", "OK"}:
+            return CheckStatus.BLOCKED
+        if status_text in {"FAIL", "FAILED", "ERROR"}:
+            return CheckStatus.FAIL
+        return CheckStatus.BLOCKED
+    try:
+        payload = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        return CheckStatus.BLOCKED
+    try:
+        _validate_test_payload(payload)
+    except GeneratedEvidenceError:
+        return CheckStatus.BLOCKED
+    record = _find_record(payload, bench_name, check_name)
+    if record is None:
+        return CheckStatus.BLOCKED
+    status_text = str(record.get("status", "")).upper()
+    if status_text in {"PASS", "PASSED", "OK"}:
+        return CheckStatus.PASS
+    return CheckStatus.BLOCKED
+
+
+def generated_check(
+    check_id: str,
+    outcome: GeneratedTestResult,
+    bench_name: str,
+    check_name: str,
+    required: bool = True,
+) -> Check:
+    status = _classify_generated_check(check_id, outcome, bench_name, check_name)
+    if status == CheckStatus.PASS:
+        message = f"{check_id.lower()} generated assertion passed"
+    elif status == CheckStatus.FAIL:
+        message = f"{check_id.lower()} generated assertion failed"
+    elif status == CheckStatus.BLOCKED:
+        if outcome.process.timed_out:
+            message = "generated test timed out"
+        else:
+            message = "generated test evidence is missing or malformed"
+    else:
+        message = f"generated test status {status}"
+    evidence = {
+        "generated_testbench": {
+            "path": str(outcome.generated_path),
+            "sha256": outcome.generated_sha256,
+        },
+        "result": {
+            "path": str(outcome.result_path),
+            "sha256": outcome.result_sha256,
+        },
+        "stdout": outcome.process.stdout,
+        "stderr": outcome.process.stderr,
+    }
+    return Check(
+        check_id,
+        status,
+        Severity.ERROR,
+        message,
+        "harness",
+        outcome.process.argv,
+        outcome.process.returncode,
+        outcome.process.duration_seconds,
+        evidence,
+        required,
+    )
+
 
 def result_check(check_id: str, result: ProcessResult, *, required: bool = True) -> Check:
     environment_error = any(text in result.stderr.lower() for text in (
