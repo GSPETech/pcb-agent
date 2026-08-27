@@ -372,16 +372,8 @@ def _init(args: argparse.Namespace) -> int:
         print(f"pcb-agent: --into is not a directory: {into}", file=sys.stderr)
         return 3
     target = into / name
-    if target.exists():
-        try:
-            contents = list(target.iterdir())
-        except OSError:
-            contents = None
-        if contents:
-            print(f"pcb-agent: target not empty: {target}", file=sys.stderr)
-            return 3
-    if target.is_symlink():
-        print(f"pcb-agent: target is a symlink: {target}", file=sys.stderr)
+    if target.exists() or target.is_symlink():
+        print(f"pcb-agent: target already exists: {target}", file=sys.stderr)
         return 3
 
     template_root = (Path(__file__).resolve().parent.parent.parent
@@ -396,9 +388,21 @@ def _init(args: argparse.Namespace) -> int:
         "pcb.toml",
     )
 
-    target.mkdir(parents=False, exist_ok=False)
+    if not template_root.is_dir():
+        print("pcb-agent: template directory not found", file=sys.stderr)
+        return 3
+    for relative in template_files:
+        source = template_root / relative
+        if source.is_symlink() or not source.is_file():
+            print(f"pcb-agent: invalid template file: {relative}", file=sys.stderr)
+            return 3
+
+    created_target = False
     created: list[str] = []
     try:
+        target.mkdir(parents=False, exist_ok=False)
+        created_target = True
+
         for relative in template_files:
             source = template_root / relative
             destination = target / relative
@@ -420,8 +424,9 @@ def _init(args: argparse.Namespace) -> int:
             path.write_text(text, encoding="utf-8", newline="\n")
 
         load_project(target)
-    except Exception as error:
-        shutil.rmtree(target, ignore_errors=True)
+    except (OSError, UnicodeDecodeError, ConfigurationError, ValueError) as error:
+        if created_target:
+            shutil.rmtree(target, ignore_errors=True)
         print(f"pcb-agent: init failed: {error}", file=sys.stderr)
         return 3
 

@@ -63,8 +63,25 @@ class InitTests(unittest.TestCase):
             target.mkdir()
             (target / "leftover.txt").write_text("x", encoding="utf-8")
             code, _ = self._run_main("init", "taken", "--into", tmp)
-            self.assertNotEqual(code, 0)
+            self.assertEqual(code, 3)
             self.assertTrue((target / "leftover.txt").exists())
+
+    def test_init_rejects_empty_target(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "taken"
+            target.mkdir()
+            code, _ = self._run_main("init", "taken", "--into", tmp)
+            self.assertEqual(code, 3)
+            self.assertTrue(target.exists())
+            self.assertFalse(list(target.iterdir()))
+
+    def test_init_cleans_up_on_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            from unittest.mock import patch
+            with patch("shutil.copy2", side_effect=OSError("disk full")):
+                code, _ = self._run_main("init", "broken", "--into", tmp)
+            self.assertEqual(code, 3)
+            self.assertFalse((Path(tmp) / "broken").exists())
 
     def test_init_json_output_contains_safety_fields(self) -> None:
         import sys
