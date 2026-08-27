@@ -102,58 +102,67 @@ def _normalize_patterns(value: object) -> tuple[str, ...]:
     patterns: list[str] = []
     seen: set[str] = set()
 
-    def add(pattern: str) -> None:
-        if pattern in seen:
-            return
-        seen.add(pattern)
-        patterns.append(pattern)
-
     for item in value:
         if not isinstance(item, str) or not item.strip():
             return ()
-        add(item)
-        if "/**/" in item:
-            add(item.replace("/**/", "/*/"))
-            add(item.replace("/**/", "/*/*/"))
-        if item.endswith("/**"):
-            add(item[:-3] + "/*")
-            add(item[:-3] + "/*/*")
-        if item.endswith("/**/*") or item.endswith("/**.zen") or item.endswith("/**.kicad_pcb"):
-            head, _, tail = item.rpartition("/**")
-            add(head + "/" + tail)
-            add(head + "/*/" + tail)
-            add(head + "/*/*/" + tail)
+        if item in seen:
+            continue
+        try:
+            _segments(item)
+        except ValueError:
+            return ()
+        seen.add(item)
+        patterns.append(item)
     return tuple(patterns)
 
 
+def _segments(value: str) -> tuple[str, ...]:
+    from pathlib import PurePosixPath
+
+    normalized = value.replace("\\", "/")
+    path = PurePosixPath(normalized)
+
+    if path.is_absolute():
+        raise ValueError("absolute policy path is forbidden")
+
+    parts = path.parts
+    if not parts or any(part in {"", ".", ".."} for part in parts):
+        raise ValueError("invalid policy path")
+
+    return parts
+
+
 def matches(path: str, pattern: str) -> bool:
-    """Glob-style match with `**` meaning any number of directory segments."""
-    return _glob_match(path, pattern)
-
-
-def _glob_match(path: str, pattern: str) -> bool:
-    if "**" not in pattern:
-        import fnmatch as _fn
-        return _fn.fnmatch(path, pattern)
-    head, _, rest = pattern.partition("**")
-    if not path.startswith(head.rstrip("/")):
+    """Segment-safe glob-style match with `**` semantics."""
+    try:
+        path_parts = _segments(path)
+        pattern_parts = _segments(pattern)
+    except ValueError:
         return False
-    suffix = path[len(head.rstrip("/")):]
-    return _glob_match_with_doublestar(suffix.lstrip("/"), rest.lstrip("/"))
 
+    from fnmatch import fnmatchcase
+    from functools import lru_cache
 
-def _glob_match_with_doublestar(path: str, pattern: str) -> bool:
-    if not pattern:
-        return path == "" or True
-    if "**" in pattern:
-        head, _, rest = pattern.partition("**")
-        import fnmatch as _fn
-        segments = path.split("/")
-        for index in range(len(segments) + 1):
-            candidate = "/".join(segments[index:])
-            if _fn.fnmatch(candidate, head.lstrip("/")):
-                if _glob_match_with_doublestar(candidate, rest.lstrip("/")):
-                    return True
-        return False
-    import fnmatch as _fn
-    return _fn.fnmatch(path, pattern)
+    @lru_cache(maxsize=None)
+    def match(path_index: int, pattern_index: int) -> bool:
+        if pattern_index == len(pattern_parts):
+            return path_index == len(path_parts)
+
+        token = pattern_parts[pattern_index]
+
+        if token == "**":
+            return (
+                match(path_index, pattern_index + 1)
+                or (
+                    path_index < len(path_parts)
+                    and match(path_index + 1, pattern_index)
+                )
+            )
+
+        return (
+            path_index < len(path_parts)
+            and fnmatchcase(path_parts[path_index], token)
+            and match(path_index + 1, pattern_index + 1)
+        )
+
+    return match(0, 0)
