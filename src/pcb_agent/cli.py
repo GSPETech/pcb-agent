@@ -18,6 +18,7 @@ from . import diode, kicad
 from .backends import BackendError, CodexBackend, CommandBackend
 from .models import Check, CheckStatus, Severity, VerificationReport
 from .policy import PolicyViolation, ProtectedHashes, WorkspaceLock, WorkspaceSnapshot
+from .policy_config import Policy, PolicyConfigError, matches as policy_matches
 from .state import (
     ConfigurationError,
     ProjectState,
@@ -243,10 +244,15 @@ def _backend_changes(before: dict[str, str], after: dict[str, str]) -> tuple[str
     return tuple(sorted(path for path in before.keys() | after.keys() if before.get(path) != after.get(path)))
 
 
-def _allowed_backend_path(path: str, profile: str) -> bool:
-    return fnmatch(path, "src/*.zen") or fnmatch(path, "src/**/*.zen") or (
-        profile == "layout" and (fnmatch(path, "layout/*.kicad_pcb") or fnmatch(path, "layout/**/*.kicad_pcb"))
-    )
+def _allowed_backend_path(path: str, profile: str, policy: Policy) -> bool:
+    if any(policy_matches(path, pattern) for pattern in policy.deny_files):
+        return False
+    for pattern in policy.allow_files:
+        if pattern.endswith(".kicad_pcb") and profile != "layout":
+            continue
+        if policy_matches(path, pattern):
+            return True
+    return False
 
 
 def _fingerprint(checks: Sequence[Check], changed: Sequence[str]) -> str:
@@ -254,11 +260,12 @@ def _fingerprint(checks: Sequence[Check], changed: Sequence[str]) -> str:
     return hashlib.sha256(repr(value).encode()).hexdigest()
 
 
-def _run_backend_unlocked(args: argparse.Namespace, project: ProjectState, run: RunState) -> list[Check]:
+def _run_backend_unlocked(args: argparse.Namespace, project: ProjectState, run: RunState,
+                           policy: Policy) -> list[Check]:
     if os.environ.get("PCB_AGENT_ACTIVE"):
         return [_check("BACKEND", CheckStatus.BLOCKED, "nested pcb-agent run is forbidden")]
-    if not 1 <= args.max_iterations <= 5:
-        raise ConfigurationError("max-iterations must be between 1 and 5")
+    if not 1 <= args.max_iterations <= policy.max_iterations:
+        raise ConfigurationError(f"max-iterations must be between 1 and {policy.max_iterations}")
     protected_paths = (*PROTECTED, project.test)
     protected = ProtectedHashes.capture(project.root, protected_paths)
     editable = _editable_paths(project)
@@ -282,7 +289,7 @@ def _run_backend_unlocked(args: argparse.Namespace, project: ProjectState, run: 
             snapshot.seal_backend_changes().restore_backend_changes()
             return [_check("POLICY_INTEGRITY", CheckStatus.FAIL, "backend changed protected files")]
         changed = _backend_changes(before, _workspace_hashes(project))
-        forbidden = tuple(path for path in changed if not _allowed_backend_path(path, args.profile))
+        forbidden = tuple(path for path in changed if not _allowed_backend_path(path, args.profile, policy))
         if forbidden:
             snapshot.seal_backend_changes().restore_backend_changes()
             for relative in forbidden:
@@ -295,9 +302,11 @@ def _run_backend_unlocked(args: argparse.Namespace, project: ProjectState, run: 
             return [_check("POLICY_INTEGRITY", CheckStatus.FAIL,
                            f"backend changed forbidden paths: {', '.join(forbidden)}")]
         sealed = snapshot.seal_backend_changes()
-        if len(changed) > 20:
+        if len(changed) > policy.max_changed_files:
             sealed.restore_backend_changes()
-            raise PolicyViolation("backend changed more than 20 editable files")
+            raise PolicyViolation(
+                f"backend changed more than {policy.max_changed_files} editable files"
+            )
         if result.process.timed_out or result.process.returncode != 0:
             snapshot.seal_backend_changes().restore_backend_changes()
             return [_check("BACKEND", CheckStatus.BLOCKED, f"backend exited {result.process.returncode}")]
@@ -311,10 +320,11 @@ def _run_backend_unlocked(args: argparse.Namespace, project: ProjectState, run: 
     return [_check("BACKEND", CheckStatus.BLOCKED, "iteration limit reached")]
 
 
-def _run_backend(args: argparse.Namespace, project: ProjectState, run: RunState) -> list[Check]:
+def _run_backend(args: argparse.Namespace, project: ProjectState, run: RunState,
+                 policy: Policy) -> list[Check]:
     lock = WorkspaceLock.acquire(project.root)
     try:
-        return _run_backend_unlocked(args, project, run)
+        return _run_backend_unlocked(args, project, run, policy)
     finally:
         lock.release()
 
@@ -322,6 +332,7 @@ def _run_backend(args: argparse.Namespace, project: ProjectState, run: RunState)
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
+        policy = Policy.load()
         project = load_project(getattr(args, "project_option", None) or args.project)
         if hasattr(args, "profile"):
             args.profile = args.profile or project.profile
@@ -365,14 +376,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "verify":
             checks = _verify(project, run, args.profile)
         else:
-            checks = _run_backend(args, project, run)
+            checks = _run_backend(args, project, run, policy)
         backend_terminal = (args.command == "run" and checks and checks[0].id == "BACKEND"
                             and checks[0].status == CheckStatus.BLOCKED)
         return _persist(project, run, checks, args.format, getattr(args, "profile", project.profile),
                         4 if backend_terminal else None)
-    except (ConfigurationError, PolicyViolation, BackendError, FileNotFoundError, OSError, ValueError) as error:
+    except (ConfigurationError, PolicyConfigError, PolicyViolation, BackendError,
+            FileNotFoundError, OSError, ValueError) as error:
         print(f"pcb-agent: {error}", file=sys.stderr)
-        if isinstance(error, ConfigurationError):
+        if isinstance(error, (ConfigurationError, PolicyConfigError)):
             return 3
         if isinstance(error, PolicyViolation):
             return 1

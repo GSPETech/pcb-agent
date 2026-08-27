@@ -51,8 +51,9 @@ class FakeBackendTests(unittest.TestCase):
         return argparse.Namespace(**values)
 
     def run_backend(self, backend: FakeBackend, checks: list[Check], **overrides: object) -> list[Check]:
+        from pcb_agent.policy_config import Policy
         with patch("pcb_agent.cli.CommandBackend", return_value=backend), patch("pcb_agent.cli._verify", return_value=checks):
-            return cli._run_backend(self.args(**overrides), self.project, self.run)
+            return cli._run_backend(self.args(**overrides), self.project, self.run, Policy.load())
 
     def test_success_and_backend_crash(self) -> None:
         success = self.run_backend(FakeBackend(process()), [Check("VERIFY", CheckStatus.PASS)])
@@ -70,8 +71,9 @@ class FakeBackendTests(unittest.TestCase):
         self.assertEqual(limited[0].message, "iteration limit reached")
 
     def test_nested_run_is_blocked(self) -> None:
+        from pcb_agent.policy_config import Policy
         with patch.dict(os.environ, {"PCB_AGENT_ACTIVE": "1"}):
-            checks = cli._run_backend(self.args(), self.project, self.run)
+            checks = cli._run_backend(self.args(), self.project, self.run, Policy.load())
         self.assertEqual(checks[0].status, CheckStatus.BLOCKED)
         self.assertIn("nested", checks[0].message)
 
