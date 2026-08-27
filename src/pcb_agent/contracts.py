@@ -1,4 +1,4 @@
-"""Strict manual project-contract loader."""
+"""Strict project-contract loader. Shape comes from JSON schemas; cross-document rules stay here."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
 
+from .jsonschema import SchemaError, load_schema, validate
 from .paths import require_regular_file, resolve_workspace_path
 
 
@@ -18,6 +19,12 @@ REQUIRED_FILES = (
     "expected-connectivity.json",
     "project.toml",
 )
+
+_SCHEMA_BY_FILE = {
+    "SPEC.json": "specification.schema.json",
+    "ACCEPTANCE.json": "acceptance.schema.json",
+    "expected-connectivity.json": "connectivity.schema.json",
+}
 
 
 class ContractError(ValueError):
@@ -67,8 +74,16 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
         config = tomllib.loads(raw["project.toml"].decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError, tomllib.TOMLDecodeError) as error:
         raise ContractError(f"invalid project contract: {error}") from error
-    if not all(isinstance(value, dict) for value in (specification, acceptance, connectivity)):
-        raise ContractError("JSON contract roots must be objects")
+    documents = {
+        "SPEC.json": specification,
+        "ACCEPTANCE.json": acceptance,
+        "expected-connectivity.json": connectivity,
+    }
+    for filename, schema_name in _SCHEMA_BY_FILE.items():
+        try:
+            validate(documents[filename], load_schema(schema_name), filename)
+        except SchemaError as error:
+            raise ContractError(f"{filename} violates schema: {error}") from error
     project = config.get("project")
     if not isinstance(project, dict):
         raise ContractError("project.toml requires [project]")
@@ -77,24 +92,13 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
     negative_fixture = project.get("negative_fixture", False)
     if not isinstance(negative_fixture, bool):
         raise ContractError("project.negative_fixture must be boolean")
-    if not isinstance(connectivity.get("components"), dict) or not isinstance(connectivity.get("nets"), dict):
-        raise ContractError("connectivity requires object fields: components and nets")
     build_negative = (negative_fixture and any(
         isinstance(item, dict) and item.get("kind") == "diode_build" and item.get("expected") == "FAIL"
         for item in acceptance.get("checks", [])
     ))
     if (not connectivity["components"] or not connectivity["nets"]) and not build_negative:
         raise ContractError("connectivity components and nets must not be empty")
-    for reference, component in connectivity["components"].items():
-        if not isinstance(reference, str) or not reference or not isinstance(component, dict) or not isinstance(component.get("kind"), str):
-            raise ContractError("connectivity components require reference and kind")
-    for net, definition in connectivity["nets"].items():
-        members = definition.get("members") if isinstance(definition, dict) else None
-        if not isinstance(net, str) or not net or not isinstance(members, list) or not members or any(not isinstance(item, str) or "." not in item for item in members):
-            raise ContractError("connectivity nets require non-empty pin members")
     toolchain, layout = config.get("toolchain"), config.get("layout")
-    if not isinstance(name, str) or not name.strip():
-        raise ContractError("project.name must be a non-empty string")
     if profile not in {"schematic", "layout"}:
         raise ContractError("project.profile must be schematic or layout")
     for key, value in (("project.source", source), ("project.test", test)):
@@ -111,22 +115,12 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
         raise ContractError("layout.board must end in .kicad_pcb")
     if layout["required"] and profile != "layout":
         raise ContractError("layout.required requires layout profile")
-    if acceptance.get("production_ready") is not False or acceptance.get("fabrication_approved") is not False:
-        raise ContractError("acceptance must keep production and fabrication false")
-    if not isinstance(specification.get("requirements"), list) or not isinstance(acceptance.get("checks"), list):
-        raise ContractError("specification.requirements and acceptance.checks must be arrays")
     requirements = specification["requirements"]
     checks = acceptance["checks"]
-    if not requirements or not checks:
-        raise ContractError("requirements and acceptance checks must not be empty")
     requirement_ids = [item.get("id") for item in requirements if isinstance(item, dict)]
     acceptance_ids = [item.get("id") for item in checks if isinstance(item, dict)]
-    if (len(requirement_ids) != len(requirements) or any(not isinstance(item, str) or not item for item in requirement_ids)
-            or len(set(requirement_ids)) != len(requirement_ids)):
-        raise ContractError("requirement IDs must be unique non-empty strings")
-    if (len(acceptance_ids) != len(checks) or any(not isinstance(item, str) or not item for item in acceptance_ids)
-            or len(set(acceptance_ids)) != len(acceptance_ids)):
-        raise ContractError("acceptance IDs must be unique non-empty strings")
+    if len(set(acceptance_ids)) != len(acceptance_ids):
+        raise ContractError("acceptance IDs must be unique")
     covered: set[str] = set()
     for item in checks:
         requirement, test_name, kind = item.get("requirement"), item.get("test"), item.get("kind")

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pcb-agent.local/schemas/acceptance.schema.json",
+  "title": "Project acceptance checks",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "checks", "production_ready", "fabrication_approved"],
+  "properties": {
+    "schema_version": {"const": "1"},
+    "production_ready": {"const": false},
+    "fabrication_approved": {"const": false},
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "requirement", "kind", "expected"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^ACC-[0-9]{3,}$"},
+          "requirement": {"type": "string", "pattern": "^REQ-[0-9]{3,}$"},
+          "kind": {"enum": ["zener_test", "diode_build"]},
+          "test": {"type": "string", "minLength": 1},
+          "expected": {"enum": ["PASS", "FAIL"]},
+          "reason": {"type": "string"}
+        }
+      }
+    }
+  }
+}

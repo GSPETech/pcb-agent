@@ -20,18 +20,29 @@ def write_contract(root: Path, *, name: str = "test-project") -> None:
     (root / "src" / "board.zen").write_text("Board()\n", encoding="utf-8")
     (root / "tests" / "board_test.zen").write_text("Test()\n", encoding="utf-8")
     (root / "SPEC.json").write_text(
-        json.dumps({"requirements": [{"id": "REQ-1"}]}), encoding="utf-8"
+        json.dumps({
+            "schema_version": "1",
+            "project": {"name": name, "pcb_version": "0.4", "layers": 4},
+            "requirements": [{"id": "REQ-001", "type": "syntax", "description": "board parses", "severity": "error", "evidence_required": ["zener_test"]}],
+            "fabrication": {"automatic_approval": False, "human_approval_required": True},
+        }),
+        encoding="utf-8",
     )
     (root / "ACCEPTANCE.json").write_text(
         json.dumps({
-            "checks": [{"id": "ACC-1", "requirement": "REQ-1", "kind": "zener_test", "test": "BoardTest.default", "expected": "PASS"}],
+            "schema_version": "1",
+            "checks": [{"id": "ACC-001", "requirement": "REQ-001", "kind": "zener_test", "test": "BoardTest.default", "expected": "PASS"}],
             "production_ready": False,
             "fabrication_approved": False,
         }),
         encoding="utf-8",
     )
     (root / "expected-connectivity.json").write_text(
-        json.dumps({"components": {"U1": {"kind": "test"}}, "nets": {"N1": {"members": ["U1.P1"]}}}), encoding="utf-8"
+        json.dumps({"schema_version": "1",
+                    "components": {"U1": {"kind": "test"}},
+                    "nets": {"N1": {"members": ["U1.P1"]}},
+                    "rules": {"forbid_unlisted_members": False, "required_power_nets": []}}),
+        encoding="utf-8",
     )
     (root / "project.toml").write_text(
         f'''[project]
