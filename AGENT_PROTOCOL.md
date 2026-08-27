@@ -77,6 +77,7 @@ Berhenti dan laporkan tanpa menebak bila:
 - requirement ambigu atau saling konflik;
 - authoritative datasheet/package evidence tidak ada;
 - mandatory tool/evidence `BLOCKED`;
+- unsupported component kinds / properties di-request di `expected-connectivity.json` atau `SPEC.json` (harness akan gagal `BLOCKED` jika mapping belum diverifikasi empiris);
 - perubahan butuh file denylist;
 - lima iterasi habis atau failure fingerprint berulang;
 - layout change berisiko menghapus placement/routing manusia;
