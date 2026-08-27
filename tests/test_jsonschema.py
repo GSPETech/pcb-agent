@@ -167,6 +167,42 @@ class RejectTests(unittest.TestCase):
                 with self.assertRaises(SchemaError):
                     validate(instance, schema)
 
+    def test_json_integer_semantics(self) -> None:
+        schema = {"type": "integer"}
+        validate(1, schema)
+        validate(1.0, schema)
+        with self.assertRaises(SchemaError):
+            validate(1.5, schema)
+        with self.assertRaises(SchemaError):
+            validate(True, schema)
+        import math
+        with self.assertRaises(SchemaError):
+            validate(float("inf"), schema)
+        with self.assertRaises(SchemaError):
+            validate(math.nan, schema)
+
+    def test_json_number_semantics(self) -> None:
+        schema = {"type": "number"}
+        validate(1, schema)
+        validate(1.5, schema)
+        with self.assertRaises(SchemaError):
+            validate(True, schema)
+        import math
+        with self.assertRaises(SchemaError):
+            validate(float("inf"), schema)
+        with self.assertRaises(SchemaError):
+            validate(math.nan, schema)
+
+    def test_absent_optional_property_schema_checked(self) -> None:
+        schema = {
+            "type": "object",
+            "properties": {
+                "optional": {"minLength": -1}
+            }
+        }
+        with self.assertRaises(SchemaError):
+            validate({}, schema)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -78,7 +79,79 @@ def _json_equal(left: Any, right: Any) -> bool:
 
     return left == right
 
+def validate_schema(schema: Any, root: Mapping[str, Any] | None = None, path: str = "<schema>") -> None:
+    if isinstance(schema, bool):
+        return
+    if not isinstance(schema, dict):
+        raise SchemaError(f"{path}: schema fragment must be object or bool")
+    
+    unknown = set(schema) - _SUPPORTED
+    if unknown:
+        raise SchemaError(f"{path}: unsupported schema keywords: {sorted(unknown)}")
+    
+    if "$ref" in schema:
+        ref = schema["$ref"]
+        if not isinstance(ref, str) or not ref.startswith("#/$defs/"):
+            raise SchemaError(f"{path}: $ref must be local string")
+        if root is not None:
+            name = ref[len("#/$defs/"):]
+            defs = root.get("$defs")
+            if not isinstance(defs, dict) or name not in defs:
+                raise SchemaError(f"{path}: unresolved $ref {ref}")
+
+    for keyword in ("properties", "patternProperties", "$defs"):
+        if keyword in schema:
+            val = schema[keyword]
+            if not isinstance(val, dict):
+                raise SchemaError(f"{path}: {keyword} must be object")
+            for k, sub in val.items():
+                validate_schema(sub, root or schema, f"{path}.{keyword}.{k}")
+
+    for keyword in ("items", "additionalProperties"):
+        if keyword in schema:
+            val = schema[keyword]
+            if not isinstance(val, (bool, dict)):
+                raise SchemaError(f"{path}: {keyword} must be bool or object")
+            validate_schema(val, root or schema, f"{path}.{keyword}")
+            
+    if "type" in schema:
+        t = schema["type"]
+        if not isinstance(t, str) and not (isinstance(t, list) and all(isinstance(x, str) for x in t)):
+            raise SchemaError(f"{path}: type must be string or array of strings")
+
+    if "enum" in schema:
+        enum = schema["enum"]
+        if not isinstance(enum, list) or not enum:
+            raise SchemaError(f"{path}: enum must be non-empty array")
+
+    if "pattern" in schema:
+        import re
+        pat = schema["pattern"]
+        if not isinstance(pat, str):
+            raise SchemaError(f"{path}: pattern must be string")
+        try:
+            re.compile(pat)
+        except re.error as e:
+            raise SchemaError(f"{path}: invalid regex {pat}: {e}")
+
+    for kw in ("minLength", "maxLength", "minItems", "maxItems"):
+        if kw in schema:
+            val = schema[kw]
+            if not isinstance(val, int) or isinstance(val, bool) or val < 0:
+                raise SchemaError(f"{path}: {kw} must be non-negative integer")
+
+    if "uniqueItems" in schema:
+        val = schema["uniqueItems"]
+        if not isinstance(val, bool):
+            raise SchemaError(f"{path}: uniqueItems must be boolean")
+
+    if "required" in schema:
+        req = schema["required"]
+        if not isinstance(req, list) or not req or any(not isinstance(k, str) for k in req) or len(set(req)) != len(req):
+            raise SchemaError(f"{path}: required must be unique string array")
+
 def validate(instance: Any, schema: dict[str, Any], path: str = "<root>") -> None:
+    validate_schema(schema, schema, path + "_schema")
     _validate(instance, schema, schema, path)
 
 
@@ -232,6 +305,13 @@ def _validate(instance: Any, schema: Any, root: dict[str, Any], path: str) -> No
                         raise SchemaError(f"{path}: array items are not unique")
 
 
+def _is_json_integer(value: Any) -> bool:
+    if isinstance(value, int) and not isinstance(value, bool):
+        return True
+    if isinstance(value, float) and math.isfinite(value) and value.is_integer():
+        return True
+    return False
+
 def _check_type(instance: Any, type_value: Any, path: str) -> None:
     if isinstance(type_value, list):
         for variant in type_value:
@@ -243,8 +323,18 @@ def _check_type(instance: Any, type_value: Any, path: str) -> None:
         raise SchemaError(f"{path}: type mismatch (any of {type_value})")
     if type_value not in _TYPES:
         raise SchemaError(f"{path}: unknown type {type_value!r}")
-    if type_value in _NUMERIC_TYPES and isinstance(instance, bool):
-        raise SchemaError(f"{path}: bool not accepted as {type_value}")
+    if type_value == "integer":
+        if not _is_json_integer(instance):
+            raise SchemaError(f"{path}: expected integer, got {type(instance).__name__}")
+        return
+    if type_value == "number":
+        if isinstance(instance, bool):
+            raise SchemaError(f"{path}: bool not accepted as number")
+        if not isinstance(instance, (int, float)):
+            raise SchemaError(f"{path}: expected number, got {type(instance).__name__}")
+        if isinstance(instance, float) and not math.isfinite(instance):
+            raise SchemaError(f"{path}: expected finite number")
+        return
     expected = _TYPES[type_value]
     if not isinstance(instance, expected):
         raise SchemaError(f"{path}: expected {type_value}, got {type(instance).__name__}")
