@@ -302,20 +302,24 @@ def execute_generated_test(
         test_rel = rel_path.replace("\\", "/")
         test_path = snapshot / test_rel
         test_path.parent.mkdir(parents=True, exist_ok=True)
-        test_path.write_text(generated_source, encoding="utf-8")
+        generated_bytes = generated_source.encode("utf-8")
+        test_path.write_bytes(generated_bytes)
 
         result = run_process(snapshot, command, timeout=300)
 
         evidence_root.mkdir(parents=True, exist_ok=True)
         evidence_source = evidence_root / evidence_name
-        evidence_source.write_text(generated_source, encoding="utf-8")
+        evidence_source.write_bytes(generated_bytes)
         retained_hash = hashlib.sha256(evidence_source.read_bytes()).hexdigest()
-        if retained_hash != hashlib.sha256(generated_source.encode("utf-8")).hexdigest():
+        if retained_hash != hashlib.sha256(generated_bytes).hexdigest():
             raise GeneratedCompatibilityError("retained generated source hash mismatch")
 
         raw_path = evidence_root / f"{check_id.lower()}-result.json"
-        raw_path.write_text(result.stdout, encoding="utf-8")
+        result_bytes = result.stdout.encode("utf-8")
+        raw_path.write_bytes(result_bytes)
         raw_hash = hashlib.sha256(raw_path.read_bytes()).hexdigest()
+        if raw_hash != hashlib.sha256(result_bytes).hexdigest():
+            raise GeneratedCompatibilityError("retained result hash mismatch")
 
         input_hashes = {
             "testbench": f"sha256:{retained_hash}",
