@@ -111,6 +111,56 @@ class GeneratedPassClassificationTests(unittest.TestCase):
         }
         self.assertEqual(self.classify(payload), CheckStatus.BLOCKED)
 
+    def test_nested_diagnostic_identity_does_not_satisfy_gate(self) -> None:
+        payload = {
+            "results": [
+                {
+                    "status": "PASS",
+                    "diagnostic": record("PASS"),
+                }
+            ],
+            "summary": {
+                "total": 1,
+                "passed": 1,
+                "failed": 0,
+                "failures": 0,
+                "errors": 0,
+            },
+        }
+        self.assertEqual(self.classify(payload), CheckStatus.BLOCKED)
+
+    def test_alias_identity_fields_do_not_satisfy_gate(self) -> None:
+        payload = {
+            "results": [
+                {
+                    "test_bench": "PcbAgentConnectivity",
+                    "name": "_check_connectivity",
+                    "status": "PASS",
+                }
+            ],
+            "summary": {
+                "total": 1,
+                "passed": 1,
+                "failed": 0,
+                "failures": 0,
+                "errors": 0,
+            },
+        }
+        self.assertEqual(self.classify(payload), CheckStatus.BLOCKED)
+
+    def test_duplicate_passing_expected_records_block(self) -> None:
+        payload = {
+            "results": [record("PASS"), record("PASS")],
+            "summary": {
+                "total": 2,
+                "passed": 2,
+                "failed": 0,
+                "failures": 0,
+                "errors": 0,
+            },
+        }
+        self.assertEqual(self.classify(payload), CheckStatus.BLOCKED)
+
 
 if __name__ == "__main__":
     unittest.main()

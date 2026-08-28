@@ -93,22 +93,6 @@ def doctor_probes(project: ProjectState) -> tuple[ProcessResult, ...]:
     return tuple(results)
 
 
-def _records(value: object) -> list[Mapping[str, Any]]:
-    out: list[Mapping[str, Any]] = []
-
-    def walk(item: object) -> None:
-        if isinstance(item, dict):
-            out.append(item)
-            for child in item.values():
-                walk(child)
-        elif isinstance(item, list):
-            for child in item:
-                walk(child)
-
-    walk(value)
-    return out
-
-
 def _int_or_none(value: object) -> int | None:
     if isinstance(value, bool):
         return None
@@ -165,19 +149,24 @@ def _payload_has_failure(payload: Mapping[str, Any]) -> bool:
 
 
 def _record_identity(record: Mapping[str, Any]) -> tuple[str | None, str | None]:
-    bench = record.get("test_bench_name") or record.get("test_bench")
-    check = record.get("check_name") or record.get("name")
+    bench = record.get("test_bench_name")
+    check = record.get("check_name")
     if isinstance(bench, str) and isinstance(check, str):
         return bench, check
     return None, None
 
 
 def _find_record(payload: Mapping[str, Any], bench_name: str, check_name: str) -> Mapping[str, Any] | None:
-    for record in _records(payload["results"]):
+    matches: list[Mapping[str, Any]] = []
+    for record in payload["results"]:
+        if not isinstance(record, dict):
+            return None
         rb, rc = _record_identity(record)
         if rb == bench_name and rc == check_name:
-            return record
-    return None
+            matches.append(record)
+    if len(matches) != 1:
+        return None
+    return matches[0]
 
 
 def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None) -> ProcessResult:
