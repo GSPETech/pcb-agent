@@ -63,7 +63,116 @@ def build_adapter_registry(entries: Iterable[ComponentAdapter]) -> dict[str, Com
     return registry
 
 
-_ADAPTERS: dict[str, ComponentAdapter] = {}
+_CAPTURED_PCBC_VERSION = "0.4.40"
+_CAPTURED_BLINKY_EVIDENCE = "sha256:02c6cb60bfaf371e640e34ed0ff7b707074cfad0789b38a25c014cfa66cfac11"
+_CAPTURED_GENERICS_EVIDENCE = "sha256:3320a8aa668f5f28dc19b4240f9f92e22333805ead12e36cb4c5a3c3b1636267"
+_PACKAGE_ACCESSOR = "properties['package']"
+
+
+def captured_adapter_registry() -> dict[str, ComponentAdapter]:
+    """Production adapters verified against captured Diode 0.4.40 output.
+
+    Every pin mapping, instance suffix, and accessor was observed in raw
+    `pcb test -f json` output stored under
+    `tests/evidence/diode-0.4.40/`. See docs/spike-diode-net-naming.md.
+    """
+    return build_adapter_registry(
+        [
+            ComponentAdapter(
+                kind="resistor",
+                instance_suffix="R",
+                pins={"P1": "1", "P2": "2"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_BLINKY_EVIDENCE,
+                value_accessor="resistance",
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=("P1", "P2"),
+            ),
+            ComponentAdapter(
+                kind="led",
+                instance_suffix="LED",
+                pins={"A": "A", "K": "K"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_BLINKY_EVIDENCE,
+                value_accessor=None,
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=None,
+            ),
+            ComponentAdapter(
+                kind="capacitor",
+                instance_suffix="C",
+                pins={"P1": "1", "P2": "2"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                value_accessor="capacitance",
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=None,
+            ),
+            ComponentAdapter(
+                kind="inductor",
+                instance_suffix="L",
+                pins={"P1": "1", "P2": "2"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                value_accessor="inductance",
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=None,
+            ),
+            ComponentAdapter(
+                kind="ferrite_bead",
+                instance_suffix="FB",
+                pins={"P1": "1", "P2": "2"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                value_accessor="impedance",
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=None,
+            ),
+            ComponentAdapter(
+                kind="thermistor",
+                instance_suffix="TH",
+                pins={"P1": "1", "P2": "2"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                value_accessor="resistance",
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=None,
+            ),
+            ComponentAdapter(
+                kind="zener",
+                instance_suffix="D",
+                pins={"A": "A", "K": "K"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                value_accessor="zener_voltage",
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=None,
+            ),
+            ComponentAdapter(
+                kind="rectifier",
+                instance_suffix="D",
+                pins={"A": "A", "K": "K"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                value_accessor="reverse_voltage",
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=None,
+            ),
+            ComponentAdapter(
+                kind="tvs",
+                instance_suffix="D",
+                pins={"A": "A", "K": "K"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                value_accessor="reverse_standoff_voltage",
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=None,
+            ),
+        ]
+    )
+
+
+_ADAPTERS: dict[str, ComponentAdapter] = captured_adapter_registry()
 
 
 def set_adapter_registry(registry: Mapping[str, ComponentAdapter]) -> None:
@@ -282,12 +391,10 @@ def render_connectivity_testbench(
 
     for comp_ref, comp_def in components.items():
         adapter = adapter_for(comp_def["kind"], pcbc_version)
-        diode_ref = (
-            f"{bench_name}__{case_name}.{comp_ref}.{adapter.instance_suffix}"
-        )
+        component_ref = f"{comp_ref}.{adapter.instance_suffix}"
         lines.append(
-            f"    check({_zener_string(diode_ref)} in components, "
-            f"{_zener_string(f'missing component {diode_ref}')})"
+            f"    check({_zener_string(component_ref)} in components, "
+            f"{_zener_string(f'missing component {component_ref}')})"
         )
 
     expected_net_names: list[str] = []
@@ -437,11 +544,11 @@ def render_specification_testbench(
             raise GeneratorError(f"subject {subject} in {rid} is missing kind")
 
         adapter = adapter_for(kind, pcbc_version)
-        diode_ref = f"{bench_name}__{case_name}.{subject}.{adapter.instance_suffix}"
+        component_ref = f"{subject}.{adapter.instance_suffix}"
         if subject not in components_with_assertions:
             lines.append(
-                f"    check({_zener_string(diode_ref)} in components, "
-                f"{_zener_string(f'missing component {diode_ref}')})"
+                f"    check({_zener_string(component_ref)} in components, "
+                f"{_zener_string(f'missing component {component_ref}')})"
             )
             components_with_assertions.add(subject)
 
@@ -452,7 +559,7 @@ def render_specification_testbench(
                     raise GeneratorError(f"adapter for {kind} has no verified value accessor")
                 lines.append(
                     "    check(components["
-                    f"{_zener_string(diode_ref)}"
+                    f"{_zener_string(component_ref)}"
                     f"].{adapter.value_accessor}.matches("
                     f"{_zener_string(str(expected_value))}"
                     f"), {_zener_string(f'wrong value for {subject}')})"
@@ -463,7 +570,7 @@ def render_specification_testbench(
                     raise GeneratorError(f"adapter for {kind} has no verified package accessor")
                 lines.append(
                     "    check(components["
-                    f"{_zener_string(diode_ref)}"
+                    f"{_zener_string(component_ref)}"
                     f"].{adapter.package_accessor}.value == "
                     f"{_zener_string(str(expected_value))}, "
                     f"{_zener_string(f'wrong package for {subject}')})"

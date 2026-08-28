@@ -128,10 +128,11 @@ class FakeBackendTests(unittest.TestCase):
             with patch.dict(os.environ, {"PATH": path}, clear=False), contextlib.redirect_stdout(io.StringIO()):
                 valid = cli.main(["verify", str(valid_fixture), "--format", "json"])
                 invalid = cli.main(["verify", str(invalid_fixture), "--format", "json"])
-        # The adapter registry is empty, so the generated gates report BLOCKED
-        # and the valid fixture exits 2 rather than 0. See
-        # docs/spike-diode-net-naming.md. A green run is covered by
-        # tests/test_green_run.py, which registers a stub adapter.
+        # The fake pcb reports pcbc 0.4.34, which no captured adapter is
+        # verified against, so the generated gates report BLOCKED and the valid
+        # fixture exits 2 rather than 0. A green run against a real 0.4.40
+        # toolchain is covered by docs/spike-diode-net-naming.md; a CI green
+        # run is covered by tests/test_green_run.py.
         self.assertEqual(valid, 2)
         # A failed build now blocks dependent gates, so the run is BLOCKED.
         self.assertEqual(invalid, 2)

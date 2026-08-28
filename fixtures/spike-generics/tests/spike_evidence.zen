@@ -1,0 +1,60 @@
+AllGenerics = Module("../src/all_generics.zen")
+
+def spike_evidence(module, inputs):
+    components = module.components()
+    nets = module.nets()
+
+    expected_components = ["C1.C", "D1.LED", "D2.D", "D3.D", "DZ1.D", "FB1.FB", "L1.L", "R1.R", "TH1.TH", "Y1.Y", "Y2.Y"]
+    for ref in expected_components:
+        check(ref in components, "missing component " + ref)
+    check(len(components) == 11, "expected exactly 11 components")
+
+    types = {
+        "C1.C": "capacitor", "D1.LED": "led", "D2.D": "rectifier", "D3.D": "tvs",
+        "DZ1.D": "zener", "FB1.FB": "ferrite_bead", "L1.L": "inductor",
+        "R1.R": "resistor", "TH1.TH": "thermistor", "Y1.Y": "crystal", "Y2.Y": "crystal",
+    }
+    for ref, kind in types.items():
+        check(str(components[ref].type) == kind, ref + " must be " + kind)
+
+    expected_nets = {
+        "VCC": [("SpikeAllGenerics__default.C1.C", "1"), ("SpikeAllGenerics__default.R1.R", "1")],
+        "GND": [("SpikeAllGenerics__default.C1.C", "2"), ("SpikeAllGenerics__default.Y2.Y", "GND_2"), ("SpikeAllGenerics__default.Y2.Y", "GND_4"), ("SpikeAllGenerics__default.D1.LED", "K"), ("SpikeAllGenerics__default.D3.D", "A"), ("SpikeAllGenerics__default.D2.D", "A"), ("SpikeAllGenerics__default.DZ1.D", "A")],
+        "LED_ANODE": [("SpikeAllGenerics__default.R1.R", "2"), ("SpikeAllGenerics__default.D1.LED", "A")],
+        "VIN": [("SpikeAllGenerics__default.TH1.TH", "1"), ("SpikeAllGenerics__default.L1.L", "1"), ("SpikeAllGenerics__default.FB1.FB", "1"), ("SpikeAllGenerics__default.D3.D", "K"), ("SpikeAllGenerics__default.D2.D", "K"), ("SpikeAllGenerics__default.DZ1.D", "K")],
+        "MID": [("SpikeAllGenerics__default.TH1.TH", "2"), ("SpikeAllGenerics__default.L1.L", "2"), ("SpikeAllGenerics__default.FB1.FB", "2")],
+        "XIN_NET": [("SpikeAllGenerics__default.Y1.Y", "1")],
+        "XOUT_NET": [("SpikeAllGenerics__default.Y1.Y", "2")],
+        "XIN_NET2": [("SpikeAllGenerics__default.Y2.Y", "XIN")],
+        "XOUT_NET2": [("SpikeAllGenerics__default.Y2.Y", "XOUT")],
+    }
+    for name, members in expected_nets.items():
+        observed = nets.get(name, [])
+        check(len(observed) == len(members), "net " + name + " wrong member count")
+        for member in members:
+            check(member in observed, "net " + name + " missing member " + str(member))
+
+    value_probes = {
+        "R1.R": ("resistance", "1kohm"), "C1.C": ("capacitance", "100nF"),
+        "L1.L": ("inductance", "10uH"), "Y1.Y": ("frequency", "8MHz"),
+        "Y2.Y": ("frequency", "16MHz"), "TH1.TH": ("resistance", "10kohm"),
+        "FB1.FB": ("impedance", "220ohm"), "DZ1.D": ("zener_voltage", "3.3V"),
+        "D2.D": ("reverse_voltage", "40V"), "D3.D": ("reverse_standoff_voltage", "5V"),
+    }
+    for ref, (accessor, value) in value_probes.items():
+        check(getattr(components[ref], accessor).matches(value), ref + " value mismatch")
+
+    package_probes = {
+        "R1.R": "0402", "C1.C": "0402", "L1.L": "0402", "Y1.Y": "3215_2Pin",
+        "Y2.Y": "3225_4Pin", "TH1.TH": "0402", "FB1.FB": "0402",
+        "DZ1.D": "SOD-123", "D2.D": "SOD-123", "D3.D": "DO-219AB", "D1.LED": "0402",
+    }
+    for ref, package in package_probes.items():
+        check(str(components[ref].properties["package"].value) == package, ref + " package mismatch")
+
+TestBench(
+    name = "SpikeAllGenerics",
+    module = AllGenerics,
+    test_cases = {"default": {}},
+    checks = [spike_evidence],
+)

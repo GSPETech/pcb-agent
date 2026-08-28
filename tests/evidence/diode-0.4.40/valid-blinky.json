@@ -1,0 +1,23 @@
+{
+  "results": [
+    {
+      "test_bench_name": "BlinkyTest",
+      "case_name": "default",
+      "check_name": "component_value",
+      "file_path": "/home/rendra/pcbagent-full/fixtures/valid-blinky/tests/blinky_test.zen",
+      "status": "pass"
+    },
+    {
+      "test_bench_name": "BlinkyTest",
+      "case_name": "default",
+      "check_name": "connectivity",
+      "file_path": "/home/rendra/pcbagent-full/fixtures/valid-blinky/tests/blinky_test.zen",
+      "status": "pass"
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "passed": 2,
+    "failed": 0
+  }
+}

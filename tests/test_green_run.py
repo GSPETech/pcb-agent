@@ -10,8 +10,10 @@ because that fixture declares a `package` on `D1` with no requirement covering
 it, which the ownership guard correctly reports as BLOCKED. Locked fixtures are
 never edited to make a test pass.
 
-The stub adapter exists only here. The production registry stays empty until a
-real Diode spike captures the mappings. See docs/spike-diode-net-naming.md.
+The stub adapter exists only here because CI has no real Diode toolchain. The
+production registry in `generated_testbench.py` is built from captured Diode
+0.4.40 evidence (see docs/spike-diode-net-naming.md); it cannot be used here
+because the fake `pcb` in `helpers.py` reports a different pcbc version.
 """
 
 from __future__ import annotations

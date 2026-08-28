@@ -128,7 +128,7 @@ class ConnectivityGeneratorTests(unittest.TestCase):
 
         self.assertIn('M = Module("../src/blinky.zen")', source)
         self.assertIn(
-            'check("PcbAgentConnectivity__contract.R1.R" in components',
+            'check("R1.R" in components',
             source,
         )
         self.assertIn(
@@ -383,12 +383,12 @@ class SpecificationGeneratorTests(unittest.TestCase):
 
         self.assertIn('M = Module("../src/blinky.zen")', source)
         self.assertIn(
-            'check("PcbAgentSpecification__contract.R1.R" in components',
+            'check("R1.R" in components',
             source,
         )
         self.assertIn('.resistance.matches("1kohm")', source)
         self.assertIn(
-            "components[\"PcbAgentSpecification__contract.R1.R\"].properties['package'].value == \"0402\"",
+            'components["R1.R"].properties[\'package\'].value == "0402"',
             source,
         )
 

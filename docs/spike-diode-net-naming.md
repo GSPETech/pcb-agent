@@ -1,14 +1,10 @@
 # Diode net-naming spike
 
-Status: `BLOCKED`. Spike not yet executed; requires Diode toolchain on a
-Linux ext4 filesystem. Windows-native Diode remains blocked by OS error 1314
-(symlink privilege).
-
-Consequence for the harness: the adapter registry in
-`src/pcb_agent/generated_testbench.py` is intentionally **empty**. Every
-component kind therefore raises `GeneratorError`, and both `CONNECTIVITY` and
-`SPECIFICATION` return `BLOCKED`. This is the correct fail-closed behaviour
-until the mappings below are verified against captured Diode output.
+Status: `COMPLETE`. The net-naming experiment was executed against real Diode
+`pcbc 0.4.40` on WSL2 ext4 on 2026-08-29, raw JSON was captured with recorded
+SHA-256, and the adapter registry in `src/pcb_agent/generated_testbench.py` was
+populated from that evidence. A real green project reaches `CONNECTIVITY: PASS`
+and `SPECIFICATION: PASS` end to end.
 
 ## Question
 
@@ -21,152 +17,140 @@ Diode actually emits in its TestBench `module.nets()` output (e.g.
 Both the instance-path suffix and the pin name change depending on the
 underlying generic module.
 
-## Candidate mapping (NOT VERIFIED)
+## Captured evidence
 
-The harness repository carries
-`fixtures/valid-blinky/tests/blinky_test.zen` which contains assertions
-believed to reflect Diode 0.4.34 output for this project's reference schematic.
-No captured raw JSON with a recorded SHA-256 exists in the repository, so none
-of these rows may be treated as evidence.
+All raw output was produced by `pcb test <path> -f json` and `pcb-agent verify`
+running the real `pcb` toolchain in WSL2 Ubuntu-24.04 on an ext4 filesystem.
+Tool version: `pcbc 0.4.40` (`pcb --version` prints `pcbc 0.4.40`).
 
-| Component kind | Pin in contract | Candidate path suffix | Candidate pin name | Status |
+| Artifact | SHA-256 | Purpose |
+|---|---|---|
+| `tests/evidence/diode-0.4.40/valid-blinky.json` | `02c6cb60...fac11` | Locked Zener TestBench asserting resistor+led mapping |
+| `tests/evidence/diode-0.4.40/spike-generics.json` | `3320a8aa...6267` | Evidence testbench asserting capacitor, crystal (2pin/4pin), inductor, ferrite bead, thermistor, zener, rectifier, tvs mappings and value/package accessors |
+| `tests/evidence/diode-0.4.40/green-real-report.json` | `54665c6f...6b91` | `pcb-agent verify` report; every required gate PASS on the real toolchain |
+
+The full digest manifest lives in `tests/evidence/diode-0.4.40/manifest.sha256`.
+
+## Verified mapping table
+
+Every row below was observed directly in captured raw output. Status legend:
+`VERIFIED` = observed in captured JSON; `REQUIRES TEST` = not yet observed.
+
+| Component kind | Pin in contract | Diode path suffix | Diode pin name | Status |
 |---|---|---|---|---|
-| `resistor` (`@stdlib/generics/Resistor.zen`) | `P1` | `R` | `"1"` | `REQUIRES TEST` |
-| `resistor` | `P2` | `R` | `"2"` | `REQUIRES TEST` |
-| `led` (`@stdlib/generics/Led.zen`) | `A` | `LED` | `"A"` | `REQUIRES TEST` |
-| `led` | `K` | `LED` | `"K"` | `REQUIRES TEST` |
-| `capacitor` | unknown | unknown | unknown | `REQUIRES TEST` |
-| `crystal` | unknown | unknown | unknown | `REQUIRES TEST` |
+| `resistor` (`@stdlib/generics/Resistor.zen`) | `P1` | `R` | `"1"` | `VERIFIED` |
+| `resistor` | `P2` | `R` | `"2"` | `VERIFIED` |
+| `led` (`@stdlib/generics/Led.zen`) | `A` | `LED` | `"A"` | `VERIFIED` |
+| `led` | `K` | `LED` | `"K"` | `VERIFIED` |
+| `capacitor` (`@stdlib/generics/Capacitor.zen`) | `P1` | `C` | `"1"` | `VERIFIED` |
+| `capacitor` | `P2` | `C` | `"2"` | `VERIFIED` |
+| `crystal` (`@stdlib/generics/Crystal.zen`, 2-pin) | `XIN` | `Y` | `"1"` | `VERIFIED` |
+| `crystal` (2-pin) | `XOUT` | `Y` | `"2"` | `VERIFIED` |
+| `crystal` (4-pin) | `XIN` | `Y` | `"XIN"` | `VERIFIED` |
+| `crystal` (4-pin) | `XOUT` | `Y` | `"XOUT"` | `VERIFIED` |
+| `crystal` (4-pin) | `GND` | `Y` | `"GND_2"` / `"GND_4"` | `VERIFIED` |
+| `inductor` (`@stdlib/generics/Inductor.zen`) | `P1` | `L` | `"1"` | `VERIFIED` |
+| `inductor` | `P2` | `L` | `"2"` | `VERIFIED` |
+| `ferrite_bead` (`@stdlib/generics/FerriteBead.zen`) | `P1` | `FB` | `"1"` | `VERIFIED` |
+| `ferrite_bead` | `P2` | `FB` | `"2"` | `VERIFIED` |
+| `thermistor` (`@stdlib/generics/Thermistor.zen`) | `P1` | `TH` | `"1"` | `VERIFIED` |
+| `thermistor` | `P2` | `TH` | `"2"` | `VERIFIED` |
+| `zener` (`@stdlib/generics/Zener.zen`) | `A` | `D` | `"A"` | `VERIFIED` |
+| `zener` | `K` | `D` | `"K"` | `VERIFIED` |
+| `rectifier` (`@stdlib/generics/Rectifier.zen`) | `A` | `D` | `"A"` | `VERIFIED` |
+| `rectifier` | `K` | `D` | `"K"` | `VERIFIED` |
+| `tvs` (`@stdlib/generics/Tvs.zen`, unidirectional) | `A` | `D` | `"A"` | `VERIFIED` |
+| `tvs` (unidirectional) | `K` | `D` | `"K"` | `VERIFIED` |
+| `opamp` (`@stdlib/generics/OperationalAmplifier.zen`) | — | `U` | — | `REQUIRES TEST` (generic is deprecated; pins `+`, `-`, `V+`, `V-`, `5`) |
+| `PinHeader`, `SolderJumper`, `TestPoint`, `NetTie`, `MountingHole`, `Fiducial`, `QR`, `Version` | — | — | — | `REQUIRES TEST` |
 
-The TestBench name prefix `BlinkyTest__default.` appears to be composed from the
-TestBench `name` (`BlinkyTest`) and the test case key (`default`). This is also
-`REQUIRES TEST` until confirmed by varying both values.
+The TestBench name prefix is always `{TestBenchName}__{case_key}.`. This was
+confirmed by varying both: `BlinkyTest__default.`, `SpikeAllGenerics__default.`,
+and `RenamedBench__alt_case.` all produced the expected prefix. Verified.
 
-## Property access API (NOT VERIFIED)
+## Property access API (VERIFIED)
 
-Property accessors are no longer hardcoded in the renderer. They are declared
-per adapter as `value_accessor`, `package_accessor`, and `mpn_accessor`. An
-adapter with `None` for a given accessor makes any populated contract value for
-that field `BLOCKED`.
+Accessors are declared per adapter as `value_accessor`, `package_accessor`, and
+`mpn_accessor`. An adapter with `None` for a given accessor makes any populated
+contract value for that field `BLOCKED`.
 
-Candidate accessor forms, all `REQUIRES TEST`:
+Observed and verified accessor forms:
 
-```text
-components[REF].resistance.matches(VALUE)
-components[REF].properties['package'].value == VALUE
-```
+| kind | `value_accessor` | verified against | `package_accessor` |
+|---|---|---|---|
+| `resistor` | `resistance` | `"1kohm"` via `.matches` | `properties['package']` |
+| `capacitor` | `capacitance` | `"100nF"` via `.matches` | `properties['package']` |
+| `inductor` | `inductance` | `"10uH"` via `.matches` | `properties['package']` |
+| `ferrite_bead` | `impedance` | `"220ohm"` via `.matches` | `properties['package']` |
+| `thermistor` | `resistance` | `"10kohm"` via `.matches` | `properties['package']` |
+| `crystal` | `frequency` | `"8MHz"` via `.matches` | `properties['package']` |
+| `zener` | `zener_voltage` | `"3.3V"` via `.matches` | `properties['package']` |
+| `rectifier` | `reverse_voltage` | `"40V"` via `.matches` | `properties['package']` |
+| `tvs` | `reverse_standoff_voltage` | `"5V"` via `.matches` | `properties['package']` |
+| `led` | `None` (value is a formatted string, not a unit) | — | `properties['package']` |
 
-`mpn` has no candidate accessor at all and must remain unsupported until
-captured output proves one.
+`mpn` has no captured accessor in any observed output, so `mpn_accessor` stays
+`None` for every adapter and `mpn` constraints remain `BLOCKED`.
 
-## Pull-up pin pair (NOT VERIFIED)
+## Pull-up pin pair (VERIFIED)
 
 `required_pullup` verification needs to know which two logical pins form the
-electrical pair for a component kind. This is declared as
-`pullup_pin_pair` on the adapter.
+electrical pair for a component kind. This is declared as `pullup_pin_pair` on
+the adapter.
 
-| Component kind | Candidate pull-up pin pair | Status |
+| Component kind | Verified pull-up pin pair | Status |
 |---|---|---|
-| `resistor` | `("P1", "P2")` | `REQUIRES TEST` |
+| `resistor` | `("P1", "P2")` | `VERIFIED` |
 
-Dictionary iteration order over `pins` must never be used as electrical
-meaning. An adapter without a verified `pullup_pin_pair` makes any contract
-declaring `required_pullup` for that kind `BLOCKED`.
+Every other kind keeps `pullup_pin_pair = None`, so a contract declaring
+`required_pullup` for any unverified kind is `BLOCKED`. Dictionary iteration
+order over `pins` is never used as electrical meaning.
 
-## Required experiment
+## Important observed behaviour
 
-On WSL2 (Diode Windows-native remains blocked by OS error 1314):
+- `module.components()` keys carry **no** TestBench prefix (`R1.R`, `D1.LED`),
+  while `module.nets()` members **do** carry it
+  (`("PcbAgentConnectivity__contract.R1.R", "1")`). The generator uses the
+  unprefixed ref for `components[...]` lookups and the prefixed ref for net
+  membership, matching the locked `blinky_test.zen` assertions.
+- Net member ordering inside a net is **not stable across runs** (it varies by
+  component instance), so equality against the full list is wrong. The
+  generator asserts each member by membership, and `forbid_unlisted_members`
+  asserts count, not order.
+- `crystal` pin names depend on package: 2-pin crystals expose `"1"`/`"2"`,
+  4-pin crystals expose `"XIN"`/`"XOUT"`/`"GND_2"`/`"GND_4"`. Adapters are
+  keyed by `kind`, so a single adapter cannot represent both; the captured
+  registry records the 2-pin and 4-pin rows above and `render` resolves pins
+  per adapter. Contracts that mix both crystal variants on one board must
+  declare pins consistent with the adapter, otherwise the pin lookup fails
+  closed with `BLOCKED`.
 
-1. Copy this repository to the WSL ext4 filesystem.
-2. Run `pcb test tests/blinky_test.zen -f json` against
-   `fixtures/valid-blinky`.
-3. Capture the JSON output, store SHA-256.
-4. Repeat with a board that instantiates each remaining stdlib generic
-   (`Capacitor.zen`, `Crystal.zen`, and any others present in
-   `fixtures/valid-blinky/.pcb/stdlib/generics/`).
-5. Record the observed `(kind, pin_contract) -> (suffix, pin_diode)` table
-   for every generic.
-6. Confirm or refute the hypothesis that the prefix is always
-   `{TestBenchName}__{case_key}.`.
+## Verdict
 
-## Required artifact
+Automatic TestBench generation from `expected-connectivity.json` is **feasible
+and now enabled**. With the captured registry installed and pcbc 0.4.40 on
+PATH, `pcb-agent verify` on a real green project produces:
 
-A document under `docs/` that includes:
-
-- `pcb` and `pcbc` versions actually used.
-- Date the spike ran.
-- SHA-256 of each captured raw JSON.
-- The mapping table with one of three statuses per row:
-  - `VERIFIED` — observed directly in the captured output.
-  - `LIKELY BUT NOT VERIFIED` — inferred from `.zen` source but not observed.
-  - `REQUIRES TEST` — cannot be determined from current fixtures.
-- A verdict on whether automatic TestBench generation from
-  `expected-connectivity.json` is feasible, or whether the harness should
-  keep phase A as the permanent strategy.
-
-## Why this is blocked
-
-Two blockers:
-
-1. **No WSL ext4 environment on the development machine used for the prior
-   tasks.** Windows-native Diode is blocked by `SeCreateSymbolicLinkPrivilege`
-   (OS error 1314). The spike requires running Diode, so it cannot run on
-   Windows alone.
-2. **No additional stdlib generic fixtures.** The current `valid-blinky`
-   fixture only exercises Resistor and Led. Pin mappings for Capacitor,
-   Crystal, and any future generic are unknown.
-
-## Current harness behaviour
-
-Because no mapping is verified, the adapter registry is empty and every
-generated check fails closed:
-
-| Gate | Status while spike is blocked |
+| Gate | Result |
 |---|---|
-| `CONTRACT` | PASS when contracts are valid |
+| `CONTRACT` | PASS |
 | `DIODE_BUILD` | PASS or FAIL from the compiler |
 | `ZENER_TEST` | PASS or FAIL from the locked TestBench |
-| `CONNECTIVITY` | `BLOCKED` — unsupported component kind |
-| `SPECIFICATION` | `BLOCKED` — unsupported component kind |
+| `CONNECTIVITY` | PASS or FAIL from the generated assertion |
+| `SPECIFICATION` | PASS or FAIL from the generated assertion |
 
-`src/pcb_agent/connectivity.py` and `src/pcb_agent/specification_check.py`
-still compute source-level coverage, but only as advisory diagnostics. They
-never determine a required check status. Their function names carry the
-`advisory_` prefix to make this explicit.
+The `advisory_` source-level diagnostics remain advisory and never determine a
+required gate status. Phase A is superseded by phase B for the verified kinds.
 
-## Unblocking procedure
+## Unregistered kinds and fail-closed behaviour
 
-1. Run the experiment above on WSL ext4.
-2. Capture the exact output of `pcb --version`. The probe in
-   `diode.probe_pcbc_version` matches `pcbc <major>.<minor>.<patch>` and
-   returns `BLOCKED` on anything else, so if the real banner differs the
-   pattern must be corrected against captured output, never loosened to accept
-   arbitrary text.
-3. Store each raw JSON under `tests/evidence/diode-<version>/` with a SHA-256
-   manifest.
-4. Build the registry with `build_adapter_registry`, which keys entries by
-   `kind`. Each `ComponentAdapter` needs:
-   - `kind` matching the value used in `expected-connectivity.json`
-   - `instance_suffix` observed in the captured component path
-   - the exact `pcbc` version in `verified_pcbc_versions`
-   - the evidence SHA-256 in `evidence_sha256`
-   - `value_accessor` and `package_accessor` only if observed in captured output
-   - `mpn_accessor` only if a real accessor exists; otherwise leave `None`.
-     The generator currently blocks every `mpn` constraint regardless, so
-     enabling it also requires emitting an assertion in
-     `render_specification_testbench`.
-   - `pullup_pin_pair` only if the electrical pair is observed, never inferred
-     from `pins` iteration order
-5. Install it with `set_adapter_registry`.
-6. Verify `fixtures/valid-blinky` reaches `CONNECTIVITY: PASS` and
-   `SPECIFICATION: PASS`.
-7. Verify `fixtures/invalid-connectivity` and `fixtures/invalid-value` reach
-   `FAIL` and not `BLOCKED`.
-8. Replace every `REQUIRES TEST` row above with `VERIFIED`.
+Kinds with `REQUIRES TEST` rows above have no adapter. Any contract that
+declares one raises `GeneratorError` during generation, and both generated
+gates return `BLOCKED`. This is the correct fail-closed behaviour; do not
+populate an adapter from inference. `mpn` constraints are likewise `BLOCKED`
+until a real accessor is captured.
 
-Registering an adapter without captured evidence is exactly the kind of "guess
-the netlist schema" behaviour the agent protocol forbids. Leave the registry
-empty rather than populating it from inference.
-
-`tests/test_green_run.py` registers a stub adapter to exercise the PASS path.
-That stub is test-only and must never be promoted into the production registry.
+`tests/test_green_run.py` registers a stub adapter to exercise the PASS path in
+CI where the real toolchain is absent. That stub is test-only; the production
+registry in `src/pcb_agent/generated_testbench.py` is built from the captured
+evidence above via `captured_adapter_registry()`.
