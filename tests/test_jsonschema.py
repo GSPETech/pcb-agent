@@ -41,14 +41,59 @@ class LoadSchemaTests(unittest.TestCase):
             load_schema("nonexistent.schema.json")
 
 
+ALL_SCHEMAS = (
+    "connectivity.schema.json",
+    "specification.schema.json",
+    "verification-report.schema.json",
+    "acceptance.schema.json",
+)
+
+
 class KeywordSupportTests(unittest.TestCase):
     def test_all_used_keywords_are_supported(self) -> None:
-        for name in ("connectivity.schema.json", "specification.schema.json",
-                     "verification-report.schema.json", "acceptance.schema.json"):
+        from pcb_agent.jsonschema import _SUPPORTED
+
+        for name in ALL_SCHEMAS:
             with self.subTest(schema=name):
-                schema = load_schema(name)
-                used = collect_used_keywords(schema)
+                used = collect_used_keywords(load_schema(name))
                 self.assertTrue(used, msg=f"no used keywords found in {name}")
+                unsupported = used - _SUPPORTED
+                self.assertEqual(
+                    unsupported,
+                    set(),
+                    msg=f"{name} uses unsupported keywords: {sorted(unsupported)}",
+                )
+
+    def test_walker_reaches_nested_property_keywords(self) -> None:
+        used = collect_used_keywords(load_schema("connectivity.schema.json"))
+        for keyword in ("const", "pattern", "minItems", "minLength", "uniqueItems"):
+            self.assertIn(keyword, used)
+
+    def test_walker_detects_unsupported_keyword_in_nested_subschema(self) -> None:
+        from pcb_agent.jsonschema import _SUPPORTED
+
+        schema = {
+            "type": "object",
+            "properties": {
+                "nested": {
+                    "type": "object",
+                    "properties": {
+                        "deep": {"type": "string", "madeUpKeyword": True},
+                    },
+                }
+            },
+        }
+        used = collect_used_keywords(schema)
+        self.assertIn("madeUpKeyword", used)
+        self.assertNotEqual(used - _SUPPORTED, set())
+
+    def test_walker_does_not_treat_property_names_as_keywords(self) -> None:
+        schema = {
+            "type": "object",
+            "properties": {"totally_not_a_keyword": {"type": "string"}},
+        }
+        used = collect_used_keywords(schema)
+        self.assertNotIn("totally_not_a_keyword", used)
 
 
 def _generated_report_dict() -> dict:

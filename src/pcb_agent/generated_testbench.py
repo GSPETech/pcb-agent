@@ -197,6 +197,12 @@ def _validate_connectivity_shape(connectivity: Mapping[str, Any]) -> None:
                     f"net {net_name} member {member} references unknown component"
                 )
 
+    unexpected_rules = set(rules) - supported["rules"]
+    if unexpected_rules:
+        raise GeneratorError(
+            f"rules declares unsupported fields: {sorted(unexpected_rules)}"
+        )
+
     power_nets = rules.get("required_power_nets", [])
     if power_nets:
         if not isinstance(power_nets, list):

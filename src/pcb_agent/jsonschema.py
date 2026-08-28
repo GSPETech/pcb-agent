@@ -343,21 +343,31 @@ def _check_type(instance: Any, type_value: Any, path: str) -> None:
         raise SchemaError(f"{path}: expected {type_value}, got {type(instance).__name__}")
 
 
-def collect_used_keywords(schema: dict[str, Any]) -> set[str]:
+def collect_used_keywords(schema: Any) -> set[str]:
+    """Return every keyword used anywhere in a schema tree.
+
+    Walks into per-property subschemas, which the previous implementation
+    missed: the children of `properties` are property *names*, not keywords,
+    so recursing on them by name never reached the nested schemas. Callers
+    compare the result against the supported set; this function deliberately
+    does not filter, otherwise the comparison could never fail.
+
+    Property and `$defs` names are not collected as keywords.
+    """
     used: set[str] = set()
 
     def walk(node: Any) -> None:
-        if isinstance(node, bool):
+        if isinstance(node, bool) or not isinstance(node, dict):
             return
-        if not isinstance(node, dict):
-            return
-        used.update(node)
-        for key, value in node.items():
-            if key in {"$defs"}:
-                walk(value)
-            elif key in {"properties", "patternProperties", "items",
-                          "additionalProperties"}:
-                walk(value)
+        used.update(node.keys())
+        for container in ("$defs", "properties", "patternProperties"):
+            value = node.get(container)
+            if isinstance(value, dict):
+                for sub in value.values():
+                    walk(sub)
+        for direct in ("items", "additionalProperties"):
+            if direct in node:
+                walk(node[direct])
 
     walk(schema)
-    return {k for k in used if k in _SUPPORTED - {"$schema", "$id", "title", "description"}}
+    return used
