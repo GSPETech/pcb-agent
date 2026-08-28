@@ -210,7 +210,7 @@ def _check_required_pullup(
         return ""
     component = pullup.get("component")
     rail = pullup.get("rail")
-    
+
     comp_def = components.get(component) if isinstance(component, str) else None
     if not isinstance(comp_def, dict):
         raise GeneratorError(
@@ -219,24 +219,24 @@ def _check_required_pullup(
     kind = comp_def.get("kind")
     if not isinstance(kind, str):
         raise GeneratorError(f"component {component} missing kind")
-        
+
     adapter = adapter_for(kind, pcbc_version)
     if adapter.pullup_pin_pair is None:
         raise GeneratorError(f"adapter for {kind} lacks verified pullup_pin_pair")
-        
+
     if not isinstance(rail, str) or not rail:
         raise GeneratorError(
             f"net {net_name} required_pullup rail must be string"
         )
-        
+
     pin_a, pin_b = adapter.pullup_pin_pair
     diode_pin_a = adapter.pins.get(pin_a)
     diode_pin_b = adapter.pins.get(pin_b)
     if not diode_pin_a or not diode_pin_b:
         raise GeneratorError(f"adapter for {kind} missing pullup pins")
-        
+
     diode_ref = f"{bench_name}__{case_name}.{component}.{adapter.instance_suffix}"
-    
+
     # Assert that one pin is on the signal net (we don't know which one, but exactly one)
     # and the OTHER pin is on the rail net.
     return (

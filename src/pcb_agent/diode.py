@@ -367,9 +367,9 @@ def _classify_generated_check(check_id: str, outcome: GeneratedTestResult, bench
     record = _find_record(payload, bench_name, check_name)
     if record is None:
         return CheckStatus.BLOCKED
-        
+
     status_text = str(record.get('status', '')).upper()
-    
+
     summary = payload.get('summary', {})
     failed_count = _int_or_none(summary.get('failed')) or 0
     failures_count = _int_or_none(summary.get('failures')) or 0
