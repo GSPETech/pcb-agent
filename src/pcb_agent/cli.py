@@ -175,7 +175,11 @@ def _schematic_checks(project: ProjectState, run: RunState | None = None) -> lis
 
 def _connectivity_check(project: ProjectState, test: Check, run: RunState | None) -> Check:
     if test.status != CheckStatus.PASS:
-        return _check("CONNECTIVITY", test.status, "Zener TestBench did not pass")
+        return _check(
+            "CONNECTIVITY",
+            CheckStatus.BLOCKED,
+            "locked Zener TestBench did not pass; connectivity was not verified",
+        )
     connectivity = project.connectivity
     if not connectivity.get("components") and not connectivity.get("nets"):
         return _check("CONNECTIVITY", CheckStatus.SKIPPED,
@@ -217,7 +221,11 @@ def _connectivity_check(project: ProjectState, test: Check, run: RunState | None
 
 def _specification_check(project: ProjectState, test: Check, run: RunState | None) -> Check:
     if test.status != CheckStatus.PASS:
-        return _check("SPECIFICATION", test.status, "Zener TestBench did not pass")
+        return _check(
+            "SPECIFICATION",
+            CheckStatus.BLOCKED,
+            "locked Zener TestBench did not pass; specification was not verified",
+        )
 
     from .generated_testbench import render_specification_testbench, GeneratorError
     try:
@@ -260,11 +268,14 @@ def _verify(project: ProjectState, run: RunState, profile: str) -> list[Check]:
     if checks[-1].status == CheckStatus.PASS:
         checks.extend(_schematic_checks(project, run))
     else:
-        dependent_status = checks[-1].status
+        # A failed or blocked build means no schematic evidence was gathered at
+        # all. Inheriting FAIL would report "checked and wrong" for gates that
+        # never ran, so dependent gates are BLOCKED. This matches the layout
+        # branch below, which already uses BLOCKED for the same situation.
         checks.extend([
-            _check("ZENER_TEST", dependent_status, "build did not pass"),
-            _check("CONNECTIVITY", dependent_status, "build did not pass"),
-            _check("SPECIFICATION", dependent_status, "build did not pass"),
+            _check("ZENER_TEST", CheckStatus.BLOCKED, "Diode build did not pass"),
+            _check("CONNECTIVITY", CheckStatus.BLOCKED, "Diode build did not pass"),
+            _check("SPECIFICATION", CheckStatus.BLOCKED, "Diode build did not pass"),
         ])
     if profile == "layout" and all(check.status == CheckStatus.PASS for check in checks):
         generation = _diode_command(project, "layout-command", "LAYOUT_GENERATE")
