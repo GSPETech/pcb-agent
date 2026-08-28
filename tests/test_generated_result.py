@@ -22,9 +22,9 @@ def outcome(payload: dict, returncode: int = 0) -> GeneratedTestResult:
     )
     return GeneratedTestResult(
         process,
-        Path("connectivity-testbench.zen"),
+        "reports/run/raw/connectivity-testbench.zen",
         "sha256:" + "a" * 64,
-        Path("connectivity-result.json"),
+        "reports/run/raw/connectivity-result.json",
         "sha256:" + "b" * 64,
     )
 

@@ -36,9 +36,9 @@ _GENERATED_TEST_ENVIRONMENT_FRAGMENTS = (
 @dataclass(frozen=True)
 class GeneratedTestResult:
     process: ProcessResult
-    generated_path: Path
+    generated_path: str
     generated_sha256: str
-    result_path: Path
+    result_path: str
     result_sha256: str
 
 
@@ -254,6 +254,18 @@ def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None
     return result
 
 
+def _relative_evidence_path(path: Path, project_root: Path) -> str:
+    import posixpath
+    resolved_path = path.resolve(strict=True)
+    resolved_root = project_root.resolve(strict=True)
+    try:
+        relative = resolved_path.relative_to(resolved_root)
+    except ValueError as error:
+        raise GeneratedCompatibilityError(
+            "generated evidence escapes project root"
+        ) from error
+    return relative.as_posix()
+
 def execute_generated_test(
     project: ProjectState,
     generated_source: str,
@@ -324,9 +336,9 @@ def execute_generated_test(
 
     return GeneratedTestResult(
         process=process,
-        generated_path=evidence_source,
+        generated_path=_relative_evidence_path(evidence_source, project.root),
         generated_sha256=f"sha256:{retained_hash}",
-        result_path=raw_path,
+        result_path=_relative_evidence_path(raw_path, project.root),
         result_sha256=f"sha256:{raw_hash}",
     )
 
@@ -437,11 +449,11 @@ def generated_check(
         message = f"generated test status {status}"
     evidence = {
         "generated_testbench": {
-            "path": str(outcome.generated_path),
+            "path": outcome.generated_path,
             "sha256": outcome.generated_sha256,
         },
         "result": {
-            "path": str(outcome.result_path),
+            "path": outcome.result_path,
             "sha256": outcome.result_sha256,
         },
         "stdout": outcome.process.stdout,
