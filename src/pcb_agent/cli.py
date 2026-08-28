@@ -202,7 +202,7 @@ def _connectivity_check(project: ProjectState, test: Check, run: RunState | None
         return _check("CONNECTIVITY", CheckStatus.BLOCKED, f"generated test execution blocked: {error}")
 
     return diode.generated_check(
-        "CONNECTIVITY", outcome, "PcbAgentConnectivity", "_check_connectivity"
+        "CONNECTIVITY", outcome, "PcbAgentConnectivity", "_check_connectivity", project.root
     )
 
 
@@ -230,7 +230,7 @@ def _specification_check(project: ProjectState, test: Check, run: RunState | Non
         return _check("SPECIFICATION", CheckStatus.BLOCKED, f"generated test execution blocked: {error}")
 
     return diode.generated_check(
-        "SPECIFICATION", outcome, "PcbAgentSpecification", "_check_specification"
+        "SPECIFICATION", outcome, "PcbAgentSpecification", "_check_specification", project.root
     )
 
 

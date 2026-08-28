@@ -255,7 +255,6 @@ def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None
 
 
 def _relative_evidence_path(path: Path, project_root: Path) -> str:
-    import posixpath
     resolved_path = path.resolve(strict=True)
     resolved_root = project_root.resolve(strict=True)
     try:
@@ -428,25 +427,46 @@ def _classify_generated_check(check_id: str, outcome: GeneratedTestResult, bench
     return CheckStatus.BLOCKED
 
 
+def _verify_retained_artifact(project_root: Path, relative_path: str, expected_sha256: str) -> None:
+    from .paths import resolve_workspace_path, require_regular_file
+    try:
+        path = resolve_workspace_path(project_root, relative_path, must_exist=True)
+        require_regular_file(path)
+        actual = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+        if actual != expected_sha256:
+            raise GeneratedCompatibilityError(f"evidence hash mismatch for {relative_path}")
+    except Exception as error:
+        raise GeneratedCompatibilityError(f"evidence validation failed: {error}") from error
+
+
 def generated_check(
     check_id: str,
     outcome: GeneratedTestResult,
     bench_name: str,
     check_name: str,
+    project_root: Path,
     required: bool = True,
 ) -> Check:
-    status = _classify_generated_check(check_id, outcome, bench_name, check_name)
-    if status == CheckStatus.PASS:
-        message = f"{check_id.lower()} generated assertion passed"
-    elif status == CheckStatus.FAIL:
-        message = f"{check_id.lower()} generated assertion failed"
-    elif status == CheckStatus.BLOCKED:
-        if outcome.process.timed_out:
-            message = "generated test timed out"
-        else:
-            message = "generated test evidence is missing or malformed"
+    try:
+        _verify_retained_artifact(project_root, outcome.generated_path, outcome.generated_sha256)
+        _verify_retained_artifact(project_root, outcome.result_path, outcome.result_sha256)
+    except GeneratedCompatibilityError as error:
+        status = CheckStatus.BLOCKED
+        message = str(error)
     else:
-        message = f"generated test status {status}"
+        status = _classify_generated_check(check_id, outcome, bench_name, check_name)
+        if status == CheckStatus.PASS:
+            message = f"{check_id.lower()} generated assertion passed"
+        elif status == CheckStatus.FAIL:
+            message = f"{check_id.lower()} generated assertion failed"
+        elif status == CheckStatus.BLOCKED:
+            if outcome.process.timed_out:
+                message = "generated test timed out"
+            else:
+                message = "generated test evidence is missing or malformed"
+        else:
+            message = f"generated test status {status}"
+
     evidence = {
         "generated_testbench": {
             "path": outcome.generated_path,
