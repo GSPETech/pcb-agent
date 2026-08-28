@@ -49,12 +49,15 @@ requires the expected TestBench and check record to be present and passing.
 
 Rules:
 
-- Component kinds are resolved through a versioned adapter registry. Each
-  adapter records the exact verified `pcbc` versions and the SHA-256 of the
-  captured evidence that established the mapping.
+- Component kinds are resolved through a versioned adapter registry keyed by
+  component kind. Each adapter records the exact verified `pcbc` versions, the
+  SHA-256 of the captured evidence that established the mapping, and the
+  property accessors and pull-up pin pair that were observed.
 - The registry is currently empty. No mapping has been verified against
   captured Diode output, so every generated check reports `BLOCKED`. See
   `docs/spike-diode-net-naming.md`.
+- The `pcbc` version comes from probing the installed toolchain, not from the
+  contract. A probe that fails or cannot be parsed is `BLOCKED`.
 - Unsupported component kind, unsupported pin, unverified toolchain version,
   unsupported constraint, or unsupported contract semantics all raise a
   generator error and become `BLOCKED`. They never become `PASS`.
@@ -73,22 +76,32 @@ Rules:
   Booleans, strings, floats, and null are malformed evidence.
 - Exactly one top-level record may match the expected TestBench and check
   identity. Duplicates and nested diagnostic metadata do not satisfy the gate.
+- The status is parsed from the retained, hash-verified evidence bytes, not
+  from captured stdout, so `result_sha256` attests the input that produced the
+  verdict.
 - A structured assertion failure for the expected generated check is `FAIL`.
   Compiler, environment, and evidence problems are `BLOCKED`.
-- Every populated `value`, `package`, and `mpn` in either contract must receive
-  a generated assertion, or the check reports `BLOCKED`. Conflicting values
+- Every populated `value` and `package` in either contract must receive a
+  generated assertion, or the check reports `BLOCKED`. Conflicting values
   between `SPEC.json` and `expected-connectivity.json` are a generator error.
+  The number of emitted assertions is compared against the number of processed
+  constraints, so a constraint branch that emits nothing cannot pass silently.
+- `mpn` has no verified accessor and is always `BLOCKED`.
+- Requirements of type `connectivity` accept only a `members` constraint. A
+  `value` or `package` constraint declared there is a generator error.
 - `required_pullup` verifies exact topology: one adapter pin on the signal net
   and the opposite adapter pin on the declared rail. Name existence alone is
   not sufficient. Adapters without a verified pull-up pin pair are `BLOCKED`.
+- A failed or blocked prerequisite makes dependent gates `BLOCKED`, never
+  `FAIL`. `FAIL` is reserved for gates that ran and found a real mismatch.
 - Source-level coverage scanners remain available as advisory diagnostics only
   and cannot determine a required check status.
 
 Every generated run records both the generated source and the raw result JSON
-with their SHA-256 digests in the report evidence. Paths are stored relative to
-the project root, and both artifacts are re-read and rehashed immediately
-before the check is built. A missing, mutated, symlinked, or escaping artifact
-produces `BLOCKED`.
+with their SHA-256 digests in the report evidence. All evidence paths are stored
+relative to the project root, and both generated artifacts are re-read and
+rehashed immediately before the check is built. A missing, mutated, symlinked,
+or escaping artifact produces `BLOCKED`.
 
 ## Status And Exit
 

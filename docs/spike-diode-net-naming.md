@@ -137,21 +137,36 @@ never determine a required check status. Their function names carry the
 ## Unblocking procedure
 
 1. Run the experiment above on WSL ext4.
-2. Store each raw JSON under `tests/evidence/diode-<version>/` with a SHA-256
+2. Capture the exact output of `pcb --version`. The probe in
+   `diode.probe_pcbc_version` matches `pcbc <major>.<minor>.<patch>` and
+   returns `BLOCKED` on anything else, so if the real banner differs the
+   pattern must be corrected against captured output, never loosened to accept
+   arbitrary text.
+3. Store each raw JSON under `tests/evidence/diode-<version>/` with a SHA-256
    manifest.
-3. Register adapters via `set_adapter_registry` with:
+4. Build the registry with `build_adapter_registry`, which keys entries by
+   `kind`. Each `ComponentAdapter` needs:
+   - `kind` matching the value used in `expected-connectivity.json`
+   - `instance_suffix` observed in the captured component path
    - the exact `pcbc` version in `verified_pcbc_versions`
    - the evidence SHA-256 in `evidence_sha256`
    - `value_accessor` and `package_accessor` only if observed in captured output
-   - `mpn_accessor` only if a real accessor exists; otherwise leave `None`
+   - `mpn_accessor` only if a real accessor exists; otherwise leave `None`.
+     The generator currently blocks every `mpn` constraint regardless, so
+     enabling it also requires emitting an assertion in
+     `render_specification_testbench`.
    - `pullup_pin_pair` only if the electrical pair is observed, never inferred
      from `pins` iteration order
-4. Verify `fixtures/valid-blinky` reaches `CONNECTIVITY: PASS` and
+5. Install it with `set_adapter_registry`.
+6. Verify `fixtures/valid-blinky` reaches `CONNECTIVITY: PASS` and
    `SPECIFICATION: PASS`.
-5. Verify `fixtures/invalid-connectivity` and `fixtures/invalid-value` reach
+7. Verify `fixtures/invalid-connectivity` and `fixtures/invalid-value` reach
    `FAIL` and not `BLOCKED`.
-6. Replace every `REQUIRES TEST` row above with `VERIFIED`.
+8. Replace every `REQUIRES TEST` row above with `VERIFIED`.
 
 Registering an adapter without captured evidence is exactly the kind of "guess
 the netlist schema" behaviour the agent protocol forbids. Leave the registry
 empty rather than populating it from inference.
+
+`tests/test_green_run.py` registers a stub adapter to exercise the PASS path.
+That stub is test-only and must never be promoted into the production registry.

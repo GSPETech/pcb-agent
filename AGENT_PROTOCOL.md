@@ -70,6 +70,13 @@ Invalid config memakai exit `3`. Backend crash, timeout, invalid envelope,
 iteration limit, atau no-progress memakai exit `4`. `warning` adalah severity,
 bukan status.
 
+`FAIL` hanya untuk gate yang benar-benar berjalan dan menemukan mismatch.
+Gate yang tidak dapat dievaluasi karena prasyarat gagal, tool tidak tersedia,
+mapping belum terverifikasi, atau evidence malformed adalah `BLOCKED`. Contoh:
+`DIODE_BUILD` yang gagal tetap `FAIL` karena compiler memberi verdict nyata,
+tetapi `ZENER_TEST`, `CONNECTIVITY`, dan `SPECIFICATION` menjadi `BLOCKED`
+karena tidak ada evidence yang terkumpul untuk mereka.
+
 ## Stop conditions
 
 Berhenti dan laporkan tanpa menebak bila:
