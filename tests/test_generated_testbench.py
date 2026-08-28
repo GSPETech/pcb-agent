@@ -25,6 +25,7 @@ TEST_EVIDENCE = "sha256:" + "a" * 64
 
 def _resistor_adapter() -> ComponentAdapter:
     return ComponentAdapter(
+        kind="resistor",
         instance_suffix="R",
         pins={"P1": "1", "P2": "2"},
         verified_pcbc_versions=frozenset({VERIFIED_VERSION}),
@@ -122,7 +123,7 @@ class ConnectivityGeneratorTests(unittest.TestCase):
         }
         project = DummyProjectState("src/blinky.zen", contract)
         source = render_connectivity_testbench(
-            project, pcbc_version=VERIFIED_VERSION
+            project, VERIFIED_VERSION
         )
 
         self.assertIn('M = Module("../src/blinky.zen")', source)
@@ -144,7 +145,7 @@ class ConnectivityGeneratorTests(unittest.TestCase):
         }
         project = DummyProjectState("src/board.zen", contract)
         with self.assertRaises(GeneratorError) as ctx:
-            render_connectivity_testbench(project, pcbc_version=VERIFIED_VERSION)
+            render_connectivity_testbench(project, VERIFIED_VERSION)
         self.assertIn("capacitor", str(ctx.exception))
 
     def test_unsupported_pin_raises_error(self) -> None:
@@ -155,7 +156,7 @@ class ConnectivityGeneratorTests(unittest.TestCase):
         }
         project = DummyProjectState("src/board.zen", contract)
         with self.assertRaises(GeneratorError) as ctx:
-            render_connectivity_testbench(project, pcbc_version=VERIFIED_VERSION)
+            render_connectivity_testbench(project, VERIFIED_VERSION)
         self.assertIn("P3", str(ctx.exception))
 
     def test_injection_via_net_name_does_not_reach_identifier(self) -> None:
@@ -169,7 +170,7 @@ class ConnectivityGeneratorTests(unittest.TestCase):
         }
         project = DummyProjectState("src/blinky.zen", contract)
         source = render_connectivity_testbench(
-            project, pcbc_version=VERIFIED_VERSION
+            project, VERIFIED_VERSION
         )
         self.assertNotIn("observed_PowerNet", source)
         self.assertNotIn("observed_LedAnode", source)
@@ -186,7 +187,7 @@ class ConnectivityGeneratorTests(unittest.TestCase):
         }
         project = DummyProjectState("src/board.zen", contract)
         with self.assertRaises(GeneratorError):
-            render_connectivity_testbench(project, pcbc_version=VERIFIED_VERSION)
+            render_connectivity_testbench(project, VERIFIED_VERSION)
 
     def test_unverified_pcbc_version_raises_error(self) -> None:
         contract = {
@@ -196,7 +197,7 @@ class ConnectivityGeneratorTests(unittest.TestCase):
         }
         project = DummyProjectState("src/board.zen", contract)
         with self.assertRaises(GeneratorError) as ctx:
-            render_connectivity_testbench(project, pcbc_version="0.99.0")
+            render_connectivity_testbench(project, "0.99.0")
         self.assertIn("not verified", str(ctx.exception))
 
     def test_unknown_member_component_raises_error(self) -> None:
@@ -207,7 +208,7 @@ class ConnectivityGeneratorTests(unittest.TestCase):
         }
         project = DummyProjectState("src/board.zen", contract)
         with self.assertRaises(GeneratorError) as ctx:
-            render_connectivity_testbench(project, pcbc_version=VERIFIED_VERSION)
+            render_connectivity_testbench(project, VERIFIED_VERSION)
         self.assertIn("unknown component", str(ctx.exception))
 
     def test_unknown_required_power_net_raises_error(self) -> None:
@@ -218,7 +219,7 @@ class ConnectivityGeneratorTests(unittest.TestCase):
         }
         project = DummyProjectState("src/board.zen", contract)
         with self.assertRaises(GeneratorError) as ctx:
-            render_connectivity_testbench(project, pcbc_version=VERIFIED_VERSION)
+            render_connectivity_testbench(project, VERIFIED_VERSION)
         self.assertIn("GHOST", str(ctx.exception))
 
     def test_required_pullup_raises_when_unsupported_kind(self) -> None:
@@ -234,7 +235,7 @@ class ConnectivityGeneratorTests(unittest.TestCase):
         }
         project = DummyProjectState("src/board.zen", contract)
         with self.assertRaises(GeneratorError) as ctx:
-            render_connectivity_testbench(project, pcbc_version=VERIFIED_VERSION)
+            render_connectivity_testbench(project, VERIFIED_VERSION)
         self.assertIn("unverified kind led", str(ctx.exception))
 
 
@@ -268,7 +269,7 @@ class SpecificationGeneratorTests(unittest.TestCase):
             "src/blinky.zen", connectivity, specification, acceptance
         )
         source = render_specification_testbench(
-            project, pcbc_version=VERIFIED_VERSION
+            project, VERIFIED_VERSION
         )
 
         self.assertIn('M = Module("../src/blinky.zen")', source)
@@ -303,7 +304,7 @@ class SpecificationGeneratorTests(unittest.TestCase):
             "src/blinky.zen", connectivity, specification, acceptance
         )
         with self.assertRaises(GeneratorError) as ctx:
-            render_specification_testbench(project, pcbc_version=VERIFIED_VERSION)
+            render_specification_testbench(project, VERIFIED_VERSION)
         self.assertIn("made_up_property", str(ctx.exception))
 
     def test_unasserted_connectivity_properties_raise_error(self) -> None:
@@ -314,7 +315,7 @@ class SpecificationGeneratorTests(unittest.TestCase):
             "src/blinky.zen", connectivity, specification, acceptance
         )
         with self.assertRaises(GeneratorError) as ctx:
-            render_specification_testbench(project, pcbc_version=VERIFIED_VERSION)
+            render_specification_testbench(project, VERIFIED_VERSION)
         self.assertIn("value", str(ctx.exception))
         self.assertIn("has no specification requirement covering it", str(ctx.exception))
 
@@ -339,7 +340,7 @@ class SpecificationGeneratorTests(unittest.TestCase):
             "src/blinky.zen", connectivity, specification, acceptance
         )
         with self.assertRaises(GeneratorError) as ctx:
-            render_specification_testbench(project, pcbc_version=VERIFIED_VERSION)
+            render_specification_testbench(project, VERIFIED_VERSION)
         self.assertIn("mpn", str(ctx.exception))
         self.assertIn("unsupported", str(ctx.exception))
 
@@ -366,7 +367,7 @@ class SpecificationGeneratorTests(unittest.TestCase):
             "src/blinky.zen", connectivity, specification, acceptance
         )
         with self.assertRaises(GeneratorError) as ctx:
-            render_specification_testbench(project, pcbc_version=VERIFIED_VERSION)
+            render_specification_testbench(project, VERIFIED_VERSION)
         self.assertIn("mpn", str(ctx.exception))
 
     def test_connectivity_requirement_rejects_value_constraint(self) -> None:
@@ -390,7 +391,7 @@ class SpecificationGeneratorTests(unittest.TestCase):
             "src/blinky.zen", connectivity, specification, acceptance
         )
         with self.assertRaises(GeneratorError) as ctx:
-            render_specification_testbench(project, pcbc_version=VERIFIED_VERSION)
+            render_specification_testbench(project, VERIFIED_VERSION)
         self.assertIn("connectivity", str(ctx.exception))
         self.assertIn("value", str(ctx.exception))
 
@@ -415,7 +416,7 @@ class SpecificationGeneratorTests(unittest.TestCase):
             "src/blinky.zen", connectivity, specification, acceptance
         )
         with self.assertRaises(GeneratorError) as ctx:
-            render_specification_testbench(project, pcbc_version=VERIFIED_VERSION)
+            render_specification_testbench(project, VERIFIED_VERSION)
         self.assertIn("package", str(ctx.exception))
 
     def test_connectivity_requirement_accepts_members_constraint(self) -> None:
@@ -448,7 +449,7 @@ class SpecificationGeneratorTests(unittest.TestCase):
             "src/blinky.zen", connectivity, specification, acceptance
         )
         source = render_specification_testbench(
-            project, pcbc_version=VERIFIED_VERSION
+            project, VERIFIED_VERSION
         )
         self.assertIn('.resistance.matches("1kohm")', source)
 
@@ -485,7 +486,7 @@ class SpecificationGeneratorTests(unittest.TestCase):
             "src/blinky.zen", connectivity, specification, acceptance
         )
         source = render_specification_testbench(
-            project, pcbc_version=VERIFIED_VERSION
+            project, VERIFIED_VERSION
         )
         # 3 constraints + 2 component presence assertions
         self.assertEqual(source.count("check("), 5)
@@ -511,7 +512,7 @@ class SpecificationGeneratorTests(unittest.TestCase):
             "src/blinky.zen", connectivity, specification, acceptance
         )
         with self.assertRaises(GeneratorError) as ctx:
-            render_specification_testbench(project, pcbc_version=VERIFIED_VERSION)
+            render_specification_testbench(project, VERIFIED_VERSION)
         self.assertIn("zener_test", str(ctx.exception))
 
     def test_injection_via_subject_raises_error(self) -> None:
@@ -535,19 +536,81 @@ class SpecificationGeneratorTests(unittest.TestCase):
             "src/blinky.zen", connectivity, specification, acceptance
         )
         with self.assertRaises(GeneratorError):
-            render_specification_testbench(project, pcbc_version=VERIFIED_VERSION)
+            render_specification_testbench(project, VERIFIED_VERSION)
 
 
 class AdapterRegistryBuildTests(unittest.TestCase):
+    def test_build_keys_by_kind_not_instance_suffix(self) -> None:
+        registry = build_adapter_registry([_resistor_adapter()])
+        self.assertEqual(set(registry), {"resistor"})
+        self.assertEqual(registry["resistor"].instance_suffix, "R")
+
+    def test_build_registry_is_usable_by_adapter_for(self) -> None:
+        registry = build_adapter_registry([_resistor_adapter()])
+        set_adapter_registry(registry)
+        try:
+            adapter = adapter_for("resistor", VERIFIED_VERSION)
+            self.assertEqual(adapter.instance_suffix, "R")
+        finally:
+            set_adapter_registry({})
+
+    def test_build_rejects_duplicate_kind(self) -> None:
+        with self.assertRaises(ValueError) as ctx:
+            build_adapter_registry([_resistor_adapter(), _resistor_adapter()])
+        self.assertIn("duplicate", str(ctx.exception))
+
+    def test_build_rejects_empty_kind(self) -> None:
+        with self.assertRaises(ValueError):
+            build_adapter_registry(
+                [
+                    ComponentAdapter(
+                        kind="",
+                        instance_suffix="R",
+                        pins={"P1": "1", "P2": "2"},
+                        verified_pcbc_versions=frozenset({VERIFIED_VERSION}),
+                        evidence_sha256=TEST_EVIDENCE,
+                    )
+                ]
+            )
+
     def test_build_rejects_empty_evidence(self) -> None:
         with self.assertRaises(ValueError):
             build_adapter_registry(
                 [
                     ComponentAdapter(
+                        kind="resistor",
                         instance_suffix="R",
                         pins={"P1": "1", "P2": "2"},
-                        verified_pcbc_versions=frozenset({"0.4.34"}),
+                        verified_pcbc_versions=frozenset({VERIFIED_VERSION}),
                         evidence_sha256="",
+                    )
+                ]
+            )
+
+    def test_build_rejects_malformed_evidence_digest(self) -> None:
+        with self.assertRaises(ValueError):
+            build_adapter_registry(
+                [
+                    ComponentAdapter(
+                        kind="resistor",
+                        instance_suffix="R",
+                        pins={"P1": "1", "P2": "2"},
+                        verified_pcbc_versions=frozenset({VERIFIED_VERSION}),
+                        evidence_sha256="not-a-digest",
+                    )
+                ]
+            )
+
+    def test_build_rejects_empty_verified_versions(self) -> None:
+        with self.assertRaises(ValueError):
+            build_adapter_registry(
+                [
+                    ComponentAdapter(
+                        kind="resistor",
+                        instance_suffix="R",
+                        pins={"P1": "1", "P2": "2"},
+                        verified_pcbc_versions=frozenset(),
+                        evidence_sha256=TEST_EVIDENCE,
                     )
                 ]
             )

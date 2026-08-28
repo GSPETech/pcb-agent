@@ -24,6 +24,7 @@ GENERATED_TEST_DIRECTORY = PurePosixPath("tests")
 _IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_]{0,63}$")
 _NET_NAME_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,63}$")
 _PIN_NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,31}$")
+_EVIDENCE_DIGEST_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
 _CONNECTIVITY_FIELDS: dict[str, frozenset[str]] = {
     "components": frozenset({"kind", "value", "package", "mpn"}),
     "nets": frozenset({"members", "required_pullup"}),
@@ -34,6 +35,7 @@ _CONNECTIVITY_REQUIREMENT_CONSTRAINTS = frozenset({"members"})
 
 @dataclass(frozen=True)
 class ComponentAdapter:
+    kind: str
     instance_suffix: str
     pins: Mapping[str, str]
     verified_pcbc_versions: frozenset[str]
@@ -47,9 +49,17 @@ class ComponentAdapter:
 def build_adapter_registry(entries: Iterable[ComponentAdapter]) -> dict[str, ComponentAdapter]:
     registry: dict[str, ComponentAdapter] = {}
     for adapter in entries:
-        if not isinstance(adapter.evidence_sha256, str) or not adapter.evidence_sha256:
-            raise ValueError("adapter evidence_sha256 must be non-empty string")
-        registry[adapter.instance_suffix] = adapter
+        if not isinstance(adapter.kind, str) or not _IDENTIFIER_PATTERN.match(adapter.kind):
+            raise ValueError("adapter kind must be a valid identifier")
+        if not isinstance(adapter.instance_suffix, str) or not adapter.instance_suffix:
+            raise ValueError("adapter instance_suffix must be non-empty string")
+        if not _EVIDENCE_DIGEST_PATTERN.match(adapter.evidence_sha256 or ""):
+            raise ValueError("adapter evidence_sha256 must be sha256:<64 hex>")
+        if not adapter.verified_pcbc_versions:
+            raise ValueError("adapter must declare at least one verified pcbc version")
+        if adapter.kind in registry:
+            raise ValueError(f"duplicate adapter kind: {adapter.kind}")
+        registry[adapter.kind] = adapter
     return registry
 
 
@@ -253,9 +263,9 @@ def _check_required_pullup(
 
 def render_connectivity_testbench(
     project: ProjectState,
+    pcbc_version: str,
     bench_name: str = "PcbAgentConnectivity",
     case_name: str = "contract",
-    pcbc_version: str = "unknown",
 ) -> str:
     bench_name = validate_identifier(bench_name, "bench_name")
     case_name = validate_identifier(case_name, "case_name")
@@ -346,9 +356,9 @@ def render_connectivity_testbench(
 
 def render_specification_testbench(
     project: ProjectState,
+    pcbc_version: str,
     bench_name: str = "PcbAgentSpecification",
     case_name: str = "contract",
-    pcbc_version: str = "unknown",
 ) -> str:
     bench_name = validate_identifier(bench_name, "bench_name")
     case_name = validate_identifier(case_name, "case_name")

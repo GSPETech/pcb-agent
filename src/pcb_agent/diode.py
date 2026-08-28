@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 import json
 import hashlib
+import re
 import shutil
 import tempfile
 from dataclasses import dataclass
@@ -91,6 +92,32 @@ def doctor_probes(project: ProjectState) -> tuple[ProcessResult, ...]:
     for command in commands:
         results.append(run_process(project.root, list(command), timeout=30))
     return tuple(results)
+
+
+_PCBC_VERSION_PATTERN = re.compile(r"\bpcbc\s+(?P<version>\d+\.\d+\.\d+)\b")
+
+
+def probe_pcbc_version(project: ProjectState) -> str:
+    """Return the exact installed pcbc build version.
+
+    The output shape of `pcb --version` has not been verified against a real
+    toolchain, so the parser is deliberately strict. Anything it cannot parse
+    is treated as an unusable toolchain rather than guessed at. See
+    docs/spike-diode-net-naming.md.
+    """
+    result = run_process(project.root, ["pcb", "--version"], timeout=30)
+    if result.timed_out:
+        raise GeneratedCompatibilityError("pcb --version timed out")
+    if result.returncode != 0:
+        raise GeneratedCompatibilityError(
+            f"pcb --version exited {result.returncode}"
+        )
+    match = _PCBC_VERSION_PATTERN.search(result.stdout)
+    if match is None:
+        raise GeneratedCompatibilityError(
+            "cannot parse pcbc version from pcb --version output"
+        )
+    return match.group("version")
 
 
 _PASS_STATUSES = frozenset({"PASS", "PASSED", "OK"})

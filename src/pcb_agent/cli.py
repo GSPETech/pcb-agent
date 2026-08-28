@@ -184,7 +184,16 @@ def _connectivity_check(project: ProjectState, test: Check, run: RunState | None
 
     from .generated_testbench import render_connectivity_testbench, GeneratorError
     try:
-        source = render_connectivity_testbench(project)
+        pcbc_version = diode.probe_pcbc_version(project)
+    except diode.GeneratedCompatibilityError as error:
+        return _check("CONNECTIVITY", CheckStatus.BLOCKED,
+                      f"toolchain version unknown: {error}")
+    except (FileNotFoundError, OSError, ValueError) as error:
+        return _check("CONNECTIVITY", CheckStatus.BLOCKED,
+                      f"toolchain version probe blocked: {error}")
+
+    try:
+        source = render_connectivity_testbench(project, pcbc_version)
     except GeneratorError as error:
         return _check("CONNECTIVITY", CheckStatus.BLOCKED, f"cannot generate evidence: {error}")
 
@@ -212,7 +221,16 @@ def _specification_check(project: ProjectState, test: Check, run: RunState | Non
 
     from .generated_testbench import render_specification_testbench, GeneratorError
     try:
-        source = render_specification_testbench(project)
+        pcbc_version = diode.probe_pcbc_version(project)
+    except diode.GeneratedCompatibilityError as error:
+        return _check("SPECIFICATION", CheckStatus.BLOCKED,
+                      f"toolchain version unknown: {error}")
+    except (FileNotFoundError, OSError, ValueError) as error:
+        return _check("SPECIFICATION", CheckStatus.BLOCKED,
+                      f"toolchain version probe blocked: {error}")
+
+    try:
+        source = render_specification_testbench(project, pcbc_version)
     except GeneratorError as error:
         return _check("SPECIFICATION", CheckStatus.BLOCKED, f"cannot generate evidence: {error}")
 
