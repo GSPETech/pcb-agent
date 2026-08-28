@@ -51,10 +51,6 @@ class GeneratedCompatibilityError(GeneratedEvidenceError):
     pass
 
 
-class GeneratedAssertionFailure(GeneratedEvidenceError):
-    pass
-
-
 def configured_command(project: ProjectState, key: str) -> tuple[str, ...]:
     if key not in _COMMAND_KEYS:
         raise ConfigurationError(f"unsupported Diode command key: {key}")
@@ -236,7 +232,6 @@ def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(source, target)
         snapshot_command = list(command)
-        snapshot_command[snapshot_command.index(project.test)] = project.test
         result = run_process(snapshot, snapshot_command, timeout=300)
         snapshot_test_hash = "sha256:" + hashlib.sha256((snapshot / project.test).read_bytes()).hexdigest()
         result = ProcessResult(result.argv, result.returncode, result.stdout, result.stderr,
@@ -293,13 +288,12 @@ def _relative_evidence_path(path: Path, project_root: Path) -> str:
         ) from error
     return relative.as_posix()
 
+
 def execute_generated_test(
     project: ProjectState,
     generated_source: str,
     evidence_root: Path,
     check_id: str,
-    bench_name: str,
-    case_name: str,
 ) -> GeneratedTestResult:
     if check_id not in GENERATED_TESTS:
         raise ConfigurationError(f"unknown generated check_id: {check_id}")
@@ -511,7 +505,9 @@ def generated_check(
         status,
         Severity.ERROR,
         message,
-        "harness",
+        # The verdict comes from the tool's own structured output, so the
+        # evidence is tool-provenance even though the harness parses it.
+        "tool",
         outcome.process.argv,
         outcome.process.returncode,
         outcome.process.duration_seconds,

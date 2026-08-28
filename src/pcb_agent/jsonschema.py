@@ -1,4 +1,17 @@
-"""Minimal JSON Schema subset validator, standard library only."""
+"""Minimal JSON Schema subset validator, standard library only.
+
+Deliberate deviations from draft 2020-12, all stricter than the spec:
+
+- `required: []` and `enum: []` are rejected. Both are legal in the draft, but
+  an empty array is almost always a mistake in a hand-written schema, and no
+  schema in this repository uses one.
+- Only local `#/$defs/NAME` references are supported. Remote and pointer refs
+  are rejected rather than silently ignored.
+- Any keyword outside the supported set is an error, not something to skip.
+
+Every deviation fails closed: a schema this validator rejects is never treated
+as satisfied.
+"""
 
 from __future__ import annotations
 
@@ -155,10 +168,16 @@ def validate_schema(schema: Any, root: Mapping[str, Any] | None = None, path: st
 
 def validate(instance: Any, schema: dict[str, Any], path: str = "<root>") -> None:
     validate_schema(schema, schema, path + "_schema")
-    _validate(instance, schema, schema, path)
+    _validate(instance, schema, schema, path, frozenset())
 
 
-def _validate(instance: Any, schema: Any, root: dict[str, Any], path: str) -> None:
+def _validate(
+    instance: Any,
+    schema: Any,
+    root: dict[str, Any],
+    path: str,
+    active_refs: frozenset[str] = frozenset(),
+) -> None:
     if isinstance(schema, bool):
         if not schema:
             raise SchemaError(f"{path}: schema is false")
@@ -183,7 +202,12 @@ def _validate(instance: Any, schema: Any, root: dict[str, Any], path: str) -> No
         defs = root.get("$defs")
         if not isinstance(defs, dict) or name not in defs:
             raise SchemaError(f"{path}: unresolved $ref {ref}")
-        _validate(instance, defs[name], root, path)
+        if ref in active_refs:
+            # A self-referential $defs entry would otherwise raise
+            # RecursionError, which is not a ValueError and so escapes the
+            # handlers in contracts.load_project_contract and cli.main.
+            raise SchemaError(f"{path}: circular $ref {ref}")
+        _validate(instance, defs[name], root, path, active_refs | {ref})
 
     if "type" in schema:
         _check_type(instance, schema["type"], path)
@@ -255,13 +279,16 @@ def _validate(instance: Any, schema: Any, root: dict[str, Any], path: str) -> No
 
         import re as _re
 
+        compiled_patterns: list[tuple[Any, Any]] = []
+        for pattern, sub in pattern_props.items():
+            try:
+                compiled_patterns.append((_re.compile(pattern), sub))
+            except _re.error as e:
+                raise SchemaError(f"{path}: invalid patternProperty regex {pattern}: {e}")
+
         for key, value in instance.items():
-            for pattern, sub in pattern_props.items():
-                try:
-                    _re.compile(pattern)
-                except _re.error as e:
-                    raise SchemaError(f"{path}: invalid patternProperty regex {pattern}: {e}")
-                if _re.search(pattern, key):
+            for compiled, sub in compiled_patterns:
+                if compiled.search(key):
                     _validate(value, sub, root, f"{path}.{key}")
 
         if "additionalProperties" in schema:
@@ -269,7 +296,7 @@ def _validate(instance: Any, schema: Any, root: dict[str, Any], path: str) -> No
             if not isinstance(extra, (bool, dict)):
                 raise SchemaError(f"{path}: additionalProperties must be bool or object")
             extras = {k for k in instance.keys() if k not in handled and
-                      not any(_re.search(p, k) for p in pattern_props)}
+                      not any(compiled.search(k) for compiled, _ in compiled_patterns)}
             if extra is False:
                 if extras:
                     sample = sorted(extras)[:3]

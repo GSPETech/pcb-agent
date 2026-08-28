@@ -17,6 +17,7 @@ from typing import Callable, Sequence
 from . import diode, kicad
 from .backends import BackendError, CodexBackend, CommandBackend
 from .models import Check, CheckStatus, Severity, VerificationReport
+from .paths import relative_evidence_path
 from .policy import PolicyViolation, ProtectedHashes, WorkspaceLock, WorkspaceSnapshot
 from .policy_config import Policy, PolicyConfigError, matches as policy_matches
 from .state import (
@@ -157,7 +158,10 @@ def _diode_command(project: ProjectState, key: str, check_id: str,
                                  indent=2) + "\n"
             evidence_path.write_text(payload, encoding="utf-8", newline="\n")
             digest = "sha256:" + hashlib.sha256(evidence_path.read_bytes()).hexdigest()
-            evidence = {"path": str(evidence_path), "sha256": digest}
+            evidence = {
+                "path": relative_evidence_path(evidence_path, project.root),
+                "sha256": digest,
+            }
             if key == "test-command":
                 evidence["testbench_sha256"] = result.input_hashes["testbench"]
             check = replace(check, evidence=evidence)
@@ -207,7 +211,6 @@ def _connectivity_check(project: ProjectState, test: Check, run: RunState | None
     try:
         outcome = diode.execute_generated_test(
             project, source, run.raw_directory, "CONNECTIVITY",
-            "PcbAgentConnectivity", "contract",
         )
     except diode.GeneratedCompatibilityError as error:
         return _check("CONNECTIVITY", CheckStatus.BLOCKED, f"generated test blocked: {error}")
@@ -248,7 +251,6 @@ def _specification_check(project: ProjectState, test: Check, run: RunState | Non
     try:
         outcome = diode.execute_generated_test(
             project, source, run.raw_directory, "SPECIFICATION",
-            "PcbAgentSpecification", "contract",
         )
     except diode.GeneratedCompatibilityError as error:
         return _check("SPECIFICATION", CheckStatus.BLOCKED, f"generated test blocked: {error}")
@@ -286,7 +288,11 @@ def _verify(project: ProjectState, run: RunState, profile: str) -> list[Check]:
         checks.append(layout)
         if generation.status == CheckStatus.PASS:
             try:
-                checks.append(kicad.result_check(kicad.drc(project, run), run.raw_directory / "kicad-drc.json"))
+                checks.append(kicad.result_check(
+                    kicad.drc(project, run),
+                    run.raw_directory / "kicad-drc.json",
+                    project.root,
+                ))
             except (ConfigurationError, FileNotFoundError, OSError, ValueError) as error:
                 checks.append(_check("KICAD_DRC", CheckStatus.BLOCKED, str(error)))
         else:
@@ -555,7 +561,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                                      "layout generation did not pass"))
         elif args.command == "drc":
             try:
-                checks = [kicad.result_check(kicad.drc(project, run), run.raw_directory / "kicad-drc.json")]
+                checks = [kicad.result_check(
+                    kicad.drc(project, run),
+                    run.raw_directory / "kicad-drc.json",
+                    project.root,
+                )]
             except (ConfigurationError, FileNotFoundError, OSError, ValueError) as error:
                 checks = [_check("KICAD_DRC", CheckStatus.BLOCKED, str(error))]
         elif args.command == "verify":

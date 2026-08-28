@@ -71,8 +71,6 @@ class GeneratedEvidenceByteExactTests(unittest.TestCase):
                 MULTILINE_SOURCE,
                 self.evidence_root,
                 "CONNECTIVITY",
-                "PcbAgentConnectivity",
-                "contract",
             )
 
     def test_generated_source_digest_matches_in_memory_digest(self) -> None:

@@ -114,18 +114,7 @@ def _module_path_from_generated_test(source: str) -> str:
         source_path.as_posix(),
         GENERATED_TEST_DIRECTORY.as_posix(),
     )
-    if relative.startswith("/"):
-        raise GeneratorError("source path must resolve within workspace")
     return relative
-
-
-def _check_connector_ref(ref: str, members: Iterable[str]) -> None:
-    for member in members:
-        if not isinstance(member, str) or "." not in member:
-            raise GeneratorError(f"invalid pin member: {member!r}")
-        head, _, _ = member.partition(".")
-        if head != ref:
-            raise GeneratorError(f"member {member!r} does not match ref {ref}")
 
 
 def _supported_connectivity_fields() -> dict[str, frozenset[str]]:

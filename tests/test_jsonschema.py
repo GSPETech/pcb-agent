@@ -274,5 +274,25 @@ class RejectTests(unittest.TestCase):
             validate({}, schema)
 
 
+    def test_circular_ref_raises_schema_error_not_recursion_error(self) -> None:
+        defs, ref = "$defs", "$ref"
+        schema = {defs: {"loop": {ref: "#/$defs/loop"}}, ref: "#/$defs/loop"}
+        with self.assertRaises(SchemaError) as ctx:
+            validate({}, schema)
+        self.assertIn("circular", str(ctx.exception))
+
+    def test_indirect_circular_ref_raises_schema_error(self) -> None:
+        defs, ref = "$defs", "$ref"
+        schema = {
+            defs: {
+                "a": {ref: "#/$defs/b"},
+                "b": {ref: "#/$defs/a"},
+            },
+            ref: "#/$defs/a",
+        }
+        with self.assertRaises(SchemaError):
+            validate({}, schema)
+
+
 if __name__ == "__main__":
     unittest.main()
