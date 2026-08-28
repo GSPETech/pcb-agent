@@ -41,7 +41,14 @@ def record(status: str, name: str = "_check_connectivity") -> dict:
 
 class GeneratedPassClassificationTests(unittest.TestCase):
     def classify(self, payload: dict, returncode: int = 0) -> CheckStatus:
-        with patch("pcb_agent.diode._verify_retained_artifact"):
+        # The classifier now decides from the retained, hash-verified bytes.
+        # Stubbing the verifier to return those bytes keeps these unit tests
+        # focused on classification without needing a real evidence directory.
+        result_bytes = json.dumps(payload).encode("utf-8")
+        with patch(
+            "pcb_agent.diode._verify_retained_artifact",
+            return_value=result_bytes,
+        ):
             return generated_check(
                 "CONNECTIVITY",
                 outcome(payload, returncode),
@@ -302,6 +309,115 @@ class GeneratedPassClassificationTests(unittest.TestCase):
                 root,
             )
         self.assertEqual(check.status, CheckStatus.PASS)
+
+
+    def test_status_comes_from_retained_bytes_not_stdout(self) -> None:
+        """Retained evidence, not stdout, decides the verdict.
+
+        If these two ever disagree the report hash would attest bytes that did
+        not produce the reported status.
+        """
+        import hashlib
+
+        passing = {
+            "results": [record("PASS")],
+            "summary": {
+                "total": 1,
+                "passed": 1,
+                "failed": 0,
+                "failures": 0,
+                "errors": 0,
+            },
+        }
+        failing = {
+            "results": [record("FAIL")],
+            "summary": {
+                "total": 1,
+                "passed": 0,
+                "failed": 1,
+                "failures": 1,
+                "errors": 0,
+            },
+        }
+        failing_text = json.dumps(failing)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            raw = root / "reports" / "run" / "raw"
+            raw.mkdir(parents=True)
+            (raw / "connectivity-testbench.zen").write_bytes(b"source")
+            (raw / "connectivity-result.json").write_bytes(failing_text.encode("utf-8"))
+
+            process = ProcessResult(
+                ("pcb", "test", "generated.zen", "-f", "json"),
+                0,
+                json.dumps(passing),
+                "",
+                0.1,
+                False,
+                False,
+                {},
+            )
+            resolved = GeneratedTestResult(
+                process,
+                "reports/run/raw/connectivity-testbench.zen",
+                "sha256:" + hashlib.sha256(b"source").hexdigest(),
+                "reports/run/raw/connectivity-result.json",
+                "sha256:" + hashlib.sha256(failing_text.encode("utf-8")).hexdigest(),
+            )
+            check = generated_check(
+                "CONNECTIVITY",
+                resolved,
+                "PcbAgentConnectivity",
+                "_check_connectivity",
+                root,
+            )
+        self.assertEqual(check.status, CheckStatus.FAIL)
+
+    def test_malformed_expected_digest_blocks(self) -> None:
+        payload = {
+            "results": [record("PASS")],
+            "summary": {
+                "total": 1,
+                "passed": 1,
+                "failed": 0,
+                "failures": 0,
+                "errors": 0,
+            },
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            raw = root / "reports" / "run" / "raw"
+            raw.mkdir(parents=True)
+            (raw / "connectivity-testbench.zen").write_bytes(b"source")
+            (raw / "connectivity-result.json").write_bytes(b"{}")
+
+            process = ProcessResult(
+                ("pcb", "test", "generated.zen", "-f", "json"),
+                0,
+                json.dumps(payload),
+                "",
+                0.1,
+                False,
+                False,
+                {},
+            )
+            resolved = GeneratedTestResult(
+                process,
+                "reports/run/raw/connectivity-testbench.zen",
+                "not-a-digest",
+                "reports/run/raw/connectivity-result.json",
+                "sha256:" + "b" * 64,
+            )
+            check = generated_check(
+                "CONNECTIVITY",
+                resolved,
+                "PcbAgentConnectivity",
+                "_check_connectivity",
+                root,
+            )
+        self.assertEqual(check.status, CheckStatus.BLOCKED)
+        self.assertIn("malformed evidence digest", check.message)
 
 
 if __name__ == "__main__":

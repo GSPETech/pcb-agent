@@ -122,6 +122,7 @@ def probe_pcbc_version(project: ProjectState) -> str:
 
 _PASS_STATUSES = frozenset({"PASS", "PASSED", "OK"})
 _FAIL_STATUSES = frozenset({"FAIL", "FAILED", "ERROR"})
+_EVIDENCE_DIGEST_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 def _top_level_record_counts(payload: Mapping[str, Any]) -> tuple[int, int] | None:
     passed = 0
@@ -373,19 +374,29 @@ def execute_generated_test(
     )
 
 
-def _classify_generated_check(check_id: str, outcome: GeneratedTestResult, bench_name: str, check_name: str) -> CheckStatus:
-    proc = outcome.process
-    if proc.timed_out:
+def _classify_generated_check(
+    result_bytes: bytes,
+    process: ProcessResult,
+    bench_name: str,
+    check_name: str,
+) -> CheckStatus:
+    """Decide status from the retained, hash-verified evidence bytes.
+
+    `process` supplies only out-of-band signals: timeout, exit code, stderr,
+    and truncation. The verdict itself comes from `result_bytes`, which is the
+    same byte sequence the report attests via `result_sha256`.
+    """
+    if process.timed_out:
         return CheckStatus.BLOCKED
-    lower = proc.stderr.lower()
+    lower = process.stderr.lower()
     if any(fragment in lower for fragment in _GENERATED_TEST_ENVIRONMENT_FRAGMENTS):
         return CheckStatus.BLOCKED
-
-    if proc.output_truncated:
+    if process.output_truncated:
         return CheckStatus.BLOCKED
+
     try:
-        payload = json.loads(proc.stdout)
-    except json.JSONDecodeError:
+        payload = json.loads(result_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
         return CheckStatus.BLOCKED
     try:
         _validate_test_payload(payload)
@@ -399,75 +410,54 @@ def _classify_generated_check(check_id: str, outcome: GeneratedTestResult, bench
     if record is None:
         return CheckStatus.BLOCKED
 
-    status_text = str(record.get('status', '')).upper()
-
-    summary = payload.get('summary', {})
-    failed_count = _int_or_none(summary.get('failed')) or 0
-    failures_count = _int_or_none(summary.get('failures')) or 0
-    errors_count = _int_or_none(summary.get('errors')) or 0
-
-    if proc.returncode == 0:
-        if status_text in _PASS_STATUSES and failed_count == 0 and failures_count == 0 and errors_count == 0:
-            return CheckStatus.PASS
-        if status_text in _FAIL_STATUSES and errors_count == 0:
-            return CheckStatus.FAIL
-        return CheckStatus.BLOCKED
-    else:
-        if status_text in _FAIL_STATUSES and failed_count > 0 and errors_count == 0:
-            return CheckStatus.FAIL
-        return CheckStatus.BLOCKED
-    lower = proc.stderr.lower()
-    if any(fragment in lower for fragment in _GENERATED_TEST_ENVIRONMENT_FRAGMENTS):
-        return CheckStatus.BLOCKED
-    if proc.returncode != 0:
-        if proc.output_truncated:
-            return CheckStatus.BLOCKED
-        try:
-            payload = json.loads(proc.stdout)
-        except json.JSONDecodeError:
-            return CheckStatus.BLOCKED
-        try:
-            _validate_test_payload(payload)
-        except GeneratedEvidenceError as error:
-            return CheckStatus.BLOCKED
-        record = _find_record(payload, bench_name, check_name)
-        if record is None:
-            return CheckStatus.BLOCKED
-        status_text = str(record.get("status", "")).upper()
-        if status_text in {"PASS", "PASSED", "OK"}:
-            return CheckStatus.BLOCKED
-        if status_text in {"FAIL", "FAILED", "ERROR"}:
-            return CheckStatus.FAIL
-        return CheckStatus.BLOCKED
-    try:
-        payload = json.loads(proc.stdout)
-    except json.JSONDecodeError:
-        return CheckStatus.BLOCKED
-    try:
-        _validate_test_payload(payload)
-    except GeneratedEvidenceError:
-        return CheckStatus.BLOCKED
-    if _payload_has_failure(payload):
-        return CheckStatus.BLOCKED
-    record = _find_record(payload, bench_name, check_name)
-    if record is None:
-        return CheckStatus.BLOCKED
     status_text = str(record.get("status", "")).upper()
-    if status_text in {"PASS", "PASSED", "OK"}:
-        return CheckStatus.PASS
+
+    summary = payload["summary"]
+    failed_count = _int_or_none(summary.get("failed")) or 0
+    failures_count = _int_or_none(summary.get("failures")) or 0
+    errors_count = _int_or_none(summary.get("errors")) or 0
+
+    if errors_count > 0:
+        return CheckStatus.BLOCKED
+
+    if status_text in _PASS_STATUSES:
+        if process.returncode != 0:
+            return CheckStatus.BLOCKED
+        if failed_count == 0 and failures_count == 0:
+            return CheckStatus.PASS
+        return CheckStatus.BLOCKED
+
+    if status_text in _FAIL_STATUSES:
+        return CheckStatus.FAIL
+
     return CheckStatus.BLOCKED
 
 
-def _verify_retained_artifact(project_root: Path, relative_path: str, expected_sha256: str) -> None:
+def _verify_retained_artifact(
+    project_root: Path,
+    relative_path: str,
+    expected_sha256: str,
+) -> bytes:
     from .paths import resolve_workspace_path, require_regular_file
+
+    if not _EVIDENCE_DIGEST_PATTERN.match(expected_sha256 or ""):
+        raise GeneratedCompatibilityError(
+            f"malformed evidence digest for {relative_path}"
+        )
     try:
         path = resolve_workspace_path(project_root, relative_path, must_exist=True)
         require_regular_file(path)
-        actual = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
-        if actual != expected_sha256:
-            raise GeneratedCompatibilityError(f"evidence hash mismatch for {relative_path}")
-    except Exception as error:
-        raise GeneratedCompatibilityError(f"evidence validation failed: {error}") from error
+        data = path.read_bytes()
+    except (OSError, ValueError) as error:
+        raise GeneratedCompatibilityError(
+            f"evidence validation failed: {error}"
+        ) from error
+    actual = "sha256:" + hashlib.sha256(data).hexdigest()
+    if actual != expected_sha256:
+        raise GeneratedCompatibilityError(
+            f"evidence hash mismatch for {relative_path}"
+        )
+    return data
 
 
 def generated_check(
@@ -479,13 +469,19 @@ def generated_check(
     required: bool = True,
 ) -> Check:
     try:
-        _verify_retained_artifact(project_root, outcome.generated_path, outcome.generated_sha256)
-        _verify_retained_artifact(project_root, outcome.result_path, outcome.result_sha256)
+        _verify_retained_artifact(
+            project_root, outcome.generated_path, outcome.generated_sha256
+        )
+        result_bytes = _verify_retained_artifact(
+            project_root, outcome.result_path, outcome.result_sha256
+        )
     except GeneratedCompatibilityError as error:
         status = CheckStatus.BLOCKED
         message = str(error)
     else:
-        status = _classify_generated_check(check_id, outcome, bench_name, check_name)
+        status = _classify_generated_check(
+            result_bytes, outcome.process, bench_name, check_name
+        )
         if status == CheckStatus.PASS:
             message = f"{check_id.lower()} generated assertion passed"
         elif status == CheckStatus.FAIL:
