@@ -222,7 +222,7 @@ class ConnectivityGeneratorTests(unittest.TestCase):
             render_connectivity_testbench(project, VERIFIED_VERSION)
         self.assertIn("GHOST", str(ctx.exception))
 
-    def test_required_pullup_raises_when_unsupported_kind(self) -> None:
+    def test_required_pullup_rejects_component_of_unverified_kind(self) -> None:
         contract = {
             "components": {"D1": {"kind": "led"}},
             "nets": {
@@ -237,6 +237,115 @@ class ConnectivityGeneratorTests(unittest.TestCase):
         with self.assertRaises(GeneratorError) as ctx:
             render_connectivity_testbench(project, VERIFIED_VERSION)
         self.assertIn("unverified kind led", str(ctx.exception))
+
+
+class RequiredPullupTopologyTests(unittest.TestCase):
+    """The pull-up gate must verify topology, not name existence."""
+
+    def _contract(self) -> dict:
+        return {
+            "components": {
+                "R1": {"kind": "resistor"},
+                "R2": {"kind": "resistor"},
+            },
+            "nets": {
+                "SDA": {
+                    "members": ["R1.P1", "R2.P1"],
+                    "required_pullup": {"component": "R1", "rail": "V3V3"},
+                },
+                "V3V3": {"members": ["R1.P2"]},
+            },
+            "rules": {},
+        }
+
+    def setUp(self) -> None:
+        set_adapter_registry({"resistor": _resistor_adapter()})
+
+    def tearDown(self) -> None:
+        set_adapter_registry({})
+
+    def test_renders_signal_and_rail_pin_assertions(self) -> None:
+        project = DummyProjectState("src/board.zen", self._contract())
+        source = render_connectivity_testbench(project, VERIFIED_VERSION)
+        ref = "PcbAgentConnectivity__contract.R1.R"
+        self.assertIn(f'pin_a_on_signal = ("{ref}", "1") in nets.get("SDA", [])', source)
+        self.assertIn(f'pin_b_on_signal = ("{ref}", "2") in nets.get("SDA", [])', source)
+        self.assertIn("check(pin_a_on_signal != pin_b_on_signal", source)
+        self.assertIn(f'("{ref}", "2") in nets.get("V3V3", [])', source)
+        self.assertIn(f'("{ref}", "1") in nets.get("V3V3", [])', source)
+
+    def test_blocks_when_adapter_lacks_pullup_pin_pair(self) -> None:
+        set_adapter_registry(
+            {
+                "resistor": ComponentAdapter(
+                    kind="resistor",
+                    instance_suffix="R",
+                    pins={"P1": "1", "P2": "2"},
+                    verified_pcbc_versions=frozenset({VERIFIED_VERSION}),
+                    evidence_sha256=TEST_EVIDENCE,
+                    pullup_pin_pair=None,
+                )
+            }
+        )
+        project = DummyProjectState("src/board.zen", self._contract())
+        with self.assertRaises(GeneratorError) as ctx:
+            render_connectivity_testbench(project, VERIFIED_VERSION)
+        self.assertIn("pullup_pin_pair", str(ctx.exception))
+
+    def test_blocks_when_pullup_pin_pair_names_unknown_pin(self) -> None:
+        set_adapter_registry(
+            {
+                "resistor": ComponentAdapter(
+                    kind="resistor",
+                    instance_suffix="R",
+                    pins={"P1": "1", "P2": "2"},
+                    verified_pcbc_versions=frozenset({VERIFIED_VERSION}),
+                    evidence_sha256=TEST_EVIDENCE,
+                    pullup_pin_pair=("P1", "P9"),
+                )
+            }
+        )
+        project = DummyProjectState("src/board.zen", self._contract())
+        with self.assertRaises(GeneratorError) as ctx:
+            render_connectivity_testbench(project, VERIFIED_VERSION)
+        self.assertIn("pullup pins", str(ctx.exception))
+
+    def test_topology_ignores_pins_iteration_order(self) -> None:
+        """The rendered pair must come from pullup_pin_pair, not dict order."""
+        set_adapter_registry(
+            {
+                "resistor": ComponentAdapter(
+                    kind="resistor",
+                    instance_suffix="R",
+                    pins={"P2": "2", "P1": "1", "P3": "3"},
+                    verified_pcbc_versions=frozenset({VERIFIED_VERSION}),
+                    evidence_sha256=TEST_EVIDENCE,
+                    pullup_pin_pair=("P1", "P2"),
+                )
+            }
+        )
+        project = DummyProjectState("src/board.zen", self._contract())
+        source = render_connectivity_testbench(project, VERIFIED_VERSION)
+        ref = "PcbAgentConnectivity__contract.R1.R"
+        self.assertIn(f'pin_a_on_signal = ("{ref}", "1")', source)
+        self.assertIn(f'pin_b_on_signal = ("{ref}", "2")', source)
+        self.assertNotIn('"3") in nets.get("SDA"', source)
+
+    def test_blocks_when_pullup_component_is_not_declared(self) -> None:
+        contract = self._contract()
+        contract["nets"]["SDA"]["required_pullup"]["component"] = "MISSING"
+        project = DummyProjectState("src/board.zen", contract)
+        with self.assertRaises(GeneratorError) as ctx:
+            render_connectivity_testbench(project, VERIFIED_VERSION)
+        self.assertIn("MISSING", str(ctx.exception))
+
+    def test_blocks_when_rail_is_not_a_string(self) -> None:
+        contract = self._contract()
+        contract["nets"]["SDA"]["required_pullup"]["rail"] = ""
+        project = DummyProjectState("src/board.zen", contract)
+        with self.assertRaises(GeneratorError) as ctx:
+            render_connectivity_testbench(project, VERIFIED_VERSION)
+        self.assertIn("rail", str(ctx.exception))
 
 
 class SpecificationGeneratorTests(unittest.TestCase):
