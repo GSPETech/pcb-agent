@@ -29,6 +29,8 @@ def _resistor_adapter() -> ComponentAdapter:
         pins={"P1": "1", "P2": "2"},
         verified_pcbc_versions=frozenset({VERIFIED_VERSION}),
         evidence_sha256=TEST_EVIDENCE,
+        value_accessor="resistance",
+        package_accessor="properties['package']",
     )
 
 
@@ -302,6 +304,18 @@ class SpecificationGeneratorTests(unittest.TestCase):
         with self.assertRaises(GeneratorError) as ctx:
             render_specification_testbench(project, pcbc_version=VERIFIED_VERSION)
         self.assertIn("made_up_property", str(ctx.exception))
+
+    def test_unasserted_connectivity_properties_raise_error(self) -> None:
+        connectivity = {"components": {"R1": {"kind": "resistor", "value": "10kohm"}}}
+        specification = {"requirements": []}
+        acceptance = {"checks": []}
+        project = DummyProjectState(
+            "src/blinky.zen", connectivity, specification, acceptance
+        )
+        with self.assertRaises(GeneratorError) as ctx:
+            render_specification_testbench(project, pcbc_version=VERIFIED_VERSION)
+        self.assertIn("value", str(ctx.exception))
+        self.assertIn("has no specification requirement covering it", str(ctx.exception))
 
     def test_missing_zener_test_raises_error(self) -> None:
         connectivity = {"components": {"R1": {"kind": "resistor"}}}

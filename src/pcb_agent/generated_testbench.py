@@ -37,6 +37,9 @@ class ComponentAdapter:
     pins: Mapping[str, str]
     verified_pcbc_versions: frozenset[str]
     evidence_sha256: str
+    value_accessor: str | None = None
+    package_accessor: str | None = None
+    mpn_accessor: str | None = None
 
 
 def build_adapter_registry(entries: Iterable[ComponentAdapter]) -> dict[str, ComponentAdapter]:
@@ -339,6 +342,7 @@ def render_specification_testbench(
     ]
 
     unsupported_constraint_seen = False
+    components_with_assertions = set()
     for requirement in requirements:
         if not isinstance(requirement, dict):
             continue
@@ -347,12 +351,25 @@ def render_specification_testbench(
             continue
         rtype = requirement.get("type")
         subject = requirement.get("subject")
-        constraints = requirement.get("constraints")
+        constraints = dict(requirement.get("constraints", {}))
 
         if rtype == "connectivity":
             continue
 
-        if not isinstance(constraints, dict) or not constraints:
+        comp = components.get(subject) if isinstance(subject, str) else None
+        if isinstance(comp, dict):
+            # Transfer constraints from connectivity if present
+            for field in ("value", "package", "mpn"):
+                if field in comp:
+                    if field not in constraints:
+                        constraints[field] = comp[field]
+                    elif str(constraints[field]) != str(comp[field]):
+                        raise GeneratorError(
+                            f"requirement {rid} constraint {field}={constraints[field]!r} "
+                            f"conflicts with connectivity field={comp[field]!r}"
+                        )
+
+        if not constraints:
             continue
 
         kinds = check_kinds.get(rid, [])
@@ -378,33 +395,52 @@ def render_specification_testbench(
 
         adapter = adapter_for(kind, pcbc_version)
         diode_ref = f"{bench_name}__{case_name}.{subject}.{adapter.instance_suffix}"
-        lines.append(
-            f"    check({_zener_string(diode_ref)} in components, "
-            f"{_zener_string(f'missing component {diode_ref}')})"
-        )
+        if subject not in components_with_assertions:
+            lines.append(
+                f"    check({_zener_string(diode_ref)} in components, "
+                f"{_zener_string(f'missing component {diode_ref}')})"
+            )
+            components_with_assertions.add(subject)
 
         for key, expected_value in constraints.items():
             if key == "value":
+                if adapter.value_accessor is None:
+                    raise GeneratorError(f"adapter for {kind} has no verified value accessor")
                 lines.append(
                     "    check(components["
                     f"{_zener_string(diode_ref)}"
-                    "].resistance.matches("
+                    f"].{adapter.value_accessor}.matches("
                     f"{_zener_string(str(expected_value))}"
                     f"), {_zener_string(f'wrong value for {subject}')})"
                 )
             elif key == "package":
+                if adapter.package_accessor is None:
+                    raise GeneratorError(f"adapter for {kind} has no verified package accessor")
                 lines.append(
                     "    check(components["
                     f"{_zener_string(diode_ref)}"
-                    "].properties['package'].value == "
+                    f"].{adapter.package_accessor}.value == "
                     f"{_zener_string(str(expected_value))}, "
                     f"{_zener_string(f'wrong package for {subject}')})"
                 )
+            elif key == "mpn":
+                if adapter.mpn_accessor is None:
+                    raise GeneratorError(f"adapter for {kind} has no verified mpn accessor")
             else:
                 unsupported_constraint_seen = True
                 raise GeneratorError(
                     f"unsupported constraint {key} in {rid}"
                 )
+
+    for comp_ref, comp_def in components.items():
+        if comp_ref in components_with_assertions:
+            continue
+        unasserted_props = {k: v for k, v in comp_def.items() if k in ("value", "package", "mpn")}
+        if unasserted_props:
+            raise GeneratorError(
+                f"component {comp_ref} declares properties {list(unasserted_props.keys())} "
+                f"but has no specification requirement covering it"
+            )
 
     if not lines[3:]:
         raise GeneratorError("specification produced no assertions")
