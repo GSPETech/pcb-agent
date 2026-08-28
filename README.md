@@ -60,16 +60,35 @@ Rules:
   generator error and become `BLOCKED`. They never become `PASS`.
 - Contract-controlled values never become Zener identifiers and are always
   emitted through a single escaping helper.
+- Every top-level result record must carry a recognized status. `SKIPPED`,
+  `BLOCKED`, unknown, and missing statuses are treated as incompatible
+  evidence and produce `BLOCKED`.
+- The summary must reconcile exactly with observed record statuses:
+  `total` equals the record count, `passed` and `failed` equal the counted
+  recognized statuses, and their sum equals `total`.
 - Exit code zero alone is not sufficient. Empty results, inconsistent summary
-  counts, malformed JSON, truncated output, or a missing expected record are
-  all `BLOCKED`.
+  counts, malformed JSON, truncated output, a missing expected record, or any
+  positive `failed`, `failures`, or `errors` counter are all `BLOCKED`.
+- When `failures` or `errors` is present it must be a non-negative integer.
+  Booleans, strings, floats, and null are malformed evidence.
+- Exactly one top-level record may match the expected TestBench and check
+  identity. Duplicates and nested diagnostic metadata do not satisfy the gate.
 - A structured assertion failure for the expected generated check is `FAIL`.
   Compiler, environment, and evidence problems are `BLOCKED`.
+- Every populated `value`, `package`, and `mpn` in either contract must receive
+  a generated assertion, or the check reports `BLOCKED`. Conflicting values
+  between `SPEC.json` and `expected-connectivity.json` are a generator error.
+- `required_pullup` verifies exact topology: one adapter pin on the signal net
+  and the opposite adapter pin on the declared rail. Name existence alone is
+  not sufficient. Adapters without a verified pull-up pin pair are `BLOCKED`.
 - Source-level coverage scanners remain available as advisory diagnostics only
   and cannot determine a required check status.
 
 Every generated run records both the generated source and the raw result JSON
-with their SHA-256 digests in the report evidence.
+with their SHA-256 digests in the report evidence. Paths are stored relative to
+the project root, and both artifacts are re-read and rehashed immediately
+before the check is built. A missing, mutated, symlinked, or escaping artifact
+produces `BLOCKED`.
 
 ## Status And Exit
 

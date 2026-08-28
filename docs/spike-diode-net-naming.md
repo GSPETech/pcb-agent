@@ -44,15 +44,34 @@ TestBench `name` (`BlinkyTest`) and the test case key (`default`). This is also
 
 ## Property access API (NOT VERIFIED)
 
-`render_specification_testbench` currently emits:
+Property accessors are no longer hardcoded in the renderer. They are declared
+per adapter as `value_accessor`, `package_accessor`, and `mpn_accessor`. An
+adapter with `None` for a given accessor makes any populated contract value for
+that field `BLOCKED`.
+
+Candidate accessor forms, all `REQUIRES TEST`:
 
 ```text
 components[REF].resistance.matches(VALUE)
 components[REF].properties['package'].value == VALUE
 ```
 
-Both forms are `REQUIRES TEST`. Neither has been observed against captured
-output. `mpn` has no candidate accessor at all and must remain unsupported.
+`mpn` has no candidate accessor at all and must remain unsupported until
+captured output proves one.
+
+## Pull-up pin pair (NOT VERIFIED)
+
+`required_pullup` verification needs to know which two logical pins form the
+electrical pair for a component kind. This is declared as
+`pullup_pin_pair` on the adapter.
+
+| Component kind | Candidate pull-up pin pair | Status |
+|---|---|---|
+| `resistor` | `("P1", "P2")` | `REQUIRES TEST` |
+
+Dictionary iteration order over `pins` must never be used as electrical
+meaning. An adapter without a verified `pullup_pin_pair` makes any contract
+declaring `required_pullup` for that kind `BLOCKED`.
 
 ## Required experiment
 
@@ -123,6 +142,10 @@ never determine a required check status. Their function names carry the
 3. Register adapters via `set_adapter_registry` with:
    - the exact `pcbc` version in `verified_pcbc_versions`
    - the evidence SHA-256 in `evidence_sha256`
+   - `value_accessor` and `package_accessor` only if observed in captured output
+   - `mpn_accessor` only if a real accessor exists; otherwise leave `None`
+   - `pullup_pin_pair` only if the electrical pair is observed, never inferred
+     from `pins` iteration order
 4. Verify `fixtures/valid-blinky` reaches `CONNECTIVITY: PASS` and
    `SPECIFICATION: PASS`.
 5. Verify `fixtures/invalid-connectivity` and `fixtures/invalid-value` reach
