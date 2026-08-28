@@ -54,7 +54,7 @@ def _parser() -> argparse.ArgumentParser:
         if name == "report":
             item.add_argument("--run")
     check = sub.add_parser("check")
-    check.add_argument("profile", choices=("schematic", "spec", "connectivity"), nargs="?", default="schematic")
+    check.add_argument("scope", choices=("schematic", "spec", "connectivity"), nargs="?", default="schematic")
     check.add_argument("project", nargs="?", default=".")
     check.add_argument("--project", dest="project_option")
     check.add_argument("--format", choices=("human", "json"), default="human")
@@ -530,10 +530,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             checks = [_diode_command(project, "build-command", "DIODE_BUILD", run.raw_directory)]
         elif args.command == "check":
             checks = _schematic_checks(project, run)
-            if args.profile == "spec":
-                checks = [checks[2]]
-            elif args.profile == "connectivity":
-                checks = [checks[1]]
+            if args.scope == "spec":
+                checks = [next(item for item in checks if item.id == "SPECIFICATION")]
+            elif args.scope == "connectivity":
+                checks = [next(item for item in checks if item.id == "CONNECTIVITY")]
         elif args.command == "layout":
             generation = _diode_command(project, "layout-command", "LAYOUT_GENERATE")
             checks = [generation]
