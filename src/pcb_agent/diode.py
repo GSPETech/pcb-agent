@@ -93,6 +93,40 @@ def doctor_probes(project: ProjectState) -> tuple[ProcessResult, ...]:
     return tuple(results)
 
 
+_PASS_STATUSES = frozenset({"PASS", "PASSED", "OK"})
+_FAIL_STATUSES = frozenset({"FAIL", "FAILED", "ERROR"})
+
+def _top_level_record_counts(payload: Mapping[str, Any]) -> tuple[int, int] | None:
+    passed = 0
+    failed = 0
+    for record in payload.get("results", []):
+        if not isinstance(record, dict):
+            return None
+        status = str(record.get("status", "")).upper()
+        if not status:
+            return None
+        if status in _PASS_STATUSES:
+            passed += 1
+        elif status in _FAIL_STATUSES:
+            failed += 1
+        else:
+            return None
+    return passed, failed
+
+def _summary_matches_records(payload: Mapping[str, Any]) -> bool:
+    counts = _top_level_record_counts(payload)
+    if counts is None:
+        return False
+    passed, failed = counts
+    summary = payload.get("summary", {})
+    return (
+        summary.get("total") == len(payload.get("results", []))
+        and summary.get("passed") == passed
+        and summary.get("failed") == failed
+        and passed + failed == summary.get("total")
+    )
+
+
 def _int_or_none(value: object) -> int | None:
     if isinstance(value, bool):
         return None
@@ -125,27 +159,11 @@ def _validate_test_payload(payload: object) -> Mapping[str, Any]:
     if passed + failed != total:
         raise GeneratedEvidenceError("pcb test JSON summary passed+failed mismatches total")
     for key in ("failures", "errors"):
-        value = _int_or_none(summary.get(key))
-        if value is not None and value < 0:
-            raise GeneratedEvidenceError(f"pcb test JSON summary {key} is negative")
+        if key in summary:
+            value = _int_or_none(summary[key])
+            if value is None or value < 0:
+                raise GeneratedEvidenceError(f"pcb test JSON summary {key} must be non-negative integer")
     return payload
-
-
-def _payload_has_failure(payload: Mapping[str, Any]) -> bool:
-    summary = payload["summary"]
-    if not isinstance(summary, dict):
-        return True
-    for key in ("failed", "failures", "errors"):
-        value = _int_or_none(summary.get(key))
-        if value is not None and value > 0:
-            return True
-    for record in payload["results"]:
-        if not isinstance(record, dict):
-            return True
-        status = str(record.get("status", "")).upper()
-        if status in {"FAIL", "FAILED", "ERROR"}:
-            return True
-    return False
 
 
 def _record_identity(record: Mapping[str, Any]) -> tuple[str | None, str | None]:
@@ -316,6 +334,45 @@ def execute_generated_test(
 def _classify_generated_check(check_id: str, outcome: GeneratedTestResult, bench_name: str, check_name: str) -> CheckStatus:
     proc = outcome.process
     if proc.timed_out:
+        return CheckStatus.BLOCKED
+    lower = proc.stderr.lower()
+    if any(fragment in lower for fragment in _GENERATED_TEST_ENVIRONMENT_FRAGMENTS):
+        return CheckStatus.BLOCKED
+
+    if proc.output_truncated:
+        return CheckStatus.BLOCKED
+    try:
+        payload = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        return CheckStatus.BLOCKED
+    try:
+        _validate_test_payload(payload)
+    except GeneratedEvidenceError:
+        return CheckStatus.BLOCKED
+
+    if not _summary_matches_records(payload):
+        return CheckStatus.BLOCKED
+
+    record = _find_record(payload, bench_name, check_name)
+    if record is None:
+        return CheckStatus.BLOCKED
+        
+    status_text = str(record.get('status', '')).upper()
+    
+    summary = payload.get('summary', {})
+    failed_count = _int_or_none(summary.get('failed')) or 0
+    failures_count = _int_or_none(summary.get('failures')) or 0
+    errors_count = _int_or_none(summary.get('errors')) or 0
+
+    if proc.returncode == 0:
+        if status_text in _PASS_STATUSES and failed_count == 0 and failures_count == 0 and errors_count == 0:
+            return CheckStatus.PASS
+        if status_text in _FAIL_STATUSES and errors_count == 0:
+            return CheckStatus.FAIL
+        return CheckStatus.BLOCKED
+    else:
+        if status_text in _FAIL_STATUSES and failed_count > 0 and errors_count == 0:
+            return CheckStatus.FAIL
         return CheckStatus.BLOCKED
     lower = proc.stderr.lower()
     if any(fragment in lower for fragment in _GENERATED_TEST_ENVIRONMENT_FRAGMENTS):

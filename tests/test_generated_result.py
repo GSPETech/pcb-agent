@@ -162,5 +162,63 @@ class GeneratedPassClassificationTests(unittest.TestCase):
         self.assertEqual(self.classify(payload), CheckStatus.BLOCKED)
 
 
+    def test_expected_failure_with_nonzero_exit_is_fail(self) -> None:
+        payload = {
+            "results": [record("FAIL")],
+            "summary": {
+                "total": 1,
+                "passed": 0,
+                "failed": 1,
+                "failures": 1,
+                "errors": 0,
+            },
+        }
+        status = generated_check(
+            "CONNECTIVITY",
+            outcome(payload, returncode=1),
+            "PcbAgentConnectivity",
+            "_check_connectivity",
+        ).status
+        self.assertEqual(status, CheckStatus.FAIL)
+
+    def test_expected_failure_with_nonzero_exit_but_zero_failed_is_blocked(self) -> None:
+        payload = {
+            "results": [record("FAIL")],
+            "summary": {
+                "total": 1,
+                "passed": 1,
+                "failed": 0,
+                "failures": 1,
+                "errors": 0,
+            },
+        }
+        status = generated_check(
+            "CONNECTIVITY",
+            outcome(payload, returncode=1),
+            "PcbAgentConnectivity",
+            "_check_connectivity",
+        ).status
+        self.assertEqual(status, CheckStatus.BLOCKED)
+
+    def test_expected_failure_with_nonzero_exit_and_errors_is_blocked(self) -> None:
+        payload = {
+            "results": [record("FAIL")],
+            "summary": {
+                "total": 1,
+                "passed": 0,
+                "failed": 1,
+                "failures": 0,
+                "errors": 1,
+            },
+        }
+        status = generated_check(
+            "CONNECTIVITY",
+            outcome(payload, returncode=1),
+            "PcbAgentConnectivity",
+            "_check_connectivity",
+        ).status
+        self.assertEqual(status, CheckStatus.BLOCKED)
+
+
 if __name__ == "__main__":
     unittest.main()
