@@ -31,6 +31,7 @@ def _resistor_adapter() -> ComponentAdapter:
         evidence_sha256=TEST_EVIDENCE,
         value_accessor="resistance",
         package_accessor="properties['package']",
+        pullup_pin_pair=("P1", "P2"),
     )
 
 

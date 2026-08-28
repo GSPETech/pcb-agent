@@ -40,6 +40,7 @@ class ComponentAdapter:
     value_accessor: str | None = None
     package_accessor: str | None = None
     mpn_accessor: str | None = None
+    pullup_pin_pair: tuple[str, str] | None = None
 
 
 def build_adapter_registry(entries: Iterable[ComponentAdapter]) -> dict[str, ComponentAdapter]:
@@ -196,27 +197,56 @@ def _validate_connectivity_shape(connectivity: Mapping[str, Any]) -> None:
                 )
 
 
-def _check_required_pullup(net_name: str, definition: Mapping[str, Any]) -> str:
+def _check_required_pullup(
+    net_name: str,
+    definition: Mapping[str, Any],
+    components: Mapping[str, Any],
+    pcbc_version: str,
+    bench_name: str,
+    case_name: str,
+) -> str:
     pullup = definition.get("required_pullup")
     if not isinstance(pullup, dict):
         return ""
     component = pullup.get("component")
     rail = pullup.get("rail")
-    if not isinstance(component, str) or component not in _ADAPTERS:
+    
+    comp_def = components.get(component) if isinstance(component, str) else None
+    if not isinstance(comp_def, dict):
         raise GeneratorError(
             f"net {net_name} required_pullup references unknown component {component}"
         )
+    kind = comp_def.get("kind")
+    if not isinstance(kind, str):
+        raise GeneratorError(f"component {component} missing kind")
+        
+    adapter = adapter_for(kind, pcbc_version)
+    if adapter.pullup_pin_pair is None:
+        raise GeneratorError(f"adapter for {kind} lacks verified pullup_pin_pair")
+        
     if not isinstance(rail, str) or not rail:
         raise GeneratorError(
             f"net {net_name} required_pullup rail must be string"
         )
+        
+    pin_a, pin_b = adapter.pullup_pin_pair
+    diode_pin_a = adapter.pins.get(pin_a)
+    diode_pin_b = adapter.pins.get(pin_b)
+    if not diode_pin_a or not diode_pin_b:
+        raise GeneratorError(f"adapter for {kind} missing pullup pins")
+        
+    diode_ref = f"{bench_name}__{case_name}.{component}.{adapter.instance_suffix}"
+    
+    # Assert that one pin is on the signal net (we don't know which one, but exactly one)
+    # and the OTHER pin is on the rail net.
     return (
-        f"    pullup_component = {_zener_string(component)}\n"
-        f"    pullup_rail = {_zener_string(rail)}\n"
-        f"    component_present = pullup_component in components\n"
-        f"    check(component_present, {_zener_string(f'net {net_name} pullup component missing')})\n"
-        f"    rail_present = pullup_rail in nets\n"
-        f"    check(rail_present, {_zener_string(f'net {net_name} pullup rail missing')})\n"
+        f"    pin_a_on_signal = ({_zener_string(diode_ref)}, {_zener_string(diode_pin_a)}) in nets.get({_zener_string(net_name)}, [])\n"
+        f"    pin_b_on_signal = ({_zener_string(diode_ref)}, {_zener_string(diode_pin_b)}) in nets.get({_zener_string(net_name)}, [])\n"
+        f"    check(pin_a_on_signal != pin_b_on_signal, {_zener_string(f'net {net_name} must contain exactly one pullup pin from {component}')})\n"
+        f"    if pin_a_on_signal:\n"
+        f"        check(({_zener_string(diode_ref)}, {_zener_string(diode_pin_b)}) in nets.get({_zener_string(rail)}, []), {_zener_string(f'{component} must pull up to {rail}')})\n"
+        f"    else:\n"
+        f"        check(({_zener_string(diode_ref)}, {_zener_string(diode_pin_a)}) in nets.get({_zener_string(rail)}, []), {_zener_string(f'{component} must pull up to {rail}')})\n"
     )
 
 
@@ -281,7 +311,7 @@ def render_connectivity_testbench(
                 f"{_zener_string(f'net {net_name} has unlisted members')})"
             )
 
-        lines.append(_check_required_pullup(net_name, definition))
+        lines.append(_check_required_pullup(net_name, definition, components, pcbc_version, bench_name, case_name))
 
     if rules.get("forbid_unlisted_members"):
         names_literal = ", ".join(_zener_string(n) for n in expected_net_names)
