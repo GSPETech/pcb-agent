@@ -179,7 +179,7 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
                     raise ContractError(f"connectivity required_pullup references unknown component {comp}")
                 if rail not in connectivity.get("nets", {}):
                     raise ContractError(f"connectivity required_pullup references unknown net {rail}")
-    
+
     rules = connectivity.get("rules")
     if isinstance(rules, dict):
         for net in rules.get("required_power_nets", []):

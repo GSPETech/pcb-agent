@@ -100,11 +100,11 @@ if '-f' in sys.argv and 'json' in sys.argv:
     elif 'specification' in source:
         test_bench = "PcbAgentSpecification"
         check_name = "_check_specification"
-        
+
     status = "PASS"
     if 'invalid-' in source and ('connectivity' in source or 'value' in source):
         status = "FAIL"
-        
+
     payload = {
         "results": [{"test_bench_name": test_bench, "check_name": check_name, "status": status, "name": f"{test_bench}.{check_name}"}],
         "summary": {"total": 1, "passed": 1 if status == "PASS" else 0, "failed": 1 if status == "FAIL" else 0, "failures": 0, "errors": 0}

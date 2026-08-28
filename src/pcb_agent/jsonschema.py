@@ -87,11 +87,11 @@ def validate_schema(schema: Any, root: Mapping[str, Any] | None = None, path: st
         return
     if not isinstance(schema, dict):
         raise SchemaError(f"{path}: schema fragment must be object or bool")
-    
+
     unknown = set(schema) - _SUPPORTED
     if unknown:
         raise SchemaError(f"{path}: unsupported schema keywords: {sorted(unknown)}")
-    
+
     if "$ref" in schema:
         ref = schema["$ref"]
         if not isinstance(ref, str) or not ref.startswith("#/$defs/"):
@@ -116,7 +116,7 @@ def validate_schema(schema: Any, root: Mapping[str, Any] | None = None, path: st
             if not isinstance(val, (bool, dict)):
                 raise SchemaError(f"{path}: {keyword} must be bool or object")
             validate_schema(val, root or schema, f"{path}.{keyword}")
-            
+
     if "type" in schema:
         t = schema["type"]
         if not isinstance(t, str) and not (isinstance(t, list) and all(isinstance(x, str) for x in t)):
