@@ -318,6 +318,178 @@ class SpecificationGeneratorTests(unittest.TestCase):
         self.assertIn("value", str(ctx.exception))
         self.assertIn("has no specification requirement covering it", str(ctx.exception))
 
+    def test_mpn_constraint_is_always_blocked(self) -> None:
+        connectivity = {"components": {"R1": {"kind": "resistor"}}}
+        specification = {
+            "requirements": [
+                {
+                    "id": "REQ-001",
+                    "type": "component",
+                    "subject": "R1",
+                    "constraints": {"mpn": "RC0402FR-071KL"},
+                }
+            ]
+        }
+        acceptance = {
+            "checks": [
+                {"id": "ACC-001", "requirement": "REQ-001", "kind": "zener_test"}
+            ]
+        }
+        project = DummyProjectState(
+            "src/blinky.zen", connectivity, specification, acceptance
+        )
+        with self.assertRaises(GeneratorError) as ctx:
+            render_specification_testbench(project, pcbc_version=VERIFIED_VERSION)
+        self.assertIn("mpn", str(ctx.exception))
+        self.assertIn("unsupported", str(ctx.exception))
+
+    def test_mpn_from_connectivity_is_always_blocked(self) -> None:
+        connectivity = {
+            "components": {"R1": {"kind": "resistor", "mpn": "RC0402FR-071KL"}}
+        }
+        specification = {
+            "requirements": [
+                {
+                    "id": "REQ-001",
+                    "type": "component",
+                    "subject": "R1",
+                    "constraints": {"value": "1kohm"},
+                }
+            ]
+        }
+        acceptance = {
+            "checks": [
+                {"id": "ACC-001", "requirement": "REQ-001", "kind": "zener_test"}
+            ]
+        }
+        project = DummyProjectState(
+            "src/blinky.zen", connectivity, specification, acceptance
+        )
+        with self.assertRaises(GeneratorError) as ctx:
+            render_specification_testbench(project, pcbc_version=VERIFIED_VERSION)
+        self.assertIn("mpn", str(ctx.exception))
+
+    def test_connectivity_requirement_rejects_value_constraint(self) -> None:
+        connectivity = {"components": {"R1": {"kind": "resistor"}}}
+        specification = {
+            "requirements": [
+                {
+                    "id": "REQ-001",
+                    "type": "connectivity",
+                    "subject": "R1",
+                    "constraints": {"value": "1kohm"},
+                }
+            ]
+        }
+        acceptance = {
+            "checks": [
+                {"id": "ACC-001", "requirement": "REQ-001", "kind": "zener_test"}
+            ]
+        }
+        project = DummyProjectState(
+            "src/blinky.zen", connectivity, specification, acceptance
+        )
+        with self.assertRaises(GeneratorError) as ctx:
+            render_specification_testbench(project, pcbc_version=VERIFIED_VERSION)
+        self.assertIn("connectivity", str(ctx.exception))
+        self.assertIn("value", str(ctx.exception))
+
+    def test_connectivity_requirement_rejects_package_constraint(self) -> None:
+        connectivity = {"components": {"R1": {"kind": "resistor"}}}
+        specification = {
+            "requirements": [
+                {
+                    "id": "REQ-001",
+                    "type": "connectivity",
+                    "subject": "R1",
+                    "constraints": {"package": "0402"},
+                }
+            ]
+        }
+        acceptance = {
+            "checks": [
+                {"id": "ACC-001", "requirement": "REQ-001", "kind": "zener_test"}
+            ]
+        }
+        project = DummyProjectState(
+            "src/blinky.zen", connectivity, specification, acceptance
+        )
+        with self.assertRaises(GeneratorError) as ctx:
+            render_specification_testbench(project, pcbc_version=VERIFIED_VERSION)
+        self.assertIn("package", str(ctx.exception))
+
+    def test_connectivity_requirement_accepts_members_constraint(self) -> None:
+        connectivity = {
+            "components": {"R1": {"kind": "resistor", "value": "1kohm"}},
+        }
+        specification = {
+            "requirements": [
+                {
+                    "id": "REQ-001",
+                    "type": "connectivity",
+                    "subject": "VCC",
+                    "constraints": {"members": ["R1.P1"]},
+                },
+                {
+                    "id": "REQ-002",
+                    "type": "component",
+                    "subject": "R1",
+                    "constraints": {"value": "1kohm"},
+                },
+            ]
+        }
+        acceptance = {
+            "checks": [
+                {"id": "ACC-001", "requirement": "REQ-001", "kind": "zener_test"},
+                {"id": "ACC-002", "requirement": "REQ-002", "kind": "zener_test"},
+            ]
+        }
+        project = DummyProjectState(
+            "src/blinky.zen", connectivity, specification, acceptance
+        )
+        source = render_specification_testbench(
+            project, pcbc_version=VERIFIED_VERSION
+        )
+        self.assertIn('.resistance.matches("1kohm")', source)
+
+    def test_assertion_count_matches_constraint_count(self) -> None:
+        connectivity = {
+            "components": {
+                "R1": {"kind": "resistor"},
+                "R2": {"kind": "resistor"},
+            }
+        }
+        specification = {
+            "requirements": [
+                {
+                    "id": "REQ-001",
+                    "type": "component",
+                    "subject": "R1",
+                    "constraints": {"value": "1kohm", "package": "0402"},
+                },
+                {
+                    "id": "REQ-002",
+                    "type": "component",
+                    "subject": "R2",
+                    "constraints": {"value": "4k7ohm"},
+                },
+            ]
+        }
+        acceptance = {
+            "checks": [
+                {"id": "ACC-001", "requirement": "REQ-001", "kind": "zener_test"},
+                {"id": "ACC-002", "requirement": "REQ-002", "kind": "zener_test"},
+            ]
+        }
+        project = DummyProjectState(
+            "src/blinky.zen", connectivity, specification, acceptance
+        )
+        source = render_specification_testbench(
+            project, pcbc_version=VERIFIED_VERSION
+        )
+        # 3 constraints + 2 component presence assertions
+        self.assertEqual(source.count("check("), 5)
+
     def test_missing_zener_test_raises_error(self) -> None:
         connectivity = {"components": {"R1": {"kind": "resistor"}}}
         specification = {

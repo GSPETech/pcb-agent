@@ -29,6 +29,7 @@ _CONNECTIVITY_FIELDS: dict[str, frozenset[str]] = {
     "nets": frozenset({"members", "required_pullup"}),
     "rules": frozenset({"forbid_unlisted_members", "required_power_nets"}),
 }
+_CONNECTIVITY_REQUIREMENT_CONSTRAINTS = frozenset({"members"})
 
 
 @dataclass(frozen=True)
@@ -371,8 +372,9 @@ def render_specification_testbench(
         "    components = module.components()",
     ]
 
-    unsupported_constraint_seen = False
-    components_with_assertions = set()
+    components_with_assertions: set[str] = set()
+    expected_constraints = 0
+    asserted_constraints = 0
     for requirement in requirements:
         if not isinstance(requirement, dict):
             continue
@@ -384,6 +386,12 @@ def render_specification_testbench(
         constraints = dict(requirement.get("constraints", {}))
 
         if rtype == "connectivity":
+            unexpected = set(constraints) - _CONNECTIVITY_REQUIREMENT_CONSTRAINTS
+            if unexpected:
+                raise GeneratorError(
+                    f"requirement {rid} of type connectivity declares "
+                    f"unsupported constraints: {sorted(unexpected)}"
+                )
             continue
 
         comp = components.get(subject) if isinstance(subject, str) else None
@@ -433,6 +441,7 @@ def render_specification_testbench(
             components_with_assertions.add(subject)
 
         for key, expected_value in constraints.items():
+            expected_constraints += 1
             if key == "value":
                 if adapter.value_accessor is None:
                     raise GeneratorError(f"adapter for {kind} has no verified value accessor")
@@ -443,6 +452,7 @@ def render_specification_testbench(
                     f"{_zener_string(str(expected_value))}"
                     f"), {_zener_string(f'wrong value for {subject}')})"
                 )
+                asserted_constraints += 1
             elif key == "package":
                 if adapter.package_accessor is None:
                     raise GeneratorError(f"adapter for {kind} has no verified package accessor")
@@ -453,11 +463,13 @@ def render_specification_testbench(
                     f"{_zener_string(str(expected_value))}, "
                     f"{_zener_string(f'wrong package for {subject}')})"
                 )
+                asserted_constraints += 1
             elif key == "mpn":
-                if adapter.mpn_accessor is None:
-                    raise GeneratorError(f"adapter for {kind} has no verified mpn accessor")
+                raise GeneratorError(
+                    f"mpn assertion is unsupported for {kind}; "
+                    f"no verified accessor has been captured"
+                )
             else:
-                unsupported_constraint_seen = True
                 raise GeneratorError(
                     f"unsupported constraint {key} in {rid}"
                 )
@@ -471,6 +483,12 @@ def render_specification_testbench(
                 f"component {comp_ref} declares properties {list(unasserted_props.keys())} "
                 f"but has no specification requirement covering it"
             )
+
+    if asserted_constraints != expected_constraints:
+        raise GeneratorError(
+            f"generated {expected_constraints} constraints but only "
+            f"{asserted_constraints} assertions; refusing incomplete evidence"
+        )
 
     if not lines[3:]:
         raise GeneratorError("specification produced no assertions")
