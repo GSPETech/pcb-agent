@@ -85,22 +85,29 @@ class GeneratedEvidenceByteExactTests(unittest.TestCase):
 
     def test_retained_source_contains_no_carriage_return(self) -> None:
         outcome = self._run()
-        data = (self.root / outcome.generated_path).read_bytes()
+        data = (self.evidence_root / outcome.generated_path).read_bytes()
         self.assertNotIn(b"\r", data)
 
     def test_retained_result_contains_no_carriage_return(self) -> None:
         outcome = self._run()
-        data = (self.root / outcome.result_path).read_bytes()
+        data = (self.evidence_root / outcome.result_path).read_bytes()
         self.assertNotIn(b"\r", data)
 
     def test_round_trip_verification_accepts_retained_artifacts(self) -> None:
         outcome = self._run()
         diode._verify_retained_artifact(
-            self.root, outcome.generated_path, outcome.generated_sha256
+            self.evidence_root, outcome.generated_path, outcome.generated_sha256
         )
         diode._verify_retained_artifact(
-            self.root, outcome.result_path, outcome.result_sha256
+            self.evidence_root, outcome.result_path, outcome.result_sha256
         )
+
+    def test_evidence_paths_are_relative_to_evidence_root(self) -> None:
+        outcome = self._run()
+        for path in (outcome.generated_path, outcome.result_path):
+            with self.subTest(path=path):
+                self.assertFalse(Path(path).is_absolute())
+                self.assertNotIn("\\", path)
 
     def test_execute_does_not_raise_compatibility_error(self) -> None:
         outcome = self._run()

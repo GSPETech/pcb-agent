@@ -159,7 +159,7 @@ def _diode_command(project: ProjectState, key: str, check_id: str,
             evidence_path.write_text(payload, encoding="utf-8", newline="\n")
             digest = "sha256:" + hashlib.sha256(evidence_path.read_bytes()).hexdigest()
             evidence = {
-                "path": relative_evidence_path(evidence_path, project.root),
+                "path": relative_evidence_path(evidence_path, trusted_root),
                 "sha256": digest,
             }
             if key == "test-command":
@@ -218,7 +218,8 @@ def _connectivity_check(project: ProjectState, test: Check, run: RunState | None
         return _check("CONNECTIVITY", CheckStatus.BLOCKED, f"generated test execution blocked: {error}")
 
     return diode.generated_check(
-        "CONNECTIVITY", outcome, "PcbAgentConnectivity", "_check_connectivity", project.root
+        "CONNECTIVITY", outcome, "PcbAgentConnectivity", "_check_connectivity",
+        run.raw_directory,
     )
 
 
@@ -258,7 +259,8 @@ def _specification_check(project: ProjectState, test: Check, run: RunState | Non
         return _check("SPECIFICATION", CheckStatus.BLOCKED, f"generated test execution blocked: {error}")
 
     return diode.generated_check(
-        "SPECIFICATION", outcome, "PcbAgentSpecification", "_check_specification", project.root
+        "SPECIFICATION", outcome, "PcbAgentSpecification", "_check_specification",
+        run.raw_directory,
     )
 
 
@@ -291,7 +293,7 @@ def _verify(project: ProjectState, run: RunState, profile: str) -> list[Check]:
                 checks.append(kicad.result_check(
                     kicad.drc(project, run),
                     run.raw_directory / "kicad-drc.json",
-                    project.root,
+                    run.raw_directory,
                 ))
             except (ConfigurationError, FileNotFoundError, OSError, ValueError) as error:
                 checks.append(_check("KICAD_DRC", CheckStatus.BLOCKED, str(error)))
@@ -564,7 +566,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 checks = [kicad.result_check(
                     kicad.drc(project, run),
                     run.raw_directory / "kicad-drc.json",
-                    project.root,
+                    run.raw_directory,
                 )]
             except (ConfigurationError, FileNotFoundError, OSError, ValueError) as error:
                 checks = [_check("KICAD_DRC", CheckStatus.BLOCKED, str(error))]

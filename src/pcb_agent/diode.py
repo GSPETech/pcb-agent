@@ -277,16 +277,15 @@ def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None
     return result
 
 
-def _relative_evidence_path(path: Path, project_root: Path) -> str:
-    resolved_path = path.resolve(strict=True)
-    resolved_root = project_root.resolve(strict=True)
+def _relative_evidence_path(path: Path, evidence_root: Path) -> str:
+    from .paths import PathViolation, relative_evidence_path
+
     try:
-        relative = resolved_path.relative_to(resolved_root)
-    except ValueError as error:
+        return relative_evidence_path(path, evidence_root)
+    except (PathViolation, OSError) as error:
         raise GeneratedCompatibilityError(
-            "generated evidence escapes project root"
+            "generated evidence escapes evidence root"
         ) from error
-    return relative.as_posix()
 
 
 def execute_generated_test(
@@ -361,9 +360,9 @@ def execute_generated_test(
 
     return GeneratedTestResult(
         process=process,
-        generated_path=_relative_evidence_path(evidence_source, project.root),
+        generated_path=_relative_evidence_path(evidence_source, evidence_root),
         generated_sha256=f"sha256:{retained_hash}",
-        result_path=_relative_evidence_path(raw_path, project.root),
+        result_path=_relative_evidence_path(raw_path, evidence_root),
         result_sha256=f"sha256:{raw_hash}",
     )
 
@@ -428,7 +427,7 @@ def _classify_generated_check(
 
 
 def _verify_retained_artifact(
-    project_root: Path,
+    evidence_root: Path,
     relative_path: str,
     expected_sha256: str,
 ) -> bytes:
@@ -439,7 +438,7 @@ def _verify_retained_artifact(
             f"malformed evidence digest for {relative_path}"
         )
     try:
-        path = resolve_workspace_path(project_root, relative_path, must_exist=True)
+        path = resolve_workspace_path(evidence_root, relative_path, must_exist=True)
         require_regular_file(path)
         data = path.read_bytes()
     except (OSError, ValueError) as error:
@@ -459,15 +458,15 @@ def generated_check(
     outcome: GeneratedTestResult,
     bench_name: str,
     check_name: str,
-    project_root: Path,
+    evidence_root: Path,
     required: bool = True,
 ) -> Check:
     try:
         _verify_retained_artifact(
-            project_root, outcome.generated_path, outcome.generated_sha256
+            evidence_root, outcome.generated_path, outcome.generated_sha256
         )
         result_bytes = _verify_retained_artifact(
-            project_root, outcome.result_path, outcome.result_sha256
+            evidence_root, outcome.result_path, outcome.result_sha256
         )
     except GeneratedCompatibilityError as error:
         status = CheckStatus.BLOCKED

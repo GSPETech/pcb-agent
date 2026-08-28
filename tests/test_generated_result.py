@@ -24,9 +24,9 @@ def outcome(payload: dict, returncode: int = 0) -> GeneratedTestResult:
     )
     return GeneratedTestResult(
         process,
-        "reports/run/raw/connectivity-testbench.zen",
+        "connectivity-testbench.zen",
         "sha256:" + "a" * 64,
-        "reports/run/raw/connectivity-result.json",
+        "connectivity-result.json",
         "sha256:" + "b" * 64,
     )
 
@@ -225,8 +225,8 @@ class GeneratedPassClassificationTests(unittest.TestCase):
         }
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            raw = root / "reports" / "run" / "raw"
-            raw.mkdir(parents=True)
+            raw = root
+
             (raw / "connectivity-testbench.zen").write_text("mutated", encoding="utf-8")
             (raw / "connectivity-result.json").write_text("{}", encoding="utf-8")
             check = generated_check(
@@ -234,7 +234,7 @@ class GeneratedPassClassificationTests(unittest.TestCase):
                 outcome(payload),
                 "PcbAgentConnectivity",
                 "_check_connectivity",
-                root,
+                raw,
             )
         self.assertEqual(check.status, CheckStatus.BLOCKED)
         self.assertIn("evidence", check.message)
@@ -279,8 +279,8 @@ class GeneratedPassClassificationTests(unittest.TestCase):
         )
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            raw = root / "reports" / "run" / "raw"
-            raw.mkdir(parents=True)
+            raw = root
+
             (raw / "connectivity-testbench.zen").write_text(source_text, encoding="utf-8")
             (raw / "connectivity-result.json").write_text(result_text, encoding="utf-8")
 
@@ -296,9 +296,9 @@ class GeneratedPassClassificationTests(unittest.TestCase):
             )
             resolved = GeneratedTestResult(
                 process,
-                "reports/run/raw/connectivity-testbench.zen",
+                "connectivity-testbench.zen",
                 "sha256:" + hashlib.sha256(source_text.encode("utf-8")).hexdigest(),
-                "reports/run/raw/connectivity-result.json",
+                "connectivity-result.json",
                 "sha256:" + hashlib.sha256(result_text.encode("utf-8")).hexdigest(),
             )
             check = generated_check(
@@ -306,7 +306,7 @@ class GeneratedPassClassificationTests(unittest.TestCase):
                 resolved,
                 "PcbAgentConnectivity",
                 "_check_connectivity",
-                root,
+                raw,
             )
         self.assertEqual(check.status, CheckStatus.PASS)
 
@@ -343,8 +343,8 @@ class GeneratedPassClassificationTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            raw = root / "reports" / "run" / "raw"
-            raw.mkdir(parents=True)
+            raw = root
+
             (raw / "connectivity-testbench.zen").write_bytes(b"source")
             (raw / "connectivity-result.json").write_bytes(failing_text.encode("utf-8"))
 
@@ -360,9 +360,9 @@ class GeneratedPassClassificationTests(unittest.TestCase):
             )
             resolved = GeneratedTestResult(
                 process,
-                "reports/run/raw/connectivity-testbench.zen",
+                "connectivity-testbench.zen",
                 "sha256:" + hashlib.sha256(b"source").hexdigest(),
-                "reports/run/raw/connectivity-result.json",
+                "connectivity-result.json",
                 "sha256:" + hashlib.sha256(failing_text.encode("utf-8")).hexdigest(),
             )
             check = generated_check(
@@ -370,7 +370,7 @@ class GeneratedPassClassificationTests(unittest.TestCase):
                 resolved,
                 "PcbAgentConnectivity",
                 "_check_connectivity",
-                root,
+                raw,
             )
         self.assertEqual(check.status, CheckStatus.FAIL)
 
@@ -387,8 +387,8 @@ class GeneratedPassClassificationTests(unittest.TestCase):
         }
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            raw = root / "reports" / "run" / "raw"
-            raw.mkdir(parents=True)
+            raw = root
+
             (raw / "connectivity-testbench.zen").write_bytes(b"source")
             (raw / "connectivity-result.json").write_bytes(b"{}")
 
@@ -404,9 +404,9 @@ class GeneratedPassClassificationTests(unittest.TestCase):
             )
             resolved = GeneratedTestResult(
                 process,
-                "reports/run/raw/connectivity-testbench.zen",
+                "connectivity-testbench.zen",
                 "not-a-digest",
-                "reports/run/raw/connectivity-result.json",
+                "connectivity-result.json",
                 "sha256:" + "b" * 64,
             )
             check = generated_check(
@@ -414,7 +414,7 @@ class GeneratedPassClassificationTests(unittest.TestCase):
                 resolved,
                 "PcbAgentConnectivity",
                 "_check_connectivity",
-                root,
+                raw,
             )
         self.assertEqual(check.status, CheckStatus.BLOCKED)
         self.assertIn("malformed evidence digest", check.message)
