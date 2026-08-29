@@ -4,13 +4,34 @@ Date: 2026-08-29
 Branch: `feat/diode-adapter-registry`
 PR: https://github.com/GSPETech/pcb-agent/pull/5 (OPEN, not merged)
 Author: `jrjuarendra <jrjuarendra@gmail.com>`
+Status: `PARTIAL` — follow-up tasks 1–11 pending; this file is the executable plan.
 
 ## Objective
 
 Close the final source-provenance and registry-enforcement gaps discovered in
 the audit of `docs/report-spike-remediation.md`. Execute follow-up tasks 0–11
-as separate Conventional Commits, push each completed commit, update the PR #5
-body, and do not merge PR #5.
+under the commit policy below, push each commit, update the PR #5 body, and do
+not merge PR #5 until task 11 passes.
+
+## Commit policy
+
+- Each source-changing task uses its own commit.
+- The source commit is pushed before real evidence capture.
+- Evidence recapture is a separate commit.
+- Verification transcript/attestation is a separate commit.
+- Audit-only tasks create no commit when no change is required.
+
+A source change and the resulting re-captured evidence are never combined into
+one commit.
+
+## Policy exception (explicit)
+
+This is harness/evidence development, not a board repair run. The user
+explicitly requested changes to `tests/**` and `tests/evidence/**`, so the
+`AGENT_PROTOCOL.md` repair-run denylist does not prohibit these development
+changes. `SPEC.json`, `ACCEPTANCE.json`, and `expected-connectivity.json` must
+still never be weakened to produce `PASS`; verification `PASS` is not
+fabrication approval.
 
 ## Hard constraints
 
@@ -22,37 +43,44 @@ body, and do not merge PR #5.
   must remain `BLOCKED`.
 - Do not amend existing commits. Commit author stays
   `jrjuarendra <jrjuarendra@gmail.com>`. Push each completed commit.
-- **Commit policy: every source-changing task and the evidence recapture
-  require separate commits.** A source change and the resulting re-captured
-  evidence are never combined into one commit.
+- Per-run source cleanliness belongs only to Task 1 and is consumed by the
+  Task 9 recapture. Task 5 and Task 7 do **not** claim it.
 
-## Verified state at handoff (checked 2026-08-29T12:33:20Z)
+## Verified state at handoff
 
 | Field | Value |
 |---|---|
 | Local branch name | `feat/diode-adapter-registry` |
-| Local HEAD | `15d85f48101af441ff67885ebb0fba3f939c3335` |
-| Remote branch HEAD (`origin/feat/diode-adapter-registry`) | `15d85f48101af441ff67885ebb0fba3f939c3335` |
-| PR head SHA | `15d85f48101af441ff67885ebb0fba3f939c3335` |
-| `git status --short` | `?? report-progress-spike-remediation.md` (this file, untracked at root before being moved) |
+| Local HEAD | `ce8e7bcb6bf7efb4600c47aad74466c820d59865` |
+| Remote branch HEAD (`origin/feat/diode-adapter-registry`) | `ce8e7bcb6bf7efb4600c47aad74466c820d59865` |
+| PR head SHA | `ce8e7bcb6bf7efb4600c47aad74466c820d59865` |
 | Manifest entry count | 144 |
 | Evidence file count (non-manifest) | 144 |
 | Manifest verification | `sha256sum -c manifest.sha256` → 144/144 OK, exit 0 |
+| Task 1 | PLANNED / not started |
+| PR #5 CI | green |
 
-Local HEAD equals remote HEAD equals PR head SHA: the branch is pushed and
-in sync. All 144 current evidence hashes verify.
+Local HEAD equals remote HEAD equals PR head SHA: the branch is pushed and in
+sync. All 144 current evidence hashes verify.
+
+## Docs status reconciliation
+
+`docs/report-spike-execution.md` and `docs/spike-diode-net-naming.md` cover the
+already-executed spike results (mapping table, negative behaviour, evidence
+inventory). `docs/report-spike-remediation.md` and this handoff cover the
+remaining provenance completion. The two execution/design docs stay `COMPLETE`
+with respect to the executed spike; provenance completion status is owned by
+this file and is `PARTIAL` until task 11.
 
 ## Completed
 
-### Follow-up task 0 — this handoff
+### Follow-up task 0 — this handoff (superseded by task 0A revision)
 
-`docs/report-spike-remediation.md` (the prior remediation report, tracked at
-`15d85f4`) is `PARTIAL — artifact integrity complete, per-run provenance
-enforcement pending`. The earlier claim that "every run records its own clean
-git status" was corrected: the capture orchestrator verified a clean tree once
-before the sequence; per-run source re-measurement is what tasks 1, 5, and 7
-below add. Task 15 attribution in that report points at `22878f4` (first
-tracked version), and the 0–15 = 16 numbered tasks distinction is stated.
+`docs/report-spike-remediation.md` is `PARTIAL — artifact integrity complete,
+per-run provenance enforcement pending`. The earlier claim that "every run
+records its own clean git status" was corrected: the capture orchestrator
+verified a clean tree once before the sequence; per-run source re-measurement
+is what Task 1 below adds.
 
 ## Follow-up task plan (0–11)
 
@@ -61,11 +89,11 @@ original remediation report's own 0–15 numbering.
 
 | Task | Status | Commit |
 |---|---|---|
-| 0 | **DONE** — corrected progress handoff, tracked | this commit |
+| 0A | **DONE** — authoritative executable handoff | `docs: make spike remediation handoff executable` |
 | 1 | **PLANNED — not started** | `fix: measure source cleanliness for every evidence run` |
 | 2 | PLANNED | `fix: harden manifest-bound tool version validation` |
 | 3 | PLANNED | `fix: prevent adapter provenance cache bypass` |
-| 4 | **IMPLEMENTED — audit required** (see note) | `test: complete generated renderer evidence binding` only if changed |
+| 4 | **IMPLEMENTED — audit required** | `test: complete generated renderer evidence binding` only if changed |
 | 5 | PLANNED | `test: enforce executable production command provenance` |
 | 6 | PLANNED | `test: enforce final spike provenance relations` |
 | 7 | PLANNED | `test: bind verification transcripts to independent attestation` |
@@ -74,30 +102,149 @@ original remediation report's own 0–15 numbering.
 | 10 | PLANNED | `test: retain final spike verification attestations` |
 | 11 | PLANNED | `docs: finalize fully audited spike remediation` |
 
-### Task 1 — PLANNED, not started
+## Task specifications
 
-No source changes have been made for task 1 yet. The current capture scripts
-(`scripts/capture-spike-evidence.py`, `scripts/capture-production-expression.py`)
-still check `git status`/`git diff` once at start (spike script) or hardcode an
-empty status (production script). The planned change is a machine-readable
-`measure_source_cleanliness` helper using `git status --porcelain=v1 -z
---untracked-files=all` plus staged/unstaged `git diff --binary`, each with the
-evidence root excluded, re-measured before every individual run and again after
-input copies but before `_run`. This has not been implemented.
+### Task 1 — Source cleanliness
 
-### Task 4 — already implemented, requires audit (not reimplementation)
+Files:
+- `scripts/capture-spike-evidence.py`
+- `scripts/capture-production-expression.py`
+- tests for the cleanliness helper
 
-The renderer byte-binding already exists and is enforced:
+Required Git commands:
+- `git rev-parse HEAD`
+- `git status --porcelain=v1 -z --untracked-files=all`
+- `git diff --binary`
+- `git diff --cached --binary`
 
-- `tests/test_evidence_bundle.py::test_both_renderers_byte_match_retained_generated_sources`
-- `tests/test_captured_registry.py::ProductionExpressionEvidenceTests`
-  (`test_connectivity_renderer_output_matches_retained_generated_source`,
-  `test_specification_renderer_output_matches_retained_generated_source`, plus
-  manifest/identity/one-byte-mutation coverage).
+Evidence exclusion pathspec: `tests/evidence/diode-0.4.40/**`
 
-Task 4 is therefore **audit-only**: verify the ten enumerated binding
-properties hold for both renderers and add only any genuinely missing test. Do
-not duplicate the existing byte-binding code.
+Cleanliness record fields:
+- `repo_revision`
+- `raw_status` bytes encoding + SHA-256
+- `filtered_source_status` bytes encoding + SHA-256
+- `staged_diff` SHA-256
+- `unstaged_diff` SHA-256
+- `exclusion` pathspec
+- `source_clean`
+- `measured_at`
+
+Rules:
+- nonzero Git command exit = abort
+- dirty tracked/untracked/staged source = abort
+- evidence-root-only changes = allowed and recorded
+- remeasure before each run and immediately before external tool execution
+- copies of retained inputs happen before the second measurement
+- production script measures itself; no hardcoded empty status
+
+Tests: staged change, unstaged change, untracked file, rename, spaces,
+evidence-only change, Git failure, revision drift.
+
+### Task 2 — Version validation
+
+Files: `src/pcb_agent/evidence.py`, tests.
+
+Exact accepted bytes: `pcbc X.Y.Z\n` (single line, newline-terminated).
+
+Reject: no newline, extra line, duplicate line, conflicting version, invalid
+UTF-8, version symlink, manifest symlink, evidence-root symlink, hash
+mismatch, version mismatch.
+
+### Task 3 — Registry cache
+
+Define:
+- registry generation counter
+- generation-keyed cache
+- immutable active snapshot
+- mutation invalidates cache
+- production validation validates active snapshot
+- explicit `temporary_test_registry` context manager
+- restoration after nested context and exception
+- `doctor`/`build` never validate
+- expected boundary exceptions only; no broad `ValueError` catch
+
+### Task 4 — Renderer audit (no reimplementation)
+
+List all ten checks explicitly:
+1. connectivity bytes equal retained source
+2. specification bytes equal retained source
+3. connectivity source digest in manifest
+4. specification source digest in manifest
+5. connectivity result digest in manifest
+6. specification result digest in manifest
+7. exact expected identity connectivity
+8. exact expected identity specification
+9. one-byte mutation fails
+10. wrong digest/missing manifest entry fails
+
+Mark no commit if all already pass.
+
+### Task 5 — Production command provenance
+
+Require structured per-gate metadata:
+- argv array
+- cwd
+- executable
+- exit
+- start/end timestamp
+- revision
+- source path/hash
+- stdout/stderr paths/hashes
+
+No joined string as authoritative command.
+
+### Task 6 — Provenance relations
+
+Enumerate exact relations among: `capture-provenance.json`, `commands.json`,
+each `run-provenance.json`, script hashes, source revision, source
+cleanliness, generated source/result hashes, manifest entries, reports and
+safety fields, registered kinds and crystal absence.
+
+### Task 7 — Transcript attestation
+
+Define non-circular model:
+
+Primary manifest excludes:
+- `windows-manifest.txt`
+- `wsl-manifest.txt`
+- `manifest-attestation.json`
+
+`manifest-attestation.json` stores:
+- exact primary manifest SHA-256
+- Windows check command/cwd/time/revision/exit/transcript/hash
+- WSL equivalent
+
+Pytest/Pyright transcripts have independent metadata records.
+
+### Task 8 — Capture barrier
+
+No source edit after capture barrier. All capture-affecting code
+committed/pushed. Record exact executed revision. Task creates no commit
+itself.
+
+### Task 9 — WSL recapture
+
+Define exact command order, environment, ext4 check, revision check, clean
+source check, capture script invocation, stable raw hash expectations,
+nondeterministic artifact expectations, manifest rebuild, and evidence commit.
+
+### Task 10 — Verification transcripts
+
+Only after Task 9 evidence commit. Run Windows and WSL pytest/Pyright. Build
+primary manifest first. Generate external manifest attestation afterward.
+Commit separately.
+
+### Task 11 — Final docs/PR
+
+Set `COMPLETE` only after all tests pass. Track exact executed revision
+separately from evidence/docs commits. Correct all docs and PR body. Run:
+
+- `python -m pytest tests/ -v`
+- `python -m pyright`
+- `git diff --check master...HEAD`
+- `git status --short`
+- `gh pr checks 5`
+- verify local HEAD == remote HEAD == PR head
 
 ## Dependency notes
 
@@ -135,6 +282,7 @@ not duplicate the existing byte-binding code.
 ## Commits so far (newest first)
 
 ```
+ce8e7bc docs: correct spike remediation progress handoff
 15d85f4 docs: correct remaining spike provenance claims
 90cd006 test: compare capture scripts across platform line endings
 22878f4 docs: finalize audited spike remediation report
