@@ -1,7 +1,7 @@
 command: sha256sum -c manifest.sha256  (WSL2 ext4 checkout)
 cwd: /home/rendra/pcbagent-full/tests/evidence/diode-0.4.40
-timestamp: 2026-08-29T10:32:22.000Z
-revision: 486d51843e1d53428e8553e8f7cdecb0ff1c8098
+timestamp: 2026-08-29T10:37:51.000Z
+revision: dbdc013c5ca67817ad689841b08883a7cb9f7eef
 exit_code: 0
 --- output ---
 ./capture-provenance.json: OK
@@ -144,5 +144,7 @@ exit_code: 0
 ./valid-blinky/valid-blinky.sanitized.json: OK
 ./valid-blinky/valid-blinky.stderr: OK
 ./verification/pyright.txt: OK
+./verification/windows-manifest.txt: OK
 ./verification/windows-pytest.txt: OK
+./verification/wsl-manifest.txt: OK
 ./verification/wsl-pytest.txt: OK

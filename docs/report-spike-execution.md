@@ -10,6 +10,12 @@ artifacts under `tests/evidence/diode-0.4.40/` (`manifest.sha256` passes
 `sha256sum -c`), and the production adapter registry is validated lazily
 against that bundle on the first generated TestBench use.
 
+The evidence bundle was re-captured from a clean tracked commit (`ff1b472`) on
+WSL2 ext4 against the real `pcbc 0.4.40` toolchain; the executed revision and
+clean `git status` are recorded per run in `capture-provenance.json`,
+`commands.json`, and each run directory's `run-provenance.json`. See
+`docs/report-spike-remediation.md`.
+
 ## Task
 
 Execute the Diode net-naming spike documented in `docs/spike-diode-net-naming.md`
@@ -37,7 +43,7 @@ unblock automatic TestBench generation.
 5. Confirmed the prefix hypothesis `{TestBenchName}__{case_key}.` by varying
    both values; retained as `prefix/prefix-renamed-alt-case.json`.
 6. Captured all evidence under `tests/evidence/diode-0.4.40/` with a
-   `manifest.sha256` (126 artifacts, all hashes verify).
+   `manifest.sha256` (144 artifacts, all hashes verify on Windows and WSL).
 7. Built the production adapter registry (`captured_adapter_registry()`) from
    the captured evidence, with exact result/source path + digest bindings.
 8. Ran `pcb-agent verify` end-to-end against the real toolchain:
@@ -91,20 +97,23 @@ crystal remains `BLOCKED / REQUIRES IMPLEMENTATION`.
 
 - Environment: `environment.txt`, `pcb-version.txt` (`pcbc 0.4.40`),
   `repo-revision.txt`
-- Commands: `commands.json`
-- `valid-blinky/`: source, TestBench, contracts, raw result, command/exit/stderr
+- Capture provenance: `capture-provenance.json`, `commands.json`, per-run
+  `run-provenance.json`, retained `scripts/`
+- `valid-blinky/`: source, TestBench, contracts, raw result, exit/stderr
 - `spike-generics/`: evidence TestBench + module source, raw result
 - `prefix/`: `RenamedBench__alt_case` TestBench + raw result
 - `green-real/`: full verify report + complete run directory + source/contracts
 - `production-expression/`: exact production-generated testbenches + raw results
 - `negative-invalid-syntax/`, `negative-invalid-connectivity/`,
   `negative-invalid-value/`: verify reports + run dirs + raw artifacts
+- `verification/`: retained Windows/WSL pytest, pyright, and manifest transcripts
 - `.sanitized.json` companions for publication (path fields only rewritten)
-- `manifest.sha256`: 126 artifacts, all hashes verified
+- `manifest.sha256`: 144 artifacts, all hashes verified
 
 ## Verification
 
-- pytest: 221 passed, 14 skipped, 335 subtests passed
+- Windows pytest: 249 passed, 14 skipped, 395 subtests passed
+- WSL pytest: 263 passed, 404 subtests passed
 - pyright: 0 errors
 - `sha256sum -c manifest.sha256`: all OK
 - Real toolchain (pcbc 0.4.40): `fixtures/green-real` → all required gates PASS;
