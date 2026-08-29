@@ -1,0 +1,160 @@
+{
+  "artifacts": [
+    {
+      "path": "diode_build.json",
+      "sha256": "sha256:2b906b7483a33fb937fbfe8b078861f48837794592c9c8b1f31391f53b5cab3e"
+    },
+    {
+      "path": "zener_test.json",
+      "sha256": "sha256:709ce0f91c8cd44ad09fbe410de228c6e895d78b0f48625b96bf8501599a2526",
+      "testbench_sha256": "sha256:187cd15a4da791b34c4baca1019df7df69bfd246c6651e69a058a0d90b4f203f"
+    }
+  ],
+  "checks": [
+    {
+      "command": [],
+      "duration": null,
+      "evidence": {},
+      "exit_code": null,
+      "id": "CONTRACT",
+      "message": "project contracts loaded and hashed",
+      "provenance": "harness",
+      "required": true,
+      "severity": "error",
+      "status": "PASS"
+    },
+    {
+      "command": [
+        "/home/rendra/.local/bin/pcb",
+        "build",
+        "src/blinky.zen"
+      ],
+      "duration": 0.5154034289999956,
+      "evidence": {
+        "path": "diode_build.json",
+        "sha256": "sha256:2b906b7483a33fb937fbfe8b078861f48837794592c9c8b1f31391f53b5cab3e"
+      },
+      "exit_code": 0,
+      "id": "DIODE_BUILD",
+      "message": "command exited 0",
+      "provenance": "tool",
+      "required": true,
+      "severity": "error",
+      "status": "PASS"
+    },
+    {
+      "command": [
+        "/home/rendra/.local/bin/pcb",
+        "test",
+        "tests/blinky_test.zen",
+        "-f",
+        "json"
+      ],
+      "duration": 0.11505686499999968,
+      "evidence": {
+        "path": "zener_test.json",
+        "sha256": "sha256:709ce0f91c8cd44ad09fbe410de228c6e895d78b0f48625b96bf8501599a2526",
+        "testbench_sha256": "sha256:187cd15a4da791b34c4baca1019df7df69bfd246c6651e69a058a0d90b4f203f"
+      },
+      "exit_code": 1,
+      "id": "ZENER_TEST",
+      "message": "command exited 1",
+      "provenance": "tool",
+      "required": true,
+      "severity": "error",
+      "status": "FAIL"
+    },
+    {
+      "command": [],
+      "duration": null,
+      "evidence": {},
+      "exit_code": null,
+      "id": "CONNECTIVITY",
+      "message": "locked Zener TestBench did not pass; connectivity was not verified",
+      "provenance": "harness",
+      "required": true,
+      "severity": "error",
+      "status": "BLOCKED"
+    },
+    {
+      "command": [],
+      "duration": null,
+      "evidence": {},
+      "exit_code": null,
+      "id": "SPECIFICATION",
+      "message": "locked Zener TestBench did not pass; specification was not verified",
+      "provenance": "harness",
+      "required": true,
+      "severity": "error",
+      "status": "BLOCKED"
+    },
+    {
+      "command": [],
+      "duration": null,
+      "evidence": {},
+      "exit_code": null,
+      "id": "LAYOUT_GENERATE",
+      "message": "layout profile not active",
+      "provenance": "harness",
+      "required": false,
+      "severity": "error",
+      "status": "SKIPPED"
+    },
+    {
+      "command": [],
+      "duration": null,
+      "evidence": {},
+      "exit_code": null,
+      "id": "LAYOUT_SYNC",
+      "message": "layout profile not active",
+      "provenance": "harness",
+      "required": false,
+      "severity": "error",
+      "status": "SKIPPED"
+    },
+    {
+      "command": [],
+      "duration": null,
+      "evidence": {},
+      "exit_code": null,
+      "id": "KICAD_DRC",
+      "message": "layout profile not active",
+      "provenance": "harness",
+      "required": false,
+      "severity": "error",
+      "status": "SKIPPED"
+    },
+    {
+      "command": [],
+      "duration": null,
+      "evidence": {},
+      "exit_code": null,
+      "id": "SIMULATION",
+      "message": "simulation is not implemented",
+      "provenance": "harness",
+      "required": false,
+      "severity": "error",
+      "status": "SKIPPED"
+    }
+  ],
+  "fabrication_approved": false,
+  "hashes": {
+    "ACCEPTANCE.json": "sha256:a1f1aef00f016898060d470082d0217c8fdc0aa35524e143d8413e6679ced658",
+    "SPEC.json": "sha256:ed71b79d8ddf04fe539181a89d46d213c19ebc9f72992e54912a42d8dcae504e",
+    "expected-connectivity.json": "sha256:3bbb6144c4c35e30c3691e6d68a2d424761c3b3d1e6d716f9d4e21d8a802afa1",
+    "project.toml": "sha256:747a2e6302394f4c9be850b404487394715faef92ec8df5a4fb01897f7310c32"
+  },
+  "human_review_required": true,
+  "production_ready": false,
+  "profile": "schematic",
+  "project": "invalid-connectivity",
+  "run_id": "20260829T032747.310970Z-581",
+  "schema_version": "1",
+  "source_dirty": true,
+  "status": "BLOCKED",
+  "timestamp": "2026-08-29T03:27:47.991292+00:00",
+  "versions": {
+    "pcb": "pcbc 0.4.40",
+    "pcbc": "0.4.40"
+  }
+}

@@ -24,6 +24,14 @@ verify-report.md
 *.tmp
 *.bak
 
+# Repository-owned spike evidence must stay tracked even though it carries
+# verify-report.json / verify-report.md names.
+!tests/evidence/
+tests/evidence/**/verify-report.json
+tests/evidence/**/verify-report.md
+!tests/evidence/**/verify-report.json
+!tests/evidence/**/verify-report.md
+
 # Diode transient state
 .pcb/cache/
 .pcb/tmp/
