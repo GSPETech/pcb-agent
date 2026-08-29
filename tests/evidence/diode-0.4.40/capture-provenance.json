@@ -1,0 +1,17 @@
+{
+  "captured_at": "2026-08-29T10:19:35.581270+00:00",
+  "cwd": "/home/rendra/pcbagent-full",
+  "evidence_root": "tests/evidence/diode-0.4.40",
+  "executable_pcb": "/home/rendra/.local/bin/pcb",
+  "filesystem": "ext4",
+  "git_diff_binary": "",
+  "git_diff_binary_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "git_status": "",
+  "git_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "pcbc_version": "0.4.40",
+  "production_script_sha256": "5a9eb275d88816137ed5b21d433fcd03ce8a9c5f403f4fd0316aaacdb39a7a80",
+  "python_executable": "/usr/bin/python3",
+  "repo_revision": "ff1b4726b93d2e96cc73e229fba459ab0c76069b",
+  "script": "scripts/capture-spike-evidence.py",
+  "script_sha256": "59d4773f8afb47b30441a9b5aa71d3844d60bbbf205b901a21a6fcf5678258d5"
+}

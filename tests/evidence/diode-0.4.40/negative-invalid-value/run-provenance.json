@@ -1,0 +1,25 @@
+{
+  "argv": [
+    "/usr/bin/python3",
+    "-m",
+    "pcb_agent.cli",
+    "verify",
+    "fixtures/invalid-value",
+    "--format",
+    "json"
+  ],
+  "cwd": "/home/rendra/pcbagent-full",
+  "dir": "negative-invalid-value",
+  "executable": "/usr/bin/python3",
+  "exit_code": 2,
+  "git_status": "",
+  "git_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "kind": "negative-invalid-value",
+  "repo_revision": "ff1b4726b93d2e96cc73e229fba459ab0c76069b",
+  "script_sha256": "59d4773f8afb47b30441a9b5aa71d3844d60bbbf205b901a21a6fcf5678258d5",
+  "stderr": "negative-invalid-value/verify-report.stderr",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout": "negative-invalid-value/verify-report.json",
+  "stdout_sha256": "03eea00ec774f5cb865a0f70608ef198c2ee59af9f2c2dd0488ddb0ba01d2217",
+  "timestamp": "2026-08-29T10:19:35.581270+00:00"
+}

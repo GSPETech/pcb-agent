@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "/usr/bin/python3",
+    "/home/rendra/pcbagent-full/scripts/capture-production-expression.py"
+  ],
+  "commands": [
+    "/home/rendra/.local/bin/pcb test tests/.pcb-agent-connectivity.generated.zen -f json",
+    "/home/rendra/.local/bin/pcb test tests/.pcb-agent-specification.generated.zen -f json"
+  ],
+  "cwd": "/home/rendra/pcbagent-full",
+  "dir": "production-expression",
+  "executable": "/usr/bin/python3",
+  "exit_code": 0,
+  "git_status": "",
+  "git_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "kind": "production-expression",
+  "repo_revision": "ff1b4726b93d2e96cc73e229fba459ab0c76069b",
+  "script_sha256": "5a9eb275d88816137ed5b21d433fcd03ce8a9c5f403f4fd0316aaacdb39a7a80",
+  "stderr": "production-expression/run/output.stderr",
+  "stdout": "production-expression/run/output.stdout",
+  "timestamp": "2026-08-29T10:19:42.217944+00:00"
+}

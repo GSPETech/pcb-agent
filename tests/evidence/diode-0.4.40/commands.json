@@ -1,57 +1,200 @@
 {
-  "tool": "pcbc 0.4.40",
+  "capture_provenance": "capture-provenance.json",
   "environment": "environment.txt",
   "pcb_version": "pcb-version.txt",
   "repo_revision": "repo-revision.txt",
   "runs": [
     {
+      "argv": [
+        "/home/rendra/.local/bin/pcb",
+        "test",
+        "tests/blinky_test.zen",
+        "-f",
+        "json"
+      ],
+      "cwd": "/home/rendra/pcbagent-full/fixtures/valid-blinky",
+      "dir": "valid-blinky",
+      "executable": "/home/rendra/.local/bin/pcb",
+      "exit_code": 0,
+      "git_status": "",
+      "git_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "kind": "valid-blinky-locked-testbench",
-      "dir": "valid-blinky/",
-      "command": ["pcb", "test", "tests/blinky_test.zen", "-f", "json"],
-      "metadata": "valid-blinky/valid-blinky.command.json"
+      "repo_revision": "ff1b4726b93d2e96cc73e229fba459ab0c76069b",
+      "script_sha256": "59d4773f8afb47b30441a9b5aa71d3844d60bbbf205b901a21a6fcf5678258d5",
+      "stderr": "valid-blinky/valid-blinky.stderr",
+      "stderr_sha256": "8cdbf793b4acbb45ba86577d41843a24e8b0943d380d3a6ba57a604038b98e36",
+      "stdout": "valid-blinky/valid-blinky.json",
+      "stdout_sha256": "02c6cb60bfaf371e640e34ed0ff7b707074cfad0789b38a25c014cfa66cfac11",
+      "timestamp": "2026-08-29T10:19:35.581270+00:00"
     },
     {
+      "argv": [
+        "/home/rendra/.local/bin/pcb",
+        "test",
+        "tests/spike_evidence.zen",
+        "-f",
+        "json"
+      ],
+      "cwd": "/home/rendra/pcbagent-full/fixtures/spike-generics",
+      "dir": "spike-generics",
+      "executable": "/home/rendra/.local/bin/pcb",
+      "exit_code": 0,
+      "git_status": "",
+      "git_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "kind": "spike-generics-evidence-testbench",
-      "dir": "spike-generics/",
-      "command": ["pcb", "test", "tests/spike_evidence.zen", "-f", "json"],
-      "metadata": "spike-generics/spike-generics.command.json"
+      "repo_revision": "ff1b4726b93d2e96cc73e229fba459ab0c76069b",
+      "script_sha256": "59d4773f8afb47b30441a9b5aa71d3844d60bbbf205b901a21a6fcf5678258d5",
+      "stderr": "spike-generics/spike-generics.stderr",
+      "stderr_sha256": "ddfe57da45ee47f21a563ab964bb75c829a4d50d8c7ee8813c3b23964b7826ae",
+      "stdout": "spike-generics/spike-generics.json",
+      "stdout_sha256": "3320a8aa668f5f28dc19b4240f9f92e22333805ead12e36cb4c5a3c3b1636267",
+      "timestamp": "2026-08-29T10:19:35.581270+00:00"
     },
     {
+      "argv": [
+        "/home/rendra/.local/bin/pcb",
+        "test",
+        "tests/prefix_evidence.zen",
+        "-f",
+        "json"
+      ],
+      "cwd": "/home/rendra/pcbagent-full/fixtures/spike-generics",
+      "dir": "prefix",
+      "executable": "/home/rendra/.local/bin/pcb",
+      "exit_code": 0,
+      "git_status": "",
+      "git_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "kind": "prefix-variation",
-      "dir": "prefix/",
-      "command": ["pcb", "test", "tests/prefix_evidence.zen", "-f", "json"],
-      "metadata": "prefix/prefix.command.json"
+      "repo_revision": "ff1b4726b93d2e96cc73e229fba459ab0c76069b",
+      "script_sha256": "59d4773f8afb47b30441a9b5aa71d3844d60bbbf205b901a21a6fcf5678258d5",
+      "stderr": "prefix/prefix-renamed-alt-case.stderr",
+      "stderr_sha256": "521e8828629cac57fd5f2ba84792b8039e47974aad702b529fe99bd0e66f0312",
+      "stdout": "prefix/prefix-renamed-alt-case.json",
+      "stdout_sha256": "45daf46e3919c4734730ac5bb6f6aaa1d6e559bc406b599b78bd381469f54d0d",
+      "timestamp": "2026-08-29T10:19:35.581270+00:00"
     },
     {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "pcb_agent.cli",
+        "verify",
+        "fixtures/green-real",
+        "--format",
+        "json"
+      ],
+      "cwd": "/home/rendra/pcbagent-full",
+      "dir": "green-real",
+      "executable": "/usr/bin/python3",
+      "exit_code": 0,
+      "git_status": "",
+      "git_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "kind": "green-real-verify",
-      "dir": "green-real/",
-      "command": ["python3", "-m", "pcb_agent.cli", "verify", "fixtures/green-real", "--format", "json"],
-      "metadata": "green-real/green-real-report.json",
-      "run_dir": "green-real/run/"
+      "repo_revision": "ff1b4726b93d2e96cc73e229fba459ab0c76069b",
+      "script_sha256": "59d4773f8afb47b30441a9b5aa71d3844d60bbbf205b901a21a6fcf5678258d5",
+      "stderr": "green-real/green-real-report.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "green-real/green-real-report.json",
+      "stdout_sha256": "66d4e20ef42868be09206291e2a39888ce6b37a16e97ee9542584d9144341e79",
+      "timestamp": "2026-08-29T10:19:35.581270+00:00"
     },
     {
-      "kind": "production-expression-verify",
-      "dir": "production-expression/",
-      "command": ["python3", "-c", "render+execute exact production testbenches via harness"],
-      "metadata": "production-expression/production-summary.json"
-    },
-    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "pcb_agent.cli",
+        "verify",
+        "fixtures/invalid-syntax",
+        "--format",
+        "json"
+      ],
+      "cwd": "/home/rendra/pcbagent-full",
+      "dir": "negative-invalid-syntax",
+      "executable": "/usr/bin/python3",
+      "exit_code": 2,
+      "git_status": "",
+      "git_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "kind": "negative-invalid-syntax",
-      "dir": "negative-invalid-syntax/",
-      "command": ["python3", "-m", "pcb_agent.cli", "verify", "fixtures/invalid-syntax", "--format", "json"],
-      "metadata": "negative-invalid-syntax/verify-report.json"
+      "repo_revision": "ff1b4726b93d2e96cc73e229fba459ab0c76069b",
+      "script_sha256": "59d4773f8afb47b30441a9b5aa71d3844d60bbbf205b901a21a6fcf5678258d5",
+      "stderr": "negative-invalid-syntax/verify-report.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "negative-invalid-syntax/verify-report.json",
+      "stdout_sha256": "3fa12a6cb921cf1df2426d959a24d3cc3976555489ed64ddd4792571043c3253",
+      "timestamp": "2026-08-29T10:19:35.581270+00:00"
     },
     {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "pcb_agent.cli",
+        "verify",
+        "fixtures/invalid-connectivity",
+        "--format",
+        "json"
+      ],
+      "cwd": "/home/rendra/pcbagent-full",
+      "dir": "negative-invalid-connectivity",
+      "executable": "/usr/bin/python3",
+      "exit_code": 2,
+      "git_status": "",
+      "git_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "kind": "negative-invalid-connectivity",
-      "dir": "negative-invalid-connectivity/",
-      "command": ["python3", "-m", "pcb_agent.cli", "verify", "fixtures/invalid-connectivity", "--format", "json"],
-      "metadata": "negative-invalid-connectivity/verify-report.json"
+      "repo_revision": "ff1b4726b93d2e96cc73e229fba459ab0c76069b",
+      "script_sha256": "59d4773f8afb47b30441a9b5aa71d3844d60bbbf205b901a21a6fcf5678258d5",
+      "stderr": "negative-invalid-connectivity/verify-report.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "negative-invalid-connectivity/verify-report.json",
+      "stdout_sha256": "347a53c37cd3a8566053430213690d28d9d4ceecd6a5a4e2e14a5b676e42e372",
+      "timestamp": "2026-08-29T10:19:35.581270+00:00"
     },
     {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "pcb_agent.cli",
+        "verify",
+        "fixtures/invalid-value",
+        "--format",
+        "json"
+      ],
+      "cwd": "/home/rendra/pcbagent-full",
+      "dir": "negative-invalid-value",
+      "executable": "/usr/bin/python3",
+      "exit_code": 2,
+      "git_status": "",
+      "git_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "kind": "negative-invalid-value",
-      "dir": "negative-invalid-value/",
-      "command": ["python3", "-m", "pcb_agent.cli", "verify", "fixtures/invalid-value", "--format", "json"],
-      "metadata": "negative-invalid-value/verify-report.json"
+      "repo_revision": "ff1b4726b93d2e96cc73e229fba459ab0c76069b",
+      "script_sha256": "59d4773f8afb47b30441a9b5aa71d3844d60bbbf205b901a21a6fcf5678258d5",
+      "stderr": "negative-invalid-value/verify-report.stderr",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "negative-invalid-value/verify-report.json",
+      "stdout_sha256": "03eea00ec774f5cb865a0f70608ef198c2ee59af9f2c2dd0488ddb0ba01d2217",
+      "timestamp": "2026-08-29T10:19:35.581270+00:00"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "/home/rendra/pcbagent-full/scripts/capture-production-expression.py"
+      ],
+      "commands": [
+        "/home/rendra/.local/bin/pcb test tests/.pcb-agent-connectivity.generated.zen -f json",
+        "/home/rendra/.local/bin/pcb test tests/.pcb-agent-specification.generated.zen -f json"
+      ],
+      "cwd": "/home/rendra/pcbagent-full",
+      "dir": "production-expression",
+      "executable": "/usr/bin/python3",
+      "exit_code": 0,
+      "git_status": "",
+      "git_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "production-expression",
+      "repo_revision": "ff1b4726b93d2e96cc73e229fba459ab0c76069b",
+      "script_sha256": "5a9eb275d88816137ed5b21d433fcd03ce8a9c5f403f4fd0316aaacdb39a7a80",
+      "stderr": "production-expression/run/output.stderr",
+      "stdout": "production-expression/run/output.stdout",
+      "timestamp": "2026-08-29T10:19:42.217944+00:00"
     }
-  ]
+  ],
+  "tool": "pcbc 0.4.40"
 }

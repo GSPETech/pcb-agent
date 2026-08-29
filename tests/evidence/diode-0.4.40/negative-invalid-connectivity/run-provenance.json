@@ -1,0 +1,25 @@
+{
+  "argv": [
+    "/usr/bin/python3",
+    "-m",
+    "pcb_agent.cli",
+    "verify",
+    "fixtures/invalid-connectivity",
+    "--format",
+    "json"
+  ],
+  "cwd": "/home/rendra/pcbagent-full",
+  "dir": "negative-invalid-connectivity",
+  "executable": "/usr/bin/python3",
+  "exit_code": 2,
+  "git_status": "",
+  "git_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "kind": "negative-invalid-connectivity",
+  "repo_revision": "ff1b4726b93d2e96cc73e229fba459ab0c76069b",
+  "script_sha256": "59d4773f8afb47b30441a9b5aa71d3844d60bbbf205b901a21a6fcf5678258d5",
+  "stderr": "negative-invalid-connectivity/verify-report.stderr",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout": "negative-invalid-connectivity/verify-report.json",
+  "stdout_sha256": "347a53c37cd3a8566053430213690d28d9d4ceecd6a5a4e2e14a5b676e42e372",
+  "timestamp": "2026-08-29T10:19:35.581270+00:00"
+}

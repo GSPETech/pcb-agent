@@ -1,13 +1,17 @@
 {
-  "pcbc_version": "0.4.40",
   "connectivity": {
     "generated_sha256": "sha256:802b58ab16fdfae8acbb6bc8b3a9b6ee28ede8a6c4fbc0b9ff78998b9fee4360",
-    "result_sha256": "sha256:f10dcff5faa9b8d92f52c00aa2831db5fd0349217e73cfe999eb91b8baa7fc9f",
+    "result_sha256": "sha256:e66df57743b29e735e47c880c07b34f5b1e70de8063e372f51efc2d313c6bd54",
     "status": 0
   },
+  "cwd": "/home/rendra/pcbagent-full",
+  "executable": "pcb",
+  "pcbc_version": "0.4.40",
+  "repo_revision": "ff1b4726b93d2e96cc73e229fba459ab0c76069b",
   "specification": {
     "generated_sha256": "sha256:be3d7e504ee64e1c710704214e899ae822d2460a756a92eb758dcb4b8b92ce13",
-    "result_sha256": "sha256:f0998ce7edb5769aca7f98f18b8c9ba8d9cb63ba56cf8f6060417f249f98ddea",
+    "result_sha256": "sha256:ae5426a9629996e657e91c15bbcde81643ad2e1559c39cf64861ce4348b289eb",
     "status": 0
-  }
+  },
+  "timestamp": "2026-08-29T10:19:42.217944+00:00"
 }

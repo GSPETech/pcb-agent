@@ -3,7 +3,7 @@
     {
       "case_name": "contract",
       "check_name": "_check_specification",
-      "file_path": "<sanitized>-cnxprn7e/tests/.pcb-agent-specification.generated.zen",
+      "file_path": "<sanitized>-k6x39qin/tests/.pcb-agent-specification.generated.zen",
       "status": "pass",
       "test_bench_name": "PcbAgentSpecification"
     }
