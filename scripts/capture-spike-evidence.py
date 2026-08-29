@@ -301,7 +301,9 @@ def _capture_verify(
 def _rebuild_manifest(evidence_root: Path) -> None:
     """Rebuild manifest.sha256 and verify it; fail closed on any mismatch."""
     result = subprocess.run(
-        "find . -type f ! -name manifest.sha256 -print0 | sort -z | xargs -0 sha256sum > manifest.sha256",
+        "find . -type f ! -name manifest.sha256 ! -name manifest-attestation.json "
+        "! -name windows-manifest.txt ! -name wsl-manifest.txt "
+        "-print0 | sort -z | xargs -0 sha256sum > manifest.sha256",
         cwd=str(evidence_root), shell=True, timeout=120,
     )
     if result.returncode != 0:
