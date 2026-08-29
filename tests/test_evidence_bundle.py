@@ -14,8 +14,15 @@ import json
 import unittest
 from pathlib import Path
 
-from pcb_agent.evidence import load_evidence_manifest
-from pcb_agent.generated_testbench import captured_adapter_registry, evidence_root
+from pcb_agent.evidence import load_evidence_manifest, validate_version_record
+from pcb_agent.generated_testbench import (
+    captured_adapter_registry,
+    ensure_registry_provenance,
+    evidence_root,
+    render_connectivity_testbench,
+    render_specification_testbench,
+    reset_registry_provenance,
+)
 
 
 def _evidence_files(root: Path) -> list[Path]:
@@ -53,6 +60,122 @@ class EvidenceBundleCompletenessTests(unittest.TestCase):
     def test_version_record_establishes_pcbc_0_4_40(self) -> None:
         version = (self.root / "pcb-version.txt").read_text(encoding="utf-8").strip()
         self.assertIn("pcbc 0.4.40", version)
+
+    def test_version_record_is_bound_to_manifest(self) -> None:
+        self.assertIn("pcb-version.txt", self.manifest)
+        self.assertEqual(validate_version_record(self.root, self.manifest), "0.4.40")
+        data = (self.root / "pcb-version.txt").read_bytes()
+        self.assertEqual(hashlib.sha256(data).hexdigest(), self.manifest["pcb-version.txt"])
+
+    def test_version_record_is_exactly_one_strict_pcbc_line(self) -> None:
+        text = (self.root / "pcb-version.txt").read_text(encoding="utf-8")
+        import re
+        records = re.findall(r"\bpcbc\s+(\d+\.\d+\.\d+)\b", text)
+        self.assertEqual(records, ["0.4.40"])
+
+    def test_capture_provenance_records_clean_tree(self) -> None:
+        provenance = json.loads(
+            (self.root / "capture-provenance.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(provenance["git_status"], "")
+        self.assertEqual(
+            provenance["git_status_sha256"],
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        )
+        self.assertEqual(provenance["git_diff_binary"], "")
+        self.assertEqual(provenance["filesystem"], "ext4")
+        self.assertEqual(provenance["pcbc_version"], "0.4.40")
+
+    def test_every_run_records_revision_matching_capture(self) -> None:
+        revision = (self.root / "repo-revision.txt").read_text(encoding="utf-8").strip()
+        capture = json.loads(
+            (self.root / "capture-provenance.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(revision, capture["repo_revision"])
+        commands = json.loads((self.root / "commands.json").read_text(encoding="utf-8"))
+        run_dirs = [run["dir"].rstrip("/") for run in commands["runs"]]
+        self.assertEqual(len(run_dirs), 8)
+        for run_dir in run_dirs:
+            with self.subTest(run_dir=run_dir):
+                provenance_path = self.root / run_dir / "run-provenance.json"
+                self.assertTrue(provenance_path.is_file())
+                provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+                self.assertEqual(provenance["repo_revision"], revision)
+                self.assertEqual(provenance["git_status"], "")
+
+    def test_every_command_has_full_metadata(self) -> None:
+        commands = json.loads((self.root / "commands.json").read_text(encoding="utf-8"))
+        required = ("kind", "argv", "cwd", "executable", "timestamp",
+                    "repo_revision", "stdout", "stderr")
+        for run in commands["runs"]:
+            with self.subTest(kind=run.get("kind")):
+                self.assertIsInstance(run.get("exit_code"), int)
+                for field in required:
+                    self.assertIn(field, run)
+                    self.assertTrue(run[field], f"{field} empty for {run.get('kind')}")
+
+    def test_production_command_metadata_is_executable_not_placeholder(self) -> None:
+        commands = json.loads((self.root / "commands.json").read_text(encoding="utf-8"))
+        production = next(run for run in commands["runs"] if run["kind"] == "production-expression")
+        argv = production["argv"]
+        self.assertNotIn("render+execute", " ".join(argv))
+        self.assertIn("scripts/capture-production-expression.py", " ".join(argv))
+        self.assertIsInstance(production["exit_code"], int)
+        self.assertTrue(production["cwd"])
+        self.assertTrue(production["executable"])
+        self.assertTrue(production["timestamp"])
+        self.assertIn("scripts/capture-production-expression.py", self.manifest)
+
+    def test_hashed_bundle_script_matches_tracked_capture_script(self) -> None:
+        for name in ("capture-spike-evidence.py", "capture-production-expression.py"):
+            with self.subTest(name=name):
+                bundled = self.root / "scripts" / name
+                tracked = Path(__file__).resolve().parents[1] / "scripts" / name
+                self.assertIn(f"scripts/{name}", self.manifest)
+                self.assertEqual(bundled.read_bytes(), tracked.read_bytes())
+
+    def test_both_renderers_byte_match_retained_generated_sources(self) -> None:
+        from pcb_agent.state import load_project
+
+        project = load_project(Path("fixtures/production-expression"))
+        connectivity = render_connectivity_testbench(project, "0.4.40")
+        specification = render_specification_testbench(project, "0.4.40")
+        retained_connectivity = (
+            self.root / "production-expression" / "production-connectivity-testbench.generated.zen"
+        ).read_bytes()
+        retained_specification = (
+            self.root / "production-expression" / "production-specification-testbench.generated.zen"
+        ).read_bytes()
+        self.assertEqual(connectivity.encode("utf-8"), retained_connectivity)
+        self.assertEqual(specification.encode("utf-8"), retained_specification)
+
+    def test_retained_production_generated_source_digests_match_summary(self) -> None:
+        summary = json.loads(
+            (self.root / "production-expression" / "production-summary.json").read_text(encoding="utf-8")
+        )
+        for gate in ("connectivity", "specification"):
+            with self.subTest(gate=gate):
+                generated = (
+                    self.root / "production-expression" / f"production-{gate}-testbench.generated.zen"
+                ).read_bytes()
+                self.assertEqual(
+                    summary[gate]["generated_sha256"],
+                    "sha256:" + hashlib.sha256(generated).hexdigest(),
+                )
+                result = (
+                    self.root / "production-expression" / f"production-{gate}-result.json"
+                ).read_bytes()
+                self.assertEqual(
+                    summary[gate]["result_sha256"],
+                    "sha256:" + hashlib.sha256(result).hexdigest(),
+                )
+
+    def test_lazy_provenance_validation_passes_against_bundle(self) -> None:
+        reset_registry_provenance()
+        try:
+            ensure_registry_provenance()
+        finally:
+            reset_registry_provenance()
 
     def test_repo_revision_is_nonempty(self) -> None:
         revision = (self.root / "repo-revision.txt").read_text(encoding="utf-8").strip()
