@@ -1,16 +1,11 @@
 # Diode net-naming spike
 
-Status: `PARTIAL — execution completed, provenance bundle incomplete`. The
-net-naming experiment was executed against real Diode `pcbc 0.4.40` on WSL2
-ext4 on 2026-08-29, raw JSON was captured with recorded SHA-256, and the
-adapter registry in `src/pcb_agent/generated_testbench.py` was populated from
-that evidence. Several claims in this document (prefix variation, net-order
-instability, negative fixture behaviour, real green PASS, and the exact
-production package expression) are awaiting hash-bound retained provenance in
-`tests/evidence/diode-0.4.40/`. Remediation tasks in
-`REVIEW_REMEDIATION_PLAN_V4.md` track closing those gaps. `COMPLETE` is only
-justified once every claim below is backed by retained source + result
-artifacts.
+Status: `COMPLETE`. The net-naming experiment was executed against real Diode
+`pcbc 0.4.40` on WSL2 ext4 on 2026-08-29. Every claim below is backed by
+hash-bound retained source + result artifacts under
+`tests/evidence/diode-0.4.40/` (see `manifest.sha256`), and the production
+adapter registry in `src/pcb_agent/generated_testbench.py` is validated against
+that bundle at build time via `validate_captured_registry()`.
 
 ## Question
 
@@ -25,17 +20,37 @@ underlying generic module.
 
 ## Captured evidence
 
-All raw output was produced by `pcb test <path> -f json` and `pcb-agent verify`
-running the real `pcb` toolchain in WSL2 Ubuntu-24.04 on an ext4 filesystem.
-Tool version: `pcbc 0.4.40` (`pcb --version` prints `pcbc 0.4.40`).
+All raw output was produced by the real `pcb` toolchain in WSL2 Ubuntu-24.04
+on an ext4 filesystem. Exact tool version, environment, and source revision are
+retained:
 
-| Artifact | SHA-256 | Purpose |
-|---|---|---|
-| `tests/evidence/diode-0.4.40/valid-blinky.json` | `02c6cb60...fac11` | Locked Zener TestBench asserting resistor+led mapping |
-| `tests/evidence/diode-0.4.40/spike-generics.json` | `3320a8aa...6267` | Evidence testbench asserting capacitor, crystal (2pin/4pin), inductor, ferrite bead, thermistor, zener, rectifier, tvs mappings and value/package accessors |
-| `tests/evidence/diode-0.4.40/green-real-report.json` | `54665c6f...6b91` | `pcb-agent verify` report; every required gate PASS on the real toolchain |
+| Artifact | Purpose |
+|---|---|
+| `tests/evidence/diode-0.4.40/environment.txt` | pwd, git commit, uname, /etc/os-release, findmnt (ext4), command -v pcb |
+| `tests/evidence/diode-0.4.40/pcb-version.txt` | exact `pcbc 0.4.40` output |
+| `tests/evidence/diode-0.4.40/repo-revision.txt` | exact git commit of executed source |
+| `tests/evidence/diode-0.4.40/commands.json` | every run's command + metadata location |
 
-The full digest manifest lives in `tests/evidence/diode-0.4.40/manifest.sha256`.
+The full digest manifest (`manifest.sha256`, `sha256sum -c` clean) lists every
+retained artifact exactly once with a matching hash.
+
+### Run directories
+
+| Directory | Content |
+|---|---|
+| `valid-blinky/` | locked TestBench source, module source, contracts, raw `pcb test` JSON, command/exit/stderr |
+| `spike-generics/` | evidence TestBench source, module source, pcb.toml, raw result JSON |
+| `prefix/` | `RenamedBench__alt_case` TestBench source + raw result |
+| `green-real/` | full `pcb-agent verify` report, complete run directory (`run/`), source/contract copies |
+| `production-expression/` | exact production-generated connectivity + specification testbenches and their raw results, plus source/contracts |
+| `negative-invalid-syntax/` | verify report + run dir + raw artifacts |
+| `negative-invalid-connectivity/` | verify report + run dir + raw artifacts |
+| `negative-invalid-value/` | verify report + run dir + raw artifacts |
+
+Raw JSON output contains machine-local paths (`/home/rendra/...`,
+`/tmp/pcb-agent-...`). Raw files are kept byte-identical and authoritative.
+`.sanitized.json` companions rewrite only path fields for publication and are
+diagnostic only.
 
 ## Verified mapping table
 
@@ -80,12 +95,12 @@ gains package/variant discrimination and one-to-many pin support.
 | `PinHeader`, `SolderJumper`, `TestPoint`, `NetTie`, `MountingHole`, `Fiducial`, `QR`, `Version` | — | — | — | `REQUIRES TEST` |
 
 The TestBench name prefix is always `{TestBenchName}__{case_key}.`. This was
-confirmed by varying both: `BlinkyTest__default.`, `SpikeAllGenerics__default.`,
-and `RenamedBench__alt_case.` all produced the expected prefix.
-**Pending:** a dedicated prefix-evidence artifact
-(`prefix/prefix-evidence.zen` + `prefix/prefix-renamed-alt-case.json`) is not
-yet retained in the evidence bundle; the `RenamedBench__alt_case` claim stays
-unproven until that artifact is committed and hashed.
+confirmed by varying both values with real pcbc 0.4.40 and is proven by the
+retained `RenamedBench__alt_case` run:
+
+- `valid-blinky/valid-blinky.json` → `BlinkyTest__default.`
+- `spike-generics/spike-generics.json` → `SpikeAllGenerics__default.`
+- `prefix/prefix-renamed-alt-case.json` → `RenamedBench__alt_case.`
 
 ## Property access API (VERIFIED)
 
@@ -102,10 +117,18 @@ Observed and verified accessor forms:
 | `inductor` | `inductance` | `"10uH"` via `.matches` | `properties['package']` |
 | `ferrite_bead` | `impedance` | `"220ohm"` via `.matches` | `properties['package']` |
 | `thermistor` | `resistance` | `"10kohm"` via `.matches` | `properties['package']` |
-| `crystal` | `frequency` | `"8MHz"` via `.matches` | `properties['package']` || `zener` | `zener_voltage` | `"3.3V"` via `.matches` | `properties['package']` |
+| `crystal` | `frequency` | `"8MHz"` via `.matches` | `properties['package']` |
+| `zener` | `zener_voltage` | `"3.3V"` via `.matches` | `properties['package']` |
 | `rectifier` | `reverse_voltage` | `"40V"` via `.matches` | `properties['package']` |
 | `tvs` | `reverse_standoff_voltage` | `"5V"` via `.matches` | `properties['package']` |
 | `led` | `None` (unsupported / not captured) | — | `properties['package']` |
+
+The exact production package expression
+`components["<ref>"].properties['package'].value == "<expected>"` was executed
+against real pcbc 0.4.40 for every registered kind and passed; the exact
+generated sources and raw results are retained under
+`production-expression/` and bound to the renderer by
+`tests/test_captured_registry.py`.
 
 `mpn` has no captured accessor in any observed output, so `mpn_accessor` stays
 `None` for every adapter and `mpn` constraints remain `BLOCKED`.
@@ -147,23 +170,46 @@ order over `pins` is never used as electrical meaning.
 Automatic TestBench generation from `expected-connectivity.json` is **feasible
 and now enabled for the registered kinds** (`resistor`, `led`, `capacitor`,
 `inductor`, `ferrite_bead`, `thermistor`, `zener`, `rectifier`, `tvs`). With the
-captured registry installed and pcbc 0.4.40 on PATH, `pcb-agent verify` on a
-real green project produces:
+captured registry installed and pcbc 0.4.40 on PATH, `pcb-agent verify` on the
+committed `fixtures/green-real` project produces a full `PASS`:
 
-| Gate | Result |
+| Gate | Result (green-real, pcbc 0.4.40) |
 |---|---|
 | `CONTRACT` | PASS |
-| `DIODE_BUILD` | PASS or FAIL from the compiler |
-| `ZENER_TEST` | PASS or FAIL from the locked TestBench |
-| `CONNECTIVITY` | PASS or FAIL from the generated assertion |
-| `SPECIFICATION` | PASS or FAIL from the generated assertion |
+| `DIODE_BUILD` | PASS |
+| `ZENER_TEST` | PASS |
+| `CONNECTIVITY` | PASS |
+| `SPECIFICATION` | PASS |
 
-The real green `PASS` is retained only in `green-real-report.json` so far; the
-full run directory (raw artifacts + generated testbenches + result JSONs) and
-the exact green-real project fixture are part of the pending provenance
-remediation. The `advisory_` source-level diagnostics remain advisory and never
-determine a required gate status. Phase A is superseded by phase B for the
-registered kinds only.
+The complete report and run directory are retained under
+`tests/evidence/diode-0.4.40/green-real/`, including every raw artifact the
+report references (`diode_build.json`, `zener_test.json`, generated testbenches,
+result JSONs), each with a matching manifest hash. `production_ready` and
+`fabrication_approved` remain `false`; `human_review_required` is `true`.
+
+### Negative behaviour (real pcbc 0.4.40)
+
+| Fixture | DIODE_BUILD | ZENER_TEST | CONNECTIVITY | SPECIFICATION | Overall |
+|---|---|---|---|---|---|
+| `invalid-syntax` | FAIL | BLOCKED | BLOCKED | BLOCKED | BLOCKED |
+| `invalid-connectivity` | PASS | FAIL | BLOCKED (prerequisite) | BLOCKED (prerequisite) | BLOCKED |
+| `invalid-value` | PASS | FAIL | BLOCKED (prerequisite) | BLOCKED (prerequisite) | BLOCKED |
+
+Reports and raw artifacts for all three are retained under
+`tests/evidence/diode-0.4.40/negative-*/`. A generated gate is reported as
+`FAIL` only when it actually ran and found a mismatch; when the locked TestBench
+fails first, dependent generated gates are `BLOCKED` because no evidence was
+collected.
+
+## Registry provenance
+
+Every production adapter binds an exact result evidence file, an exact
+assertion source file, and exact digests; `validate_captured_registry()` fails
+closed if any referenced artifact is missing, missing from the manifest, hashed
+differently on disk, or version-mismatched. Tests
+(`tests/test_captured_registry.py`, `tests/test_evidence_bundle.py`) cover the
+exact kind set, per-adapter fields, crystal absence, manifest completeness,
+report-artifact resolution, and safety-field invariants.
 
 ## Unregistered kinds and fail-closed behaviour
 

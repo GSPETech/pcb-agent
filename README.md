@@ -51,11 +51,18 @@ Rules:
 
 - Component kinds are resolved through a versioned adapter registry keyed by
   component kind. Each adapter records the exact verified `pcbc` versions, the
-  SHA-256 of the captured evidence that established the mapping, and the
-  property accessors and pull-up pin pair that were observed.
-- The registry is currently empty. No mapping has been verified against
-  captured Diode output, so every generated check reports `BLOCKED`. See
-  `docs/spike-diode-net-naming.md`.
+  SHA-256 of the captured evidence that established the mapping, the exact
+  result and source evidence paths, and the property accessors and pull-up pin
+  pair that were observed.
+- The registry is populated from captured Diode 0.4.40 evidence
+  (`captured_adapter_registry()` in `src/pcb_agent/generated_testbench.py`)
+  and validated against the repository-owned evidence bundle
+  (`tests/evidence/diode-0.4.40/manifest.sha256`); validation fails closed if
+  any referenced artifact is missing or its hash does not match. Registered
+  kinds: `resistor`, `led`, `capacitor`, `inductor`, `ferrite_bead`,
+  `thermistor`, `zener`, `rectifier`, `tvs`. Crystal is intentionally absent
+  because the adapter model cannot represent its one-to-many four-pin GND
+  mapping. See `docs/spike-diode-net-naming.md`.
 - The `pcbc` version comes from probing the installed toolchain, not from the
   contract. A probe that fails or cannot be parsed is `BLOCKED`.
 - Unsupported component kind, unsupported pin, unverified toolchain version,
@@ -166,6 +173,11 @@ Empirical run on 2026-08-24:
 - Generated `valid-blinky` layout correctly remained `FAIL`: missing board
   outline, five silkscreen warnings, and one unconnected item. No routing or
   fabrication artifact was generated.
+
+The Diode net-naming spike (2026-08-29) captured real `pcbc 0.4.40` evidence on
+WSL2 ext4, populated the production adapter registry, and verified a committed
+green project reaches full PASS. See `docs/spike-diode-net-naming.md` and
+`docs/report-spike-execution.md`.
 
 Fixture syntax and TestBench APIs were corrected against real Diode 0.4.34 and
 source snapshot `ee4e7e2b90fbe5f787d165a0780eba42664449ab`.

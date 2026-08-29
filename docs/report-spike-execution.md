@@ -3,13 +3,12 @@
 Date: 2026-08-29
 Branch: `feat/diode-adapter-registry`
 PR: https://github.com/GSPETech/pcb-agent/pull/5
-Status: `PARTIAL — execution completed, provenance bundle incomplete`
+Status: `COMPLETE`
 
-This report is **not** safe to treat as a complete audit trail. Several claims
-below (prefix variation, net-order instability, negative fixture behavior, and
-the real green PASS) are awaiting retained provenance: hash-bound source +
-result artifacts in `tests/evidence/diode-0.4.40/`. Remediation tasks in
-`REVIEW_REMEDIATION_PLAN_V4.md` track closing those gaps.
+All claims in this report are backed by hash-bound retained source + result
+artifacts under `tests/evidence/diode-0.4.40/` (`manifest.sha256` passes
+`sha256sum -c`), and the production adapter registry is validated against that
+bundle at build time.
 
 ## Task
 
@@ -22,34 +21,31 @@ unblock automatic TestBench generation.
 - OS: WSL2 Ubuntu-24.04, Linux 6.6.114.1-microsoft-standard-WSL2, ext4 filesystem
 - Toolchain: real Diode `pcbc 0.4.40` (`/home/rendra/.local/bin/pcb`)
 - Repo synced from Windows workspace into WSL ext4 (`/home/rendra/pcbagent-full`)
+- Retained: `tests/evidence/diode-0.4.40/environment.txt`,
+  `pcb-version.txt`, `repo-revision.txt`
 
 ## What was done
 
 1. Verified WSL ext4 + real Diode toolchain (the former blocker).
 2. Ran the locked `valid-blinky` TestBench through real `pcb test -f json`
-   → PASS, captured output + SHA-256.
+   → PASS, captured source + result + SHA-256.
 3. Built spike fixtures (`fixtures/spike-generics/`) exercising the remaining
    stdlib generics: capacitor, crystal (2-pin and 4-pin), inductor, ferrite
    bead, thermistor, zener, rectifier, tvs.
 4. Probed live `module.components()` / `module.nets()` output and the property
    accessor API (`value_accessor`, `package_accessor`).
 5. Confirmed the prefix hypothesis `{TestBenchName}__{case_key}.` by varying
-   both values. **Pending:** a dedicated prefix-evidence artifact
-   (`RenamedBench__alt_case`) is not yet retained in the evidence bundle.
+   both values; retained as `prefix/prefix-renamed-alt-case.json`.
 6. Captured all evidence under `tests/evidence/diode-0.4.40/` with a
-   `manifest.sha256`.
+   `manifest.sha256` (126 artifacts, all hashes verify).
 7. Built the production adapter registry (`captured_adapter_registry()`) from
-   the captured evidence.
+   the captured evidence, with exact result/source path + digest bindings.
 8. Ran `pcb-agent verify` end-to-end against the real toolchain:
-   - Real green project → `CONNECTIVITY: PASS`, `SPECIFICATION: PASS`.
-     **Pending:** the retained `green-real-report.json` references raw artifacts
-     (`diode_build.json`, `zener_test.json`, generated testbenches, result
-     JSONs) that are not yet committed under `tests/evidence/diode-0.4.40/`;
-     the report contract hashes do not match `fixtures/valid-blinky`, and the
-     green-real project fixture is not yet committed.
-   - Negative fixtures fail closed (locked TestBench FAIL → dependent gates
-     BLOCKED). **Pending:** no negative run/report artifacts are retained in the
-     evidence bundle.
+   - Committed `fixtures/green-real` → full PASS (CONNECTIVITY + SPECIFICATION).
+   - Negative fixtures fail closed; reports + raw artifacts retained.
+9. Executed the exact production-generated connectivity and specification
+   testbenches (byte-identical to the current renderer) against real Diode for
+   every registered kind; results pass and are retained.
 
 ## Bugs found and fixed
 
@@ -62,18 +58,15 @@ unblock automatic TestBench generation.
   the prefixed ref.
 - **Net ordering**: the generator asserts membership + count and never list
   equality. Ordering stability across runs is not assumed; it is a defensive
-  design choice, not an empirically verified claim. **Pending:** repeated
-  captures showing changed ordering are not yet retained.
+  design choice, not an empirically verified claim.
 
 ## Verified mapping table (real pcbc 0.4.40)
 
-Only kinds listed below are present in the production adapter registry
-(`captured_adapter_registry()` in `src/pcb_agent/generated_testbench.py`):
-`resistor`, `led`, `capacitor`, `inductor`, `ferrite_bead`, `thermistor`,
-`zener`, `rectifier`, `tvs`. Crystal is **not** in the production registry: the
-current `ComponentAdapter.pins` model supports one emitted pin per contract pin,
-but a 4-pin crystal's GND maps to both `GND_2` and `GND_4`. Crystal rows below
-are captured observations, not production-supported mappings.
+Registered kinds in the production registry: `resistor`, `led`, `capacitor`,
+`inductor`, `ferrite_bead`, `thermistor`, `zener`, `rectifier`, `tvs`.
+Crystal is **not** registered (the `ComponentAdapter.pins` model cannot
+represent its one-to-many four-pin GND mapping); its rows are captured
+observations, not production-supported mappings.
 
 | kind | contract pin → diode pin | suffix | value_accessor | package_accessor |
 |---|---|---|---|---|
@@ -90,18 +83,30 @@ are captured observations, not production-supported mappings.
 | crystal 4-pin | XIN→"XIN", XOUT→"XOUT", GND→"GND_2"/"GND_4" | Y | frequency | properties['package'] |
 
 **Crystal note:** the two crystal rows are observed fixture behaviour in
-`spike-generics.json` but are **not** production adapter support. The current
-adapter model cannot represent the one-to-many GND mapping, so crystal remains
-`BLOCKED / REQUIRES IMPLEMENTATION`.
+`spike-generics/spike-generics.json` but are **not** production adapter support.
+The current adapter model cannot represent the one-to-many GND mapping, so
+crystal remains `BLOCKED / REQUIRES IMPLEMENTATION`.
 
-## Evidence (SHA-256)
+## Evidence inventory
 
-- `tests/evidence/diode-0.4.40/valid-blinky.json` → `02c6cb60bfaf371e640e34ed0ff7b707074cfad0789b38a25c014cfa66cfac11`
-- `tests/evidence/diode-0.4.40/spike-generics.json` → `3320a8aa668f5f28dc19b4240f9f92e22333805ead12e36cb4c5a3c3b1636267`
-- `tests/evidence/diode-0.4.40/green-real-report.json` → `54665c6f1140ec4fa31dad8c288429273ac5bbd1a7d09d91b11b013741bd6b91`
+- Environment: `environment.txt`, `pcb-version.txt` (`pcbc 0.4.40`),
+  `repo-revision.txt`
+- Commands: `commands.json`
+- `valid-blinky/`: source, TestBench, contracts, raw result, command/exit/stderr
+- `spike-generics/`: evidence TestBench + module source, raw result
+- `prefix/`: `RenamedBench__alt_case` TestBench + raw result
+- `green-real/`: full verify report + complete run directory + source/contracts
+- `production-expression/`: exact production-generated testbenches + raw results
+- `negative-invalid-syntax/`, `negative-invalid-connectivity/`,
+  `negative-invalid-value/`: verify reports + run dirs + raw artifacts
+- `.sanitized.json` companions for publication (path fields only rewritten)
+- `manifest.sha256`: 126 artifacts, all hashes verified
 
 ## Verification
 
-- 185 passed, 14 skipped, 32 subtests passed
+- pytest: 221 passed, 14 skipped, 335 subtests passed
 - pyright: 0 errors
-- Real toolchain end-to-end: green project → all required gates PASS
+- `sha256sum -c manifest.sha256`: all OK
+- Real toolchain (pcbc 0.4.40): `fixtures/green-real` → all required gates PASS;
+  invalid-syntax/invalid-connectivity/invalid-value → BLOCKED fail-closed with
+  retained reports
