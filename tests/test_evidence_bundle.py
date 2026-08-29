@@ -25,9 +25,23 @@ from pcb_agent.generated_testbench import (
 )
 
 
+# Files that assert the manifest's own digest are kept OUT of the primary
+# manifest (see test_transcript_attestation.py): the primary manifest must not
+# hash the artifacts that verify it. `manifest.sha256` is excluded because it
+# cannot list itself.
+_SELF_ATTESTING_NAMES = frozenset({
+    "manifest.sha256",
+    "manifest-attestation.json",
+    "windows-manifest.txt",
+    "wsl-manifest.txt",
+})
+
+
 def _evidence_files(root: Path) -> list[Path]:
     return sorted(
-        path for path in root.rglob("*") if path.is_file() and path.name != "manifest.sha256"
+        path
+        for path in root.rglob("*")
+        if path.is_file() and path.name not in _SELF_ATTESTING_NAMES
     )
 
 

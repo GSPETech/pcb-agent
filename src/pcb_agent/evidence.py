@@ -154,6 +154,11 @@ def validate_version_record(evidence_root: Path, manifest: Mapping[str, str]) ->
     relative = "pcb-version.txt"
     if relative not in manifest:
         raise EvidenceError("pcb-version.txt missing from manifest")
+    # Check the raw (unresolved) path before `resolve_workspace_path` follows
+    # the link: a symlinked version record must fail closed even though its
+    # target resolves to a regular file inside the evidence root.
+    if (evidence_root / relative).is_symlink():
+        raise EvidenceError("pcb-version.txt is a symlink")
     path = _ensure_within(evidence_root, relative)
     if path.is_symlink():
         raise EvidenceError("pcb-version.txt is a symlink")

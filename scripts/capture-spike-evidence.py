@@ -409,7 +409,7 @@ def main() -> int:
             "src/all_generics.zen": "prefix-module.zen",
             "pcb.toml": "prefix-pcb.toml",
         },
-        pcb, revision, timestamp, git_status, script_sha256, env, "prefix-variation",
+        pcb, timestamp, script_sha256, env, "prefix-variation",
     ))
     _rebuild_manifest(_EVIDENCE_ROOT)
 
