@@ -185,6 +185,7 @@ def _capture_pcb_test(
     script_sha256: str,
     env: dict[str, str],
     kind: str,
+    git_status: str,
 ) -> dict:
     cleanliness = measure_source_cleanliness(_REPO_ROOT, _EVIDENCE_ROOT)
     if not cleanliness["source_clean"]:
@@ -193,7 +194,6 @@ def _capture_pcb_test(
             f"{cleanliness['filtered_source_status']}"
         )
     revision = cleanliness["repo_revision"]
-    git_status = bytes.fromhex(cleanliness["raw_status"]).decode("utf-8", "replace")
     argv = [pcb, "test", testfile, "-f", "json"]
     exit_code, stdout, stderr = _run(argv, cwd=fixture, env=env)
     target = evidence_root / run_dir
@@ -384,7 +384,7 @@ def main() -> int:
             "project.toml": "valid-blinky-project.toml",
             "pcb.toml": "valid-blinky-pcb.toml",
         },
-        pcb, timestamp, script_sha256, env, "valid-blinky-locked-testbench",
+        pcb, timestamp, script_sha256, env, "valid-blinky-locked-testbench", git_status,
     ))
     _rebuild_manifest(_EVIDENCE_ROOT)
 
@@ -397,7 +397,7 @@ def main() -> int:
             "src/generics.zen": "spike-generics-extra-source.zen",
             "pcb.toml": "spike-generics-pcb.toml",
         },
-        pcb, timestamp, script_sha256, env, "spike-generics-evidence-testbench",
+        pcb, timestamp, script_sha256, env, "spike-generics-evidence-testbench", git_status,
     ))
     _rebuild_manifest(_EVIDENCE_ROOT)
 
@@ -409,7 +409,7 @@ def main() -> int:
             "src/all_generics.zen": "prefix-module.zen",
             "pcb.toml": "prefix-pcb.toml",
         },
-        pcb, timestamp, script_sha256, env, "prefix-variation",
+        pcb, timestamp, script_sha256, env, "prefix-variation", git_status,
     ))
     _rebuild_manifest(_EVIDENCE_ROOT)
 
