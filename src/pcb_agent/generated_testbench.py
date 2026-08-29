@@ -6,6 +6,7 @@ classification belong to diode.execute_generated_test and cli._generated_check.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import posixpath
 import re
@@ -214,6 +215,7 @@ def captured_adapter_registry() -> dict[str, ComponentAdapter]:
     )
 
 
+_GENERATION = 0
 _ADAPTERS: dict[str, ComponentAdapter] = captured_adapter_registry()
 
 
@@ -248,46 +250,68 @@ def validate_captured_registry(root_override: Path | None = None) -> None:
     )
 
 
-_PROVENANCE_CACHE: tuple[bool, str] | None = None
+_PROVENANCE_CACHE: tuple[int, tuple[bool, str]] | None = None
 
 
 def _run_provenance_validation() -> None:
     validate_captured_registry()
 
 
-def ensure_registry_provenance() -> None:
-    """Validate the captured registry lazily before any generated use.
+def _bump_generation() -> None:
+    global _GENERATION
+    _GENERATION += 1
 
-    The verdict is cached for the process lifetime. On failure the adapter
-    registry is emptied (fail closed) so no adapter can be enabled without a
-    successful provenance check, and a `GeneratorError` is raised so generated
-    gates report `BLOCKED`. Unrelated commands never call this, so `doctor`
-    and `build` keep working even when the evidence bundle is invalid.
+
+def ensure_registry_provenance() -> None:
+    """Validate the active registry snapshot lazily before generated use.
+
+    The verdict is cached against the registry generation. Any mutation of the
+    active registry bumps the generation, so the next validation re-runs
+    instead of trusting a stale verdict. On failure the registry is emptied
+    (fail closed) and a `GeneratorError` is raised so generated gates report
+    `BLOCKED`. Unrelated commands never call this, so `doctor` and `build`
+    keep working even when the evidence bundle is invalid.
     """
     global _ADAPTERS, _PROVENANCE_CACHE
-    if _PROVENANCE_CACHE is not None:
-        if _PROVENANCE_CACHE[0]:
+    if _PROVENANCE_CACHE is not None and _PROVENANCE_CACHE[0] == _GENERATION:
+        ok, err = _PROVENANCE_CACHE[1]
+        if ok:
             return
-        raise GeneratorError(f"captured registry provenance invalid: {_PROVENANCE_CACHE[1]}")
+        raise GeneratorError(f"captured registry provenance invalid: {err}")
     try:
         _run_provenance_validation()
     except EvidenceError as error:
         _ADAPTERS = {}
-        _PROVENANCE_CACHE = (False, str(error))
+        _bump_generation()
+        _PROVENANCE_CACHE = (_GENERATION, (False, str(error)))
         raise GeneratorError(f"captured registry provenance invalid: {error}") from error
-    _PROVENANCE_CACHE = (True, "")
+    _PROVENANCE_CACHE = (_GENERATION, (True, ""))
 
 
 def reset_registry_provenance() -> None:
-    """Test hook: clear the cached verdict and restore the captured registry."""
+    """Test hook: restore the captured registry and invalidate the cache."""
     global _ADAPTERS, _PROVENANCE_CACHE
-    _PROVENANCE_CACHE = None
     _ADAPTERS = captured_adapter_registry()
+    _PROVENANCE_CACHE = None
+    _bump_generation()
 
 
 def set_adapter_registry(registry: Mapping[str, ComponentAdapter]) -> None:
-    global _ADAPTERS
+    global _ADAPTERS, _PROVENANCE_CACHE
     _ADAPTERS = dict(registry)
+    _PROVENANCE_CACHE = None
+    _bump_generation()
+
+
+@contextlib.contextmanager
+def temporary_test_registry(registry: Mapping[str, ComponentAdapter]):
+    """Swap in a test registry and restore the previous snapshot on exit."""
+    previous = dict(_ADAPTERS)
+    set_adapter_registry(registry)
+    try:
+        yield
+    finally:
+        set_adapter_registry(previous)
 
 
 def known_kinds() -> frozenset[str]:
