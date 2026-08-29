@@ -9,6 +9,7 @@ provenance (manifest entry + file bytes + version record).
 from __future__ import annotations
 
 import hashlib
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -26,6 +27,7 @@ from pcb_agent.generated_testbench import (
     captured_adapter_registry,
     evidence_root,
     known_kinds,
+    render_specification_testbench,
     validate_captured_registry,
 )
 
@@ -235,6 +237,42 @@ class CapturedRegistryProvenanceTests(unittest.TestCase):
         for adapter in registry.values():
             with self.subTest(kind=adapter.kind):
                 validate_adapter_provenance(adapter, evidence_root(), entries)
+
+
+class ProductionExpressionEvidenceTests(unittest.TestCase):
+    def test_renderer_output_matches_retained_generated_source(self) -> None:
+        """The exact production package expression was executed on real Diode.
+
+        `render_specification_testbench` must keep producing the byte-exact
+        source that passed against pcbc 0.4.40, whose result is retained under
+        `tests/evidence/diode-0.4.40/production-expression/`.
+        """
+        from pathlib import Path
+
+        from pcb_agent.state import load_project
+
+        project = load_project(Path("fixtures/production-expression"))
+        source = render_specification_testbench(project, "0.4.40")
+        retained = (
+            evidence_root() / "production-expression" / "production-specification-testbench.generated.zen"
+        ).read_bytes()
+        self.assertEqual(source.encode("utf-8"), retained)
+
+    def test_retained_generated_source_contains_production_package_expression(self) -> None:
+        source = (
+            evidence_root() / "production-expression" / "production-specification-testbench.generated.zen"
+        ).read_text(encoding="utf-8")
+        self.assertIn("components[\"R1.R\"].properties['package'].value == \"0402\"", source)
+        self.assertIn("components[\"D3.D\"].properties['package'].value == \"DO-219AB\"", source)
+
+    def test_retained_production_result_passes(self) -> None:
+        result = json.loads(
+            (evidence_root() / "production-expression" / "production-specification-result.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(result["summary"]["passed"], 1)
+        self.assertEqual(result["results"][0]["test_bench_name"], "PcbAgentSpecification")
 
 
 if __name__ == "__main__":
