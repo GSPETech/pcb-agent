@@ -25,6 +25,8 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(_REPO_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT / "src"))
 
+from pcb_agent.source_cleanliness import measure_source_cleanliness
+
 EVIDENCE_SUBDIR = "production-expression"
 
 
@@ -51,13 +53,18 @@ def capture_production_expression(
     revision: str,
     timestamp: str,
     script_sha256: str,
-    git_status: str,
-    git_status_sha256: str,
 ) -> dict:
     """Render, execute, and retain the production-expression evidence.
 
     Returns a run record with the exact argv/cwd/executable/exit/timestamp.
+    Measures source cleanliness itself; no caller-provided status.
     """
+    cleanliness = measure_source_cleanliness(repo_root, evidence_root)
+    if not cleanliness["source_clean"]:
+        raise SystemExit(
+            "refusing to capture from a dirty source tree; changes outside the "
+            f"evidence root:\n{cleanliness['filtered_source_status']}"
+        )
     from pcb_agent import diode
     from pcb_agent.generated_testbench import (
         render_connectivity_testbench,
@@ -77,14 +84,16 @@ def capture_production_expression(
     raw_dir.mkdir(parents=True, exist_ok=True)
 
     summary: dict = {}
-    commands: list[str] = []
+    commands: list[dict] = []
     for check_id, bench_name, check_name, render in (
         ("CONNECTIVITY", "PcbAgentConnectivity", "_check_connectivity", render_connectivity_testbench),
         ("SPECIFICATION", "PcbAgentSpecification", "_check_specification", render_specification_testbench),
     ):
+        started = datetime.now(timezone.utc).isoformat()
         generated = render(project, pcbc_version)
         generated_bytes = generated.encode("utf-8")
         outcome = diode.execute_generated_test(project, generated, raw_dir, check_id)
+        ended = datetime.now(timezone.utc).isoformat()
         check = diode.generated_check(check_id, outcome, bench_name, check_name, raw_dir)
         if check.status != CheckStatus.PASS:
             raise SystemExit(f"production {check_id.lower()} run did not pass: {check.status}")
@@ -100,7 +109,26 @@ def capture_production_expression(
             "result_sha256": outcome.result_sha256,
             "status": outcome.process.returncode,
         }
-        commands.append(" ".join(outcome.process.argv))
+        commands.append({
+            "gate": check_id.lower(),
+            "argv": list(outcome.process.argv),
+            "cwd": str(fixture),
+            "executable": pcb_executable,
+            "exit": outcome.process.returncode,
+            "start": started,
+            "end": ended,
+            "revision": revision,
+            "source": {
+                "path": f"{EVIDENCE_SUBDIR}/{generated_stem}.generated.zen",
+                "sha256": outcome.generated_sha256,
+            },
+            "result": {
+                "path": f"{EVIDENCE_SUBDIR}/production-{check_id.lower()}-result.json",
+                "sha256": outcome.result_sha256,
+            },
+            "stdout_sha256": _sha256(outcome.process.stdout.encode("utf-8")),
+            "stderr_sha256": _sha256(outcome.process.stderr.encode("utf-8")),
+        })
 
     fixture_copies = {
         "ACCEPTANCE.json": "production-ACCEPTANCE.json",
@@ -131,8 +159,9 @@ def capture_production_expression(
     run_provenance = {
         "kind": "production-expression",
         "repo_revision": revision,
-        "git_status": git_status,
-        "git_status_sha256": git_status_sha256,
+        "git_status": cleanliness["raw_status"],
+        "git_status_sha256": cleanliness["raw_status_sha256"],
+        "source_clean": cleanliness["source_clean"],
         "argv": [sys.executable, str(Path(__file__).resolve())],
         "cwd": str(repo_root),
         "executable": sys.executable,
@@ -161,8 +190,6 @@ def main() -> int:
         revision,
         timestamp,
         script_sha256,
-        "",
-        _sha256(b""),
     )
     print("production-expression capture OK")
     return 0

@@ -4,7 +4,7 @@
       "test_bench_name": "PcbAgentSpecification",
       "case_name": "contract",
       "check_name": "_check_specification",
-      "file_path": "/tmp/pcb-agent-specification-k6x39qin/tests/.pcb-agent-specification.generated.zen",
+      "file_path": "/tmp/pcb-agent-specification-7oqk8zep/tests/.pcb-agent-specification.generated.zen",
       "status": "pass"
     }
   ],

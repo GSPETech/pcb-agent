@@ -4,7 +4,7 @@
       "test_bench_name": "PcbAgentConnectivity",
       "case_name": "contract",
       "check_name": "_check_connectivity",
-      "file_path": "/tmp/pcb-agent-connectivity-xmgaugnl/tests/.pcb-agent-connectivity.generated.zen",
+      "file_path": "/tmp/pcb-agent-connectivity-m5z3wdnb/tests/.pcb-agent-connectivity.generated.zen",
       "status": "pass"
     }
   ],

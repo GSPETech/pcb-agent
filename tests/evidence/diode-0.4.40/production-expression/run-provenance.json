@@ -4,8 +4,58 @@
     "/home/rendra/pcbagent-full/scripts/capture-production-expression.py"
   ],
   "commands": [
-    "/home/rendra/.local/bin/pcb test tests/.pcb-agent-connectivity.generated.zen -f json",
-    "/home/rendra/.local/bin/pcb test tests/.pcb-agent-specification.generated.zen -f json"
+    {
+      "argv": [
+        "/home/rendra/.local/bin/pcb",
+        "test",
+        "tests/.pcb-agent-connectivity.generated.zen",
+        "-f",
+        "json"
+      ],
+      "cwd": "/home/rendra/pcbagent-full/fixtures/production-expression",
+      "end": "2026-08-29T14:30:20.155499+00:00",
+      "executable": "pcb",
+      "exit": 0,
+      "gate": "connectivity",
+      "result": {
+        "path": "production-expression/production-connectivity-result.json",
+        "sha256": "sha256:e2abad437adb9b9236bbcef9ab4361f0cdad84aadc860391716c180450488cbc"
+      },
+      "revision": "4744783889cda31c8132a75850a27a55d171d0a1",
+      "source": {
+        "path": "production-expression/production-connectivity-testbench.generated.zen",
+        "sha256": "sha256:802b58ab16fdfae8acbb6bc8b3a9b6ee28ede8a6c4fbc0b9ff78998b9fee4360"
+      },
+      "start": "2026-08-29T14:30:19.959331+00:00",
+      "stderr_sha256": "0f1ca59e85477c51a0e8e3498dc572fcace0b708b297e22da991d06416de9ff5",
+      "stdout_sha256": "e2abad437adb9b9236bbcef9ab4361f0cdad84aadc860391716c180450488cbc"
+    },
+    {
+      "argv": [
+        "/home/rendra/.local/bin/pcb",
+        "test",
+        "tests/.pcb-agent-specification.generated.zen",
+        "-f",
+        "json"
+      ],
+      "cwd": "/home/rendra/pcbagent-full/fixtures/production-expression",
+      "end": "2026-08-29T14:30:20.346324+00:00",
+      "executable": "pcb",
+      "exit": 0,
+      "gate": "specification",
+      "result": {
+        "path": "production-expression/production-specification-result.json",
+        "sha256": "sha256:738878c2c3e437881f4819d682c55b34f692175eb0a2b5e6f1edddcf4f2136fd"
+      },
+      "revision": "4744783889cda31c8132a75850a27a55d171d0a1",
+      "source": {
+        "path": "production-expression/production-specification-testbench.generated.zen",
+        "sha256": "sha256:be3d7e504ee64e1c710704214e899ae822d2460a756a92eb758dcb4b8b92ce13"
+      },
+      "start": "2026-08-29T14:30:20.156216+00:00",
+      "stderr_sha256": "692ad3b288642c2385af5d3aba011c720364916a6ef6c3953b81d3e986c160d2",
+      "stdout_sha256": "738878c2c3e437881f4819d682c55b34f692175eb0a2b5e6f1edddcf4f2136fd"
+    }
   ],
   "cwd": "/home/rendra/pcbagent-full",
   "dir": "production-expression",
@@ -14,9 +64,10 @@
   "git_status": "",
   "git_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "kind": "production-expression",
-  "repo_revision": "ff1b4726b93d2e96cc73e229fba459ab0c76069b",
-  "script_sha256": "5a9eb275d88816137ed5b21d433fcd03ce8a9c5f403f4fd0316aaacdb39a7a80",
+  "repo_revision": "4744783889cda31c8132a75850a27a55d171d0a1",
+  "script_sha256": "78ec05d3b8c4b528974fcfb800e81f044da228393ffffcf03c9129ef7fbd532d",
+  "source_clean": true,
   "stderr": "production-expression/run/output.stderr",
   "stdout": "production-expression/run/output.stdout",
-  "timestamp": "2026-08-29T10:19:42.217944+00:00"
+  "timestamp": "2026-08-29T14:30:19.935027+00:00"
 }

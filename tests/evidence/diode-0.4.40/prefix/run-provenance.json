@@ -13,11 +13,11 @@
   "git_status": "",
   "git_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "kind": "prefix-variation",
-  "repo_revision": "ff1b4726b93d2e96cc73e229fba459ab0c76069b",
-  "script_sha256": "59d4773f8afb47b30441a9b5aa71d3844d60bbbf205b901a21a6fcf5678258d5",
+  "repo_revision": "4744783889cda31c8132a75850a27a55d171d0a1",
+  "script_sha256": "d8dc0d64054351d9ea79c54d4118a936d572ee3afa18dfca7ef953d912f5dcd6",
   "stderr": "prefix/prefix-renamed-alt-case.stderr",
   "stderr_sha256": "521e8828629cac57fd5f2ba84792b8039e47974aad702b529fe99bd0e66f0312",
   "stdout": "prefix/prefix-renamed-alt-case.json",
   "stdout_sha256": "45daf46e3919c4734730ac5bb6f6aaa1d6e559bc406b599b78bd381469f54d0d",
-  "timestamp": "2026-08-29T10:19:35.581270+00:00"
+  "timestamp": "2026-08-29T14:30:15.251733+00:00"
 }

@@ -1,1 +1,1 @@
-run-dir=fixtures/invalid-connectivity/reports/20260829T101940.473159Z-810/
+run-dir=fixtures/invalid-connectivity/reports/20260829T143018.477005Z-918/
