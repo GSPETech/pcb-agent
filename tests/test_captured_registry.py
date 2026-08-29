@@ -19,6 +19,7 @@ from pcb_agent.evidence import (
     load_evidence_manifest,
     validate_adapter_provenance,
     validate_registry_provenance,
+    validate_version_record,
 )
 from pcb_agent.generated_testbench import (
     ComponentAdapter,
@@ -143,15 +144,28 @@ def _write_bundle(
     source = root / "spike-generics-testbench.zen"
     result.write_bytes(b'{"results": [{"status": "pass"}]}')
     source.write_bytes(b'check(True, "ok")\n')
-    (root / "pcb-version.txt").write_text(f"pcbc {version}\n", encoding="utf-8", newline="\n")
+    version_path = root / "pcb-version.txt"
+    version_path.write_text(f"pcbc {version}\n", encoding="utf-8", newline="\n")
     manifest = root / "manifest.sha256"
     manifest.write_text(
         "# bundle\n"
         f"{hashlib.sha256(result.read_bytes()).hexdigest()}  ./spike-generics.json\n"
-        f"{hashlib.sha256(source.read_bytes()).hexdigest()}  ./spike-generics-testbench.zen\n",
+        f"{hashlib.sha256(source.read_bytes()).hexdigest()}  ./spike-generics-testbench.zen\n"
+        f"{hashlib.sha256(version_path.read_bytes()).hexdigest()}  ./pcb-version.txt\n",
         encoding="utf-8",
     )
     return root, manifest, result, source
+
+
+def _rewrite_version(root: Path, manifest: Path, text: str, *, refresh_manifest: bool) -> None:
+    """Overwrite pcb-version.txt and optionally refresh its manifest hash."""
+    version_path = root / "pcb-version.txt"
+    version_path.write_text(text, encoding="utf-8", newline="\n")
+    if refresh_manifest:
+        entries = load_evidence_manifest(manifest)
+        entries["pcb-version.txt"] = hashlib.sha256(version_path.read_bytes()).hexdigest()
+        lines = [f"{digest}  ./{relative}\n" for relative, digest in sorted(entries.items())]
+        manifest.write_text("".join(lines), encoding="utf-8")
 
 
 def _generics_adapter() -> ComponentAdapter:
@@ -211,7 +225,52 @@ class AdapterProvenanceTests(unittest.TestCase):
             build_adapter_registry([_generics_adapter(), _generics_adapter()])
         self.assertIn("duplicate", str(ctx.exception))
 
-    def test_registry_provenance_version_mismatch_blocks(self) -> None:
+
+class VersionRecordTests(unittest.TestCase):
+    def test_valid_exact_version_passes_and_parses(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root, manifest, _, _ = _write_bundle(Path(temporary))
+            entries = load_evidence_manifest(manifest)
+            self.assertEqual(validate_version_record(root, entries), "0.4.40")
+            validate_registry_provenance({"capacitor": _generics_adapter()}, root, manifest)
+
+    def test_missing_manifest_entry_blocks(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root, manifest, _, _ = _write_bundle(Path(temporary))
+            entries = load_evidence_manifest(manifest)
+            del entries["pcb-version.txt"]
+            with self.assertRaises(EvidenceError) as ctx:
+                validate_version_record(root, entries)
+            self.assertIn("missing from manifest", str(ctx.exception))
+
+    def test_wrong_digest_blocks(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root, manifest, _, _ = _write_bundle(Path(temporary))
+            _rewrite_version(root, manifest, "pcbc 0.4.40", refresh_manifest=False)
+            entries = load_evidence_manifest(manifest)
+            with self.assertRaises(EvidenceError) as ctx:
+                validate_version_record(root, entries)
+            self.assertIn("hash differs", str(ctx.exception))
+
+    def test_multiple_conflicting_versions_block(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root, manifest, _, _ = _write_bundle(Path(temporary))
+            _rewrite_version(root, manifest, "pcbc 0.4.40\npcbc 0.4.41\n", refresh_manifest=True)
+            entries = load_evidence_manifest(manifest)
+            with self.assertRaises(EvidenceError) as ctx:
+                validate_version_record(root, entries)
+            self.assertIn("exactly one", str(ctx.exception))
+
+    def test_malformed_version_blocks(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root, manifest, _, _ = _write_bundle(Path(temporary))
+            _rewrite_version(root, manifest, "pcbc 0.4\n", refresh_manifest=True)
+            entries = load_evidence_manifest(manifest)
+            with self.assertRaises(EvidenceError) as ctx:
+                validate_version_record(root, entries)
+            self.assertIn("exactly one", str(ctx.exception))
+
+    def test_adapter_version_mismatch_blocks(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root, manifest, _, _ = _write_bundle(Path(temporary), version="0.4.41")
             with self.assertRaises(EvidenceError) as ctx:

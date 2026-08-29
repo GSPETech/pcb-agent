@@ -24,6 +24,7 @@ class EvidenceError(ValueError):
 
 
 _MANIFEST_ENTRY = re.compile(r"^[0-9a-f]{64}\s+(\S+)$")
+_PCBC_VERSION_RECORD = re.compile(r"\bpcbc\s+(\d+\.\d+\.\d+)\b")
 
 
 def load_evidence_manifest(manifest_path: Path) -> dict[str, str]:
@@ -137,6 +138,34 @@ def validate_adapter_provenance(
     )
 
 
+def validate_version_record(evidence_root: Path, manifest: Mapping[str, str]) -> str:
+    """Verify `pcb-version.txt` against the manifest and return the pcbc version.
+
+    The record must be listed in the manifest, the on-disk bytes must hash to
+    the manifest entry, and the text must contain exactly one strict
+    `pcbc <major>.<minor>.<patch>` record. A missing manifest entry, a digest
+    mismatch, a missing file, a malformed record, or any conflicting extra
+    version line is a fail-closed `EvidenceError`.
+    """
+    relative = "pcb-version.txt"
+    if relative not in manifest:
+        raise EvidenceError("pcb-version.txt missing from manifest")
+    path = _ensure_within(evidence_root, relative)
+    if not path.is_file():
+        raise EvidenceError("evidence file missing: pcb-version.txt")
+    data = path.read_bytes()
+    digest = hashlib.sha256(data).hexdigest()
+    if digest != manifest[relative]:
+        raise EvidenceError("pcb-version.txt on-disk hash differs from manifest")
+    records = _PCBC_VERSION_RECORD.findall(data.decode("utf-8"))
+    if len(records) != 1:
+        raise EvidenceError(
+            "pcb-version.txt must contain exactly one strict "
+            f"pcbc <major>.<minor>.<patch> record, found {len(records)}"
+        )
+    return records[0]
+
+
 def validate_registry_provenance(
     registry: Mapping[str, object],
     evidence_root: Path,
@@ -146,26 +175,21 @@ def validate_registry_provenance(
 
     Fails closed on the first missing file, missing manifest entry, digest
     mismatch, or malformed digest. The manifest must also cover the version
-    record used by the adapters.
+    record used by the adapters, and the parsed pcbc version must be verified
+    by every adapter that declares a version set.
     """
     if not evidence_root.is_dir():
         raise EvidenceError(f"evidence root missing: {evidence_root}")
     manifest = load_evidence_manifest(manifest_path)
-    version_record = evidence_root / "pcb-version.txt"
-    if not version_record.is_file():
-        raise EvidenceError("evidence root lacks pcb-version.txt")
-    version_text = version_record.read_text(encoding="utf-8")
-    match = re.search(r"\bpcbc\s+(\d+\.\d+\.\d+)\b", version_text)
-    if match is None:
-        raise EvidenceError("pcb-version.txt lacks a parseable pcbc version")
+    captured_version = validate_version_record(evidence_root, manifest)
 
     for adapter in registry.values():
         if not isinstance(adapter, object):
             continue
         kind = getattr(adapter, "kind", None)
         verified = getattr(adapter, "verified_pcbc_versions", frozenset())
-        if isinstance(verified, frozenset) and verified and match.group(1) not in verified:
+        if isinstance(verified, frozenset) and verified and captured_version not in verified:
             raise EvidenceError(
-                f"adapter {kind}: evidence version {match.group(1)} not verified"
+                f"adapter {kind}: evidence version {captured_version} not verified"
             )
         validate_adapter_provenance(adapter, evidence_root, manifest)
