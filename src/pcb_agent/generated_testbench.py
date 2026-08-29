@@ -72,9 +72,13 @@ _PACKAGE_ACCESSOR = "properties['package']"
 def captured_adapter_registry() -> dict[str, ComponentAdapter]:
     """Production adapters verified against captured Diode 0.4.40 output.
 
-    Every pin mapping, instance suffix, and accessor was observed in raw
-    `pcb test -f json` output stored under
-    `tests/evidence/diode-0.4.40/`. See docs/spike-diode-net-naming.md.
+    The raw `pcb test -f json` results stored under
+    `tests/evidence/diode-0.4.40/` carry only result identity and status. The
+    mapping/accessor values are established by the hash-bound TestBench source
+    that produced each PASS result (assertion source + module source), whose
+    digests are also retained in the evidence manifest. See
+    docs/spike-diode-net-naming.md. Crystal is intentionally absent: the
+    adapter model cannot represent its one-to-many four-pin GND mapping.
     """
     return build_adapter_registry(
         [
