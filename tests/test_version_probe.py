@@ -109,5 +109,49 @@ class VersionProbeGatesGeneratedChecksTests(unittest.TestCase):
         self.assertIn("toolchain version unknown", check.message)
 
 
+class ToolVersionCaptureTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary.name)
+        write_contract(self.root)
+        self.project = load_project(self.root)
+
+    def tearDown(self) -> None:
+        self.temporary.cleanup()
+
+    def test_captures_pcbc_version_in_report(self) -> None:
+        from pcb_agent import cli
+
+        version_result = ProcessResult(
+            ("pcb", "--version"), 0, "pcbc 0.4.40\n", "", 0.1, False, False, {}
+        )
+        with patch("pcb_agent.diode.probe_pcbc_version", return_value="0.4.40"), \
+                patch("pcb_agent.diode.run_process", return_value=version_result):
+            versions = cli._tool_versions(self.project)
+        self.assertEqual(versions.get("pcbc"), "0.4.40")
+        self.assertIn("pcb", versions)
+
+    def test_version_probe_failure_yields_no_pcbc_entry(self) -> None:
+        from pcb_agent import cli
+
+        with patch(
+            "pcb_agent.diode.probe_pcbc_version",
+            side_effect=diode.GeneratedCompatibilityError("cannot parse pcbc version"),
+        ):
+            versions = cli._tool_versions(self.project)
+        self.assertNotIn("pcbc", versions)
+
+    def test_report_serializes_versions(self) -> None:
+        from pcb_agent.models import Check, CheckStatus, VerificationReport
+
+        report = VerificationReport(
+            "board",
+            (Check("ok", CheckStatus.PASS),),
+            versions={"pcbc": "0.4.40", "pcb": "pcbc 0.4.40"},
+        )
+        data = report.to_dict()
+        self.assertEqual(data["versions"], {"pcbc": "0.4.40", "pcb": "pcbc 0.4.40"})
+
+
 if __name__ == "__main__":
     unittest.main()

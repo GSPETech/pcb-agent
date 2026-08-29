@@ -79,12 +79,33 @@ def _check(check_id: str, status: CheckStatus, message: str, *, required: bool =
     return Check(id=check_id, status=status, severity=Severity.ERROR, message=message, required=required)
 
 
+def _tool_versions(project: ProjectState) -> dict[str, str]:
+    """Best-effort exact toolchain versions for the verification report.
+
+    Version capture is diagnostic and never gates verification: a probe
+    failure yields an empty mapping rather than a BLOCKED run. The pcbc
+    version is the exact installed build, not the contract's `pcb_version`.
+    """
+    versions: dict[str, str] = {}
+    try:
+        versions["pcbc"] = diode.probe_pcbc_version(project)
+    except (FileNotFoundError, OSError, ValueError, diode.GeneratedCompatibilityError):
+        pass
+    try:
+        result = diode.run_process(project.root, ["pcb", "--version"], timeout=30)
+        if result.returncode == 0 and not result.timed_out:
+            versions["pcb"] = result.stdout.strip()
+    except (FileNotFoundError, OSError, ValueError):
+        pass
+    return versions
+
+
 def _persist(project: ProjectState, run: RunState, checks: Sequence[Check], output_format: str,
              profile: str = "schematic", exit_override: int | None = None) -> int:
     artifacts = tuple(check.evidence for check in checks if check.evidence)
     report = VerificationReport(project.name, tuple(checks), profile=profile, run_id=run.run_id,
                                 source_dirty=source_is_dirty(project.root), hashes=project.hashes,
-                                artifacts=artifacts)
+                                versions=_tool_versions(project), artifacts=artifacts)
     path = write_run_report(run, report, project)
     payload = json.loads(path.read_text(encoding="utf-8"))
     if output_format == "json":
