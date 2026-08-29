@@ -378,7 +378,55 @@ class ProductionProvenanceTests(unittest.TestCase):
 
 
 class ProductionExpressionEvidenceTests(unittest.TestCase):
-    def test_renderer_output_matches_retained_generated_source(self) -> None:
+    def test_connectivity_renderer_output_matches_retained_generated_source(self) -> None:
+        """The exact production connectivity expression was executed on real Diode.
+
+        `render_connectivity_testbench` must keep producing the byte-exact
+        source that passed against pcbc 0.4.40, whose result is retained under
+        `tests/evidence/diode-0.4.40/production-expression/`.
+        """
+        from pcb_agent.state import load_project
+
+        project = load_project(Path("fixtures/production-expression"))
+        source = render_connectivity_testbench(project, "0.4.40")
+        retained = (
+            evidence_root() / "production-expression" / "production-connectivity-testbench.generated.zen"
+        ).read_bytes()
+        self.assertEqual(source.encode("utf-8"), retained)
+
+    def test_retained_connectivity_generated_source_contains_production_expression(self) -> None:
+        source = (
+            evidence_root() / "production-expression" / "production-connectivity-testbench.generated.zen"
+        ).read_text(encoding="utf-8")
+        self.assertIn("\"R1.R\" in components", source)
+        self.assertIn("\"D3.D\" in components", source)
+        self.assertIn("PcbAgentConnectivity__contract.R1.R", source)
+        self.assertIn("PcbAgentConnectivity", source)
+
+    def test_retained_connectivity_result_passes(self) -> None:
+        result = json.loads(
+            (evidence_root() / "production-expression" / "production-connectivity-result.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(result["summary"]["passed"], 1)
+        self.assertEqual(result["results"][0]["test_bench_name"], "PcbAgentConnectivity")
+        self.assertEqual(result["results"][0]["status"], "pass")
+
+    def test_production_generated_sources_and_results_appear_in_manifest(self) -> None:
+        from pcb_agent.evidence import load_evidence_manifest
+
+        manifest = load_evidence_manifest(evidence_root() / "manifest.sha256")
+        for relative in (
+            "production-expression/production-connectivity-testbench.generated.zen",
+            "production-expression/production-connectivity-result.json",
+            "production-expression/production-specification-testbench.generated.zen",
+            "production-expression/production-specification-result.json",
+        ):
+            with self.subTest(relative=relative):
+                self.assertIn(relative, manifest)
+
+    def test_specification_renderer_output_matches_retained_generated_source(self) -> None:
         """The exact production package expression was executed on real Diode.
 
         `render_specification_testbench` must keep producing the byte-exact
