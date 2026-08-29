@@ -84,14 +84,16 @@ def capture_production_expression(
     raw_dir.mkdir(parents=True, exist_ok=True)
 
     summary: dict = {}
-    commands: list[str] = []
+    commands: list[dict] = []
     for check_id, bench_name, check_name, render in (
         ("CONNECTIVITY", "PcbAgentConnectivity", "_check_connectivity", render_connectivity_testbench),
         ("SPECIFICATION", "PcbAgentSpecification", "_check_specification", render_specification_testbench),
     ):
+        started = datetime.now(timezone.utc).isoformat()
         generated = render(project, pcbc_version)
         generated_bytes = generated.encode("utf-8")
         outcome = diode.execute_generated_test(project, generated, raw_dir, check_id)
+        ended = datetime.now(timezone.utc).isoformat()
         check = diode.generated_check(check_id, outcome, bench_name, check_name, raw_dir)
         if check.status != CheckStatus.PASS:
             raise SystemExit(f"production {check_id.lower()} run did not pass: {check.status}")
@@ -107,7 +109,26 @@ def capture_production_expression(
             "result_sha256": outcome.result_sha256,
             "status": outcome.process.returncode,
         }
-        commands.append(" ".join(outcome.process.argv))
+        commands.append({
+            "gate": check_id.lower(),
+            "argv": list(outcome.process.argv),
+            "cwd": str(fixture),
+            "executable": pcb_executable,
+            "exit": outcome.process.returncode,
+            "start": started,
+            "end": ended,
+            "revision": revision,
+            "source": {
+                "path": f"{EVIDENCE_SUBDIR}/{generated_stem}.generated.zen",
+                "sha256": outcome.generated_sha256,
+            },
+            "result": {
+                "path": f"{EVIDENCE_SUBDIR}/production-{check_id.lower()}-result.json",
+                "sha256": outcome.result_sha256,
+            },
+            "stdout_sha256": _sha256(outcome.process.stdout.encode("utf-8")),
+            "stderr_sha256": _sha256(outcome.process.stderr.encode("utf-8")),
+        })
 
     fixture_copies = {
         "ACCEPTANCE.json": "production-ACCEPTANCE.json",
