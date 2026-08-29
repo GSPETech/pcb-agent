@@ -12,6 +12,7 @@ import hashlib
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 
 class SourceCleanlinessError(RuntimeError):
@@ -39,14 +40,22 @@ def _git_bytes(repo_root: Path, *args: str) -> bytes:
     return proc.stdout
 
 
-def measure_source_cleanliness(repo_root: Path, evidence_root: Path) -> dict:
+def measure_source_cleanliness(
+    repo_root: Path,
+    evidence_root: Path,
+    baseline_revision: Optional[str] = None,
+) -> dict:
     """Return a machine-readable cleanliness record.
 
-    Raises ``SourceCleanlinessError`` when any git command exits non-zero; the
-    caller treats that as an abort, not a clean verdict.
+    Raises ``SourceCleanlinessError`` when any git command exits non-zero, or
+    when the current revision differs from `baseline_revision` (if provided).
     """
     measured_at = datetime.now(timezone.utc).isoformat()
     revision = _git_bytes(repo_root, "rev-parse", "HEAD").decode("ascii").strip()
+    if baseline_revision is not None and revision != baseline_revision:
+        raise SourceCleanlinessError(
+            f"revision drift: expected {baseline_revision}, got {revision}"
+        )
 
     raw_status = _git_bytes(
         repo_root, "status", "--porcelain=v1", "-z", "--untracked-files=all"
@@ -61,13 +70,17 @@ def measure_source_cleanliness(repo_root: Path, evidence_root: Path) -> dict:
     staged = _git_bytes(repo_root, "diff", "--cached", "--binary", "--", ".", exclude)
     unstaged = _git_bytes(repo_root, "diff", "--binary", "--", ".", exclude)
 
+    # Lossless encoding of raw binary data
+    def encode_bytes(data: bytes) -> str:
+        return data.hex()
+
     return {
         "repo_revision": revision,
-        "raw_status_encoding": "utf-8",
-        "raw_status": raw_status.decode("utf-8", "replace"),
+        "raw_status_encoding": "hex",
+        "raw_status": encode_bytes(raw_status),
         "raw_status_sha256": _sha256(raw_status),
-        "filtered_source_status_encoding": "utf-8",
-        "filtered_source_status": filtered_status.decode("utf-8", "replace"),
+        "filtered_source_status_encoding": "hex",
+        "filtered_source_status": encode_bytes(filtered_status),
         "filtered_source_status_sha256": _sha256(filtered_status),
         "staged_diff_sha256": _sha256(staged),
         "unstaged_diff_sha256": _sha256(unstaged),
