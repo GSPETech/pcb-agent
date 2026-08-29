@@ -3,7 +3,7 @@
 Date: 2026-08-29
 Branch: `feat/diode-adapter-registry`
 PR: https://github.com/GSPETech/pcb-agent/pull/5
-Status: `COMPLETE`
+Status: `PARTIAL — artifact integrity complete, per-run provenance enforcement pending`
 
 This report documents the remediation of every evidence and provenance finding
 from the final review of the Diode net-naming spike, as specified in
@@ -16,8 +16,10 @@ JSONs, referenced missing artifacts, overclaimed crystal, and lacked
 environment/version/source provenance. All findings are now remediated:
 
 - The bundle is re-captured from a **clean tracked commit** (`ff1b472`) on WSL2
-  ext4 against the real `pcbc 0.4.40` toolchain, and every run records its own
-  executed revision and clean git status.
+  ext4 against the real `pcbc 0.4.40` toolchain. The capture orchestrator
+  verified a clean tree once before beginning the capture sequence; per-run
+  records carry that verified status. Per-run re-measurement of source
+  cleanliness is pending.
 - `pcb-version.txt` is bound to the manifest and must be the exact single
   `pcbc <major>.<minor>.<patch>` record verified by every adapter.
 - Registry provenance is enforced lazily before any generated TestBench use;
@@ -41,8 +43,8 @@ The evidence bundle was re-captured from a clean tree at commit
   `ext4`, `pcbc 0.4.40`, capture timestamp, script digest
 - `commands.json` — every run's exact argv, cwd, executable, exit code,
   timestamp, revision, and stdout/stderr artifacts
-- per-run `run-provenance.json` — revision + clean-status + argv/exit/digests
-  for each of the eight run directories
+- per-run `run-provenance.json` — executed revision, the orchestrator-verified
+  clean status, argv/exit/digests for each of the eight run directories
 - `scripts/` — the executed capture scripts, hashed in the manifest
 
 ## Task-by-task remediation
@@ -64,7 +66,10 @@ The evidence bundle was re-captured from a clean tree at commit
 | 12 | Rebuilt `manifest.sha256` deterministically; added `test_evidence_bundle.py` completeness + provenance-relation tests | `2b22fd2`, `486d518` |
 | 13 | Finalized README, `docs/report-spike-execution.md`, and `docs/spike-diode-net-naming.md` only | `20f9a9c` |
 | 14 | Retained verification transcripts for Windows/WSL pytest, pyright, and both manifest checks | `dbdc013` |
-| 15 | Finalized this report and corrected its commit attribution | this commit |
+| 15 | Finalized this report and corrected its commit attribution | `22878f4` (first tracked version) |
+
+Tasks 0–15 are the 16 numbered tasks of the remediation plan; the follow-up CI
+fixes below are separate commits, not part of that table.
 
 Follow-up CI fixes:
 - `31aaf79`: re-enabled tracking of `verify-report.json`/`.md` under `tests/evidence/` (global `.gitignore` had silently excluded them).
