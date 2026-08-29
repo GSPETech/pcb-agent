@@ -132,7 +132,13 @@ class EvidenceBundleCompletenessTests(unittest.TestCase):
                 bundled = self.root / "scripts" / name
                 tracked = Path(__file__).resolve().parents[1] / "scripts" / name
                 self.assertIn(f"scripts/{name}", self.manifest)
-                self.assertEqual(bundled.read_bytes(), tracked.read_bytes())
+                # The bundle copy is byte-captured (LF). The tracked script is a
+                # text file, so a Windows checkout materializes CRLF; compare the
+                # normalized content to prove they are the same source.
+                self.assertEqual(
+                    bundled.read_bytes().replace(b"\r\n", b"\n"),
+                    tracked.read_bytes().replace(b"\r\n", b"\n"),
+                )
 
     def test_both_renderers_byte_match_retained_generated_sources(self) -> None:
         from pcb_agent.state import load_project
