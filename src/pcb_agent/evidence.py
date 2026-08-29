@@ -24,7 +24,7 @@ class EvidenceError(ValueError):
 
 
 _MANIFEST_ENTRY = re.compile(r"^[0-9a-f]{64}\s+(\S+)$")
-_PCBC_VERSION_RECORD = re.compile(r"\bpcbc\s+(\d+\.\d+\.\d+)\b")
+_PCBC_VERSION_LINE = re.compile(r"\Apcbc (\d+\.\d+\.\d+)\n\Z")
 
 
 def load_evidence_manifest(manifest_path: Path) -> dict[str, str]:
@@ -33,6 +33,8 @@ def load_evidence_manifest(manifest_path: Path) -> dict[str, str]:
     Blank lines and `#` comment lines are ignored. A duplicate path is an
     error because the bundle must list every file exactly once.
     """
+    if manifest_path.is_symlink():
+        raise EvidenceError("evidence manifest is a symlink")
     if not manifest_path.is_file():
         raise EvidenceError(f"evidence manifest missing: {manifest_path}")
     entries: dict[str, str] = {}
@@ -142,28 +144,35 @@ def validate_version_record(evidence_root: Path, manifest: Mapping[str, str]) ->
     """Verify `pcb-version.txt` against the manifest and return the pcbc version.
 
     The record must be listed in the manifest, the on-disk bytes must hash to
-    the manifest entry, and the text must contain exactly one strict
-    `pcbc <major>.<minor>.<patch>` record. A missing manifest entry, a digest
-    mismatch, a missing file, a malformed record, or any conflicting extra
-    version line is a fail-closed `EvidenceError`.
+    the manifest entry, and the bytes must be exactly one `pcbc X.Y.Z\n` line.
+    A symlinked version file, a manifest/evidence-root symlink, missing entry,
+    digest mismatch, missing file, invalid UTF-8, missing newline, extra line,
+    or malformed record is a fail-closed `EvidenceError`.
     """
+    if evidence_root.is_symlink():
+        raise EvidenceError("evidence root is a symlink")
     relative = "pcb-version.txt"
     if relative not in manifest:
         raise EvidenceError("pcb-version.txt missing from manifest")
     path = _ensure_within(evidence_root, relative)
+    if path.is_symlink():
+        raise EvidenceError("pcb-version.txt is a symlink")
     if not path.is_file():
         raise EvidenceError("evidence file missing: pcb-version.txt")
     data = path.read_bytes()
     digest = hashlib.sha256(data).hexdigest()
     if digest != manifest[relative]:
         raise EvidenceError("pcb-version.txt on-disk hash differs from manifest")
-    records = _PCBC_VERSION_RECORD.findall(data.decode("utf-8"))
-    if len(records) != 1:
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise EvidenceError("pcb-version.txt is not valid UTF-8") from error
+    match = _PCBC_VERSION_LINE.match(text)
+    if match is None:
         raise EvidenceError(
-            "pcb-version.txt must contain exactly one strict "
-            f"pcbc <major>.<minor>.<patch> record, found {len(records)}"
+            "pcb-version.txt must be exactly one pcbc <major>.<minor>.<patch> line"
         )
-    return records[0]
+    return match.group(1)
 
 
 def validate_registry_provenance(

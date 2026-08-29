@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -263,6 +264,52 @@ class VersionRecordTests(unittest.TestCase):
             with self.assertRaises(EvidenceError) as ctx:
                 validate_version_record(root, entries)
             self.assertIn("exactly one", str(ctx.exception))
+
+    def test_missing_newline_blocks(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root, manifest, _, _ = _write_bundle(Path(temporary))
+            _rewrite_version(root, manifest, "pcbc 0.4.40", refresh_manifest=True)
+            entries = load_evidence_manifest(manifest)
+            with self.assertRaises(EvidenceError) as ctx:
+                validate_version_record(root, entries)
+            self.assertIn("exactly one", str(ctx.exception))
+
+    def test_invalid_utf8_blocks(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root, manifest, _, _ = _write_bundle(Path(temporary))
+            version_path = root / "pcb-version.txt"
+            version_path.write_bytes(b"pcbc 0.4.40\n\xff\xfe")
+            entries = load_evidence_manifest(manifest)
+            entries["pcb-version.txt"] = hashlib.sha256(version_path.read_bytes()).hexdigest()
+            lines = [f"{digest}  ./{relative}\n" for relative, digest in sorted(entries.items())]
+            manifest.write_text("".join(lines), encoding="utf-8")
+            with self.assertRaises(EvidenceError) as ctx:
+                validate_version_record(root, entries)
+            self.assertIn("UTF-8", str(ctx.exception))
+
+    @unittest.skipUnless(os.name == "posix", "symlink creation requires privilege on Windows")
+    def test_version_symlink_blocks(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root, manifest, _, _ = _write_bundle(Path(temporary))
+            (root / "pcb-version.txt").unlink()
+            target = root / "real-version.txt"
+            target.write_text("pcbc 0.4.40\n", encoding="utf-8", newline="\n")
+            (root / "pcb-version.txt").symlink_to(target)
+            entries = load_evidence_manifest(manifest)
+            with self.assertRaises(EvidenceError) as ctx:
+                validate_version_record(root, entries)
+            self.assertIn("symlink", str(ctx.exception))
+
+    @unittest.skipUnless(os.name == "posix", "symlink creation requires privilege on Windows")
+    def test_manifest_symlink_blocks(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root, manifest, _, _ = _write_bundle(Path(temporary))
+            real = root / "real-manifest.sha256"
+            manifest.rename(real)
+            manifest.symlink_to(real)
+            with self.assertRaises(EvidenceError) as ctx:
+                load_evidence_manifest(manifest)
+            self.assertIn("symlink", str(ctx.exception))
 
     def test_malformed_version_blocks(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
