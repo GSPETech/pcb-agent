@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping
 
+from .evidence import EvidenceError
 from .state import ProjectState
 
 
@@ -220,7 +221,8 @@ def evidence_root() -> Path:
     """Repository-owned evidence root for the captured Diode run.
 
     Resolved relative to this source file so the bundle travels with the
-    repository and is never read from arbitrary home paths.
+    repository and is never read from arbitrary home paths or the current
+    working directory.
     """
     from pathlib import Path as _Path
 
@@ -228,19 +230,59 @@ def evidence_root() -> Path:
     return root / "tests" / "evidence" / f"diode-{_CAPTURED_PCBC_VERSION}"
 
 
-def validate_captured_registry() -> None:
+def validate_captured_registry(root_override: Path | None = None) -> None:
     """Fail closed if the captured registry's evidence bundle is incomplete.
 
     Validates every production adapter against the repository-owned manifest
     and version record. Raises `EvidenceError` on the first inconsistency.
+    The evidence root is resolved relative to the package by default; a test
+    may pass `root_override` to validate against a temporary bundle.
     """
     from .evidence import validate_registry_provenance
 
+    root = root_override if root_override is not None else evidence_root()
     validate_registry_provenance(
         captured_adapter_registry(),
-        evidence_root(),
-        evidence_root() / "manifest.sha256",
+        root,
+        root / "manifest.sha256",
     )
+
+
+_PROVENANCE_CACHE: tuple[bool, str] | None = None
+
+
+def _run_provenance_validation() -> None:
+    validate_captured_registry()
+
+
+def ensure_registry_provenance() -> None:
+    """Validate the captured registry lazily before any generated use.
+
+    The verdict is cached for the process lifetime. On failure the adapter
+    registry is emptied (fail closed) so no adapter can be enabled without a
+    successful provenance check, and a `GeneratorError` is raised so generated
+    gates report `BLOCKED`. Unrelated commands never call this, so `doctor`
+    and `build` keep working even when the evidence bundle is invalid.
+    """
+    global _ADAPTERS, _PROVENANCE_CACHE
+    if _PROVENANCE_CACHE is not None:
+        if _PROVENANCE_CACHE[0]:
+            return
+        raise GeneratorError(f"captured registry provenance invalid: {_PROVENANCE_CACHE[1]}")
+    try:
+        _run_provenance_validation()
+    except EvidenceError as error:
+        _ADAPTERS = {}
+        _PROVENANCE_CACHE = (False, str(error))
+        raise GeneratorError(f"captured registry provenance invalid: {error}") from error
+    _PROVENANCE_CACHE = (True, "")
+
+
+def reset_registry_provenance() -> None:
+    """Test hook: clear the cached verdict and restore the captured registry."""
+    global _ADAPTERS, _PROVENANCE_CACHE
+    _PROVENANCE_CACHE = None
+    _ADAPTERS = captured_adapter_registry()
 
 
 def set_adapter_registry(registry: Mapping[str, ComponentAdapter]) -> None:
@@ -439,6 +481,7 @@ def render_connectivity_testbench(
     bench_name: str = "PcbAgentConnectivity",
     case_name: str = "contract",
 ) -> str:
+    ensure_registry_provenance()
     bench_name = validate_identifier(bench_name, "bench_name")
     case_name = validate_identifier(case_name, "case_name")
 
@@ -530,6 +573,7 @@ def render_specification_testbench(
     bench_name: str = "PcbAgentSpecification",
     case_name: str = "contract",
 ) -> str:
+    ensure_registry_provenance()
     bench_name = validate_identifier(bench_name, "bench_name")
     case_name = validate_identifier(case_name, "case_name")
 

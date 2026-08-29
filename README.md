@@ -56,10 +56,11 @@ Rules:
   pair that were observed.
 - The registry is populated from captured Diode 0.4.40 evidence
   (`captured_adapter_registry()` in `src/pcb_agent/generated_testbench.py`)
-  and validated against the repository-owned evidence bundle
-  (`tests/evidence/diode-0.4.40/manifest.sha256`); validation fails closed if
-  any referenced artifact is missing or its hash does not match. Registered
-  kinds: `resistor`, `led`, `capacitor`, `inductor`, `ferrite_bead`,
+  and validated lazily against the repository-owned evidence bundle
+  (`tests/evidence/diode-0.4.40/manifest.sha256`) on the first generated
+  TestBench use; validation fails closed if any referenced artifact is
+  missing or its hash does not match. `doctor` and `build` never trigger the
+  check. Registered kinds: `resistor`, `led`, `capacitor`, `inductor`, `ferrite_bead`,
   `thermistor`, `zener`, `rectifier`, `tvs`. Crystal is intentionally absent
   because the adapter model cannot represent its one-to-many four-pin GND
   mapping. See `docs/spike-diode-net-naming.md`.

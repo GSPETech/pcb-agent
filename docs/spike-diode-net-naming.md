@@ -4,8 +4,11 @@ Status: `COMPLETE`. The net-naming experiment was executed against real Diode
 `pcbc 0.4.40` on WSL2 ext4 on 2026-08-29. Every claim below is backed by
 hash-bound retained source + result artifacts under
 `tests/evidence/diode-0.4.40/` (see `manifest.sha256`), and the production
-adapter registry in `src/pcb_agent/generated_testbench.py` is validated against
-that bundle at build time via `validate_captured_registry()`.
+adapter registry in `src/pcb_agent/generated_testbench.py` is validated lazily
+against that bundle on the first generated TestBench use via
+`ensure_registry_provenance()`. A failed validation empties the adapter
+registry, so generated gates fail closed; `doctor` and `build` never trigger
+the check.
 
 ## Question
 

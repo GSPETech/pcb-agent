@@ -105,8 +105,10 @@ retained verification transcripts before the report is marked `COMPLETE`.
   `repo-revision.txt` records `ca11826`, but the required inputs first appear
   in `68d96a3`. The bundle must be re-captured from a clean commit (or the
   report permanently downgraded).
-- `validate_captured_registry()` is exercised by tests only; production
-  enforcement at generated-check time is not yet implemented.
+- `validate_captured_registry()` is now enforced lazily on the first generated
+  TestBench use (`ensure_registry_provenance()`); a failed validation empties
+  the adapter registry so generated gates report `BLOCKED`. This is covered by
+  tests but has not yet been exercised in a real re-run.
 - Crystal pin mappings are captured observations only; production support
   requires a package/variant-discriminated adapter model with one-to-many
   emitted pins.

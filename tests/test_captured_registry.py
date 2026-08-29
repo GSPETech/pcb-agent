@@ -26,9 +26,12 @@ from pcb_agent.generated_testbench import (
     GeneratorError,
     adapter_for,
     captured_adapter_registry,
+    ensure_registry_provenance,
     evidence_root,
     known_kinds,
+    render_connectivity_testbench,
     render_specification_testbench,
+    reset_registry_provenance,
     validate_captured_registry,
 )
 
@@ -296,6 +299,82 @@ class CapturedRegistryProvenanceTests(unittest.TestCase):
         for adapter in registry.values():
             with self.subTest(kind=adapter.kind):
                 validate_adapter_provenance(adapter, evidence_root(), entries)
+
+
+class ProductionProvenanceTests(unittest.TestCase):
+    def setUp(self) -> None:
+        reset_registry_provenance()
+
+    def tearDown(self) -> None:
+        reset_registry_provenance()
+
+    def test_lazy_validation_success(self) -> None:
+        from pcb_agent.state import load_project
+
+        project = load_project(Path("fixtures/production-expression"))
+        source = render_connectivity_testbench(project, "0.4.40")
+        self.assertIn("PcbAgentConnectivity", source)
+        ensure_registry_provenance()
+
+    def test_missing_evidence_bundle_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            with self.assertRaises(EvidenceError) as ctx:
+                validate_captured_registry(root_override=Path(temporary))
+            self.assertIn("manifest", str(ctx.exception))
+
+    def test_incomplete_bundle_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root, _, _, _ = _write_bundle(Path(temporary))
+            with self.assertRaises(EvidenceError):
+                validate_captured_registry(root_override=root)
+
+    def test_failed_provenance_empties_registry(self) -> None:
+        from unittest.mock import patch
+
+        from pcb_agent.evidence import EvidenceError as EvidenceErrorCls
+
+        with patch(
+            "pcb_agent.generated_testbench._run_provenance_validation",
+            side_effect=EvidenceErrorCls("evidence root missing"),
+        ):
+            with self.assertRaises(GeneratorError) as ctx:
+                ensure_registry_provenance()
+            self.assertIn("provenance invalid", str(ctx.exception))
+        self.assertEqual(known_kinds(), frozenset())
+
+    def test_generated_render_is_blocked_after_provenance_failure(self) -> None:
+        from unittest.mock import patch
+
+        from pcb_agent.evidence import EvidenceError as EvidenceErrorCls
+        from pcb_agent.state import load_project
+
+        project = load_project(Path("fixtures/production-expression"))
+        with patch(
+            "pcb_agent.generated_testbench._run_provenance_validation",
+            side_effect=EvidenceErrorCls("evidence root missing"),
+        ):
+            with self.assertRaises(GeneratorError):
+                render_connectivity_testbench(project, "0.4.40")
+            with self.assertRaises(GeneratorError):
+                render_specification_testbench(project, "0.4.40")
+
+    def test_doctor_works_while_generated_registry_blocked(self) -> None:
+        from unittest.mock import patch
+
+        from pcb_agent import cli
+        from pcb_agent.evidence import EvidenceError as EvidenceErrorCls
+        from pcb_agent.state import load_project
+
+        project = load_project(Path("fixtures/valid-blinky"))
+        with patch(
+            "pcb_agent.generated_testbench._run_provenance_validation",
+            side_effect=EvidenceErrorCls("evidence root missing"),
+        ):
+            with self.assertRaises(GeneratorError):
+                ensure_registry_provenance()
+            checks = cli._doctor(project, "schematic")
+        self.assertIsInstance(checks, list)
+        self.assertTrue(checks)
 
 
 class ProductionExpressionEvidenceTests(unittest.TestCase):

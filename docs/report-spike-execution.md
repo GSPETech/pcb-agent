@@ -7,8 +7,8 @@ Status: `COMPLETE`
 
 All claims in this report are backed by hash-bound retained source + result
 artifacts under `tests/evidence/diode-0.4.40/` (`manifest.sha256` passes
-`sha256sum -c`), and the production adapter registry is validated against that
-bundle at build time.
+`sha256sum -c`), and the production adapter registry is validated lazily
+against that bundle on the first generated TestBench use.
 
 ## Task
 
