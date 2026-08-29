@@ -32,6 +32,8 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(_REPO_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT / "src"))
 
+from pcb_agent.source_cleanliness import measure_source_cleanliness
+
 _EVIDENCE_ROOT = _REPO_ROOT / "tests" / "evidence" / "diode-0.4.40"
 _PCBC_VERSION = "0.4.40"
 _EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
@@ -185,6 +187,12 @@ def _capture_pcb_test(
     env: dict[str, str],
     kind: str,
 ) -> dict:
+    pre_cleanliness = measure_source_cleanliness(_REPO_ROOT, _EVIDENCE_ROOT)
+    if not pre_cleanliness["source_clean"]:
+        raise SystemExit(
+            f"{kind}: source not clean before capture: "
+            f"{pre_cleanliness['filtered_source_status']}"
+        )
     argv = [pcb, "test", testfile, "-f", "json"]
     exit_code, stdout, stderr = _run(argv, cwd=fixture, env=env)
     target = evidence_root / run_dir
@@ -223,6 +231,12 @@ def _capture_verify(
     *,
     sanitize_run_raw: bool,
 ) -> dict:
+    pre_cleanliness = measure_source_cleanliness(_REPO_ROOT, _EVIDENCE_ROOT)
+    if not pre_cleanliness["source_clean"]:
+        raise SystemExit(
+            f"{kind}: source not clean before capture: "
+            f"{pre_cleanliness['filtered_source_status']}"
+        )
     argv = [python_exe, "-m", "pcb_agent.cli", "verify", fixture_rel, "--format", "json"]
     exit_code, stdout, stderr = _run(argv, cwd=repo_root, env=env)
     target = evidence_root / run_dir
@@ -306,21 +320,13 @@ def main() -> int:
         raise SystemExit("git rev-parse HEAD failed; run inside the repository")
     revision = revision_result.stdout.strip()
 
-    status_result = _git(_REPO_ROOT, "status", "--short")
-    if status_result.returncode != 0:
-        raise SystemExit("git status --short failed")
-    git_status = status_result.stdout
-    if git_status.strip():
+    cleanliness = measure_source_cleanliness(_REPO_ROOT, _EVIDENCE_ROOT)
+    if not cleanliness["source_clean"]:
         raise SystemExit(
-            "refusing to capture from a dirty tree; git status --short is not empty:\n"
-            + git_status
+            "refusing to capture from a dirty source tree; changes outside the "
+            "evidence root:\n" + cleanliness["filtered_source_status"]
         )
-
-    diff_result = _git(_REPO_ROOT, "diff", "--binary")
-    if diff_result.returncode != 0:
-        raise SystemExit("git diff --binary failed")
-    if diff_result.stdout.strip():
-        raise SystemExit("refusing to capture from a dirty tree; git diff --binary is not empty")
+    git_status = cleanliness["raw_status"]
 
     env = os.environ.copy()
     home_local = Path.home() / ".local" / "bin"

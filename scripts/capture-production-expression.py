@@ -25,6 +25,8 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(_REPO_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT / "src"))
 
+from pcb_agent.source_cleanliness import measure_source_cleanliness
+
 EVIDENCE_SUBDIR = "production-expression"
 
 
@@ -51,13 +53,18 @@ def capture_production_expression(
     revision: str,
     timestamp: str,
     script_sha256: str,
-    git_status: str,
-    git_status_sha256: str,
 ) -> dict:
     """Render, execute, and retain the production-expression evidence.
 
     Returns a run record with the exact argv/cwd/executable/exit/timestamp.
+    Measures source cleanliness itself; no caller-provided status.
     """
+    cleanliness = measure_source_cleanliness(repo_root, evidence_root)
+    if not cleanliness["source_clean"]:
+        raise SystemExit(
+            "refusing to capture from a dirty source tree; changes outside the "
+            f"evidence root:\n{cleanliness['filtered_source_status']}"
+        )
     from pcb_agent import diode
     from pcb_agent.generated_testbench import (
         render_connectivity_testbench,
@@ -131,8 +138,9 @@ def capture_production_expression(
     run_provenance = {
         "kind": "production-expression",
         "repo_revision": revision,
-        "git_status": git_status,
-        "git_status_sha256": git_status_sha256,
+        "git_status": cleanliness["raw_status"],
+        "git_status_sha256": cleanliness["raw_status_sha256"],
+        "source_clean": cleanliness["source_clean"],
         "argv": [sys.executable, str(Path(__file__).resolve())],
         "cwd": str(repo_root),
         "executable": sys.executable,
@@ -161,8 +169,6 @@ def main() -> int:
         revision,
         timestamp,
         script_sha256,
-        "",
-        _sha256(b""),
     )
     print("production-expression capture OK")
     return 0
