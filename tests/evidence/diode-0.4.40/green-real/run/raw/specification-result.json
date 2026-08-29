@@ -1,0 +1,16 @@
+{
+  "results": [
+    {
+      "test_bench_name": "PcbAgentSpecification",
+      "case_name": "contract",
+      "check_name": "_check_specification",
+      "file_path": "/tmp/pcb-agent-specification-nt89opmt/tests/.pcb-agent-specification.generated.zen",
+      "status": "pass"
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0
+  }
+}

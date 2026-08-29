@@ -1,0 +1,11 @@
+[project]
+name = "green-real"
+profile = "schematic"
+source = "src/board.zen"
+test = "tests/board_test.zen"
+
+[toolchain]
+pcb_version = "0.4"
+
+[layout]
+required = false

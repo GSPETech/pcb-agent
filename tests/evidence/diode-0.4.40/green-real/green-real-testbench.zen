@@ -1,0 +1,17 @@
+Board = Module("../src/board.zen")
+
+def default(module, inputs):
+    components = module.components()
+    check("R1.R" in components, "R1 present")
+    check("D1.LED" in components, "D1 present")
+    check("C1.C" in components, "C1 present")
+    check("L1.L" in components, "L1 present")
+    check("FB1.FB" in components, "FB1 present")
+    check("D3.D" in components, "D3 present")
+
+TestBench(
+    name = "GreenReal",
+    module = Board,
+    test_cases = {"default": {}},
+    checks = [default],
+)

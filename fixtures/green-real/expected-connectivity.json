@@ -1,0 +1,19 @@
+{
+  "schema_version": "1",
+  "components": {
+    "R1": {"kind": "resistor", "value": "1kohm", "package": "0402"},
+    "D1": {"kind": "led", "package": "0402"},
+    "C1": {"kind": "capacitor", "value": "100nF", "package": "0402"},
+    "L1": {"kind": "inductor", "value": "10uH", "package": "0402"},
+    "FB1": {"kind": "ferrite_bead", "value": "220ohm", "package": "0402"},
+    "D3": {"kind": "tvs", "value": "5V", "package": "DO-219AB"}
+  },
+  "nets": {
+    "VCC": {"members": ["R1.P1", "C1.P1", "L1.P1", "FB1.P1", "D3.K"]},
+    "LED_ANODE": {"members": ["R1.P2", "D1.A"]},
+    "GND": {"members": ["D1.K", "C1.P2", "D3.A"]},
+    "INDUCTOR_MID": {"members": ["L1.P2"]},
+    "FB_MID": {"members": ["FB1.P2"]}
+  },
+  "rules": {"forbid_unlisted_members": true, "required_power_nets": ["VCC", "GND"]}
+}

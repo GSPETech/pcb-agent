@@ -1,0 +1,14 @@
+Blinky = Module("../src/blinky.zen")
+
+def component_value(module, inputs):
+    components = module.components()
+    check("R1.R" in components, "R1 resistor must exist")
+    check(components["R1.R"].type == "resistor", "R1 must be a resistor")
+    check(components["R1.R"].resistance.matches("1kohm"), "R1 must be 1kohm")
+
+TestBench(
+    name = "ValueTest",
+    module = Blinky,
+    test_cases = {"default": {}},
+    checks = [component_value],
+)

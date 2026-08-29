@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/home/rendra/.local/bin/pcb",
+    "test",
+    "tests/board_test.zen",
+    "-f",
+    "json"
+  ],
+  "stdout": "{\n  \"results\": [\n    {\n      \"test_bench_name\": \"GreenReal\",\n      \"case_name\": \"default\",\n      \"check_name\": \"default\",\n      \"file_path\": \"/tmp/pcb-agent-trusted-test-m76y8qcv/tests/board_test.zen\",\n      \"status\": \"pass\"\n    }\n  ],\n  \"summary\": {\n    \"total\": 1,\n    \"passed\": 1,\n    \"failed\": 0\n  }\n}\n",
+  "stderr": "\u2713 GreenReal: 1 check passed across 1 case\n",
+  "exit_code": 0,
+  "duration": 0.1651265750000448
+}

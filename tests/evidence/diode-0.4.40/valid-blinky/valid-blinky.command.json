@@ -1,0 +1,1 @@
+{"cwd":"fixtures/valid-blinky","command":["pcb","test","tests/blinky_test.zen","-f","json"],"tool":"pcbc 0.4.40","kind":"locked-testbench"}

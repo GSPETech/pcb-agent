@@ -1,0 +1,8 @@
+[workspace]
+repository = "example.invalid/pcb-agent/production-expression"
+pcb-version = "0.4"
+
+[board]
+name = "production-expression"
+path = "src/board.zen"
+description = "Exact production package/value expression evidence."

@@ -1,0 +1,16 @@
+{
+  "results": [
+    {
+      "test_bench_name": "PcbAgentConnectivity",
+      "case_name": "contract",
+      "check_name": "_check_connectivity",
+      "file_path": "/tmp/pcb-agent-connectivity-k85m8tks/tests/.pcb-agent-connectivity.generated.zen",
+      "status": "pass"
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0
+  }
+}

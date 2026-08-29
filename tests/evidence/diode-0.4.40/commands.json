@@ -1,0 +1,57 @@
+{
+  "tool": "pcbc 0.4.40",
+  "environment": "environment.txt",
+  "pcb_version": "pcb-version.txt",
+  "repo_revision": "repo-revision.txt",
+  "runs": [
+    {
+      "kind": "valid-blinky-locked-testbench",
+      "dir": "valid-blinky/",
+      "command": ["pcb", "test", "tests/blinky_test.zen", "-f", "json"],
+      "metadata": "valid-blinky/valid-blinky.command.json"
+    },
+    {
+      "kind": "spike-generics-evidence-testbench",
+      "dir": "spike-generics/",
+      "command": ["pcb", "test", "tests/spike_evidence.zen", "-f", "json"],
+      "metadata": "spike-generics/spike-generics.command.json"
+    },
+    {
+      "kind": "prefix-variation",
+      "dir": "prefix/",
+      "command": ["pcb", "test", "tests/prefix_evidence.zen", "-f", "json"],
+      "metadata": "prefix/prefix.command.json"
+    },
+    {
+      "kind": "green-real-verify",
+      "dir": "green-real/",
+      "command": ["python3", "-m", "pcb_agent.cli", "verify", "fixtures/green-real", "--format", "json"],
+      "metadata": "green-real/green-real-report.json",
+      "run_dir": "green-real/run/"
+    },
+    {
+      "kind": "production-expression-verify",
+      "dir": "production-expression/",
+      "command": ["python3", "-c", "render+execute exact production testbenches via harness"],
+      "metadata": "production-expression/production-summary.json"
+    },
+    {
+      "kind": "negative-invalid-syntax",
+      "dir": "negative-invalid-syntax/",
+      "command": ["python3", "-m", "pcb_agent.cli", "verify", "fixtures/invalid-syntax", "--format", "json"],
+      "metadata": "negative-invalid-syntax/verify-report.json"
+    },
+    {
+      "kind": "negative-invalid-connectivity",
+      "dir": "negative-invalid-connectivity/",
+      "command": ["python3", "-m", "pcb_agent.cli", "verify", "fixtures/invalid-connectivity", "--format", "json"],
+      "metadata": "negative-invalid-connectivity/verify-report.json"
+    },
+    {
+      "kind": "negative-invalid-value",
+      "dir": "negative-invalid-value/",
+      "command": ["python3", "-m", "pcb_agent.cli", "verify", "fixtures/invalid-value", "--format", "json"],
+      "metadata": "negative-invalid-value/verify-report.json"
+    }
+  ]
+}

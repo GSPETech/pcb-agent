@@ -1,0 +1,14 @@
+{
+  "schema_version": "1",
+  "project": {"name": "green-real", "pcb_version": "0.4", "layers": 4},
+  "requirements": [
+    {"id": "REQ-001", "type": "component", "description": "R1 shall be 1kohm in package 0402", "subject": "R1", "constraints": {"value": "1kohm", "package": "0402"}, "severity": "error", "evidence_required": ["zener_test"]},
+    {"id": "REQ-002", "type": "component", "description": "D1 package shall be 0402", "subject": "D1", "constraints": {"package": "0402"}, "severity": "error", "evidence_required": ["zener_test"]},
+    {"id": "REQ-003", "type": "component", "description": "C1 shall be 100nF in package 0402", "subject": "C1", "constraints": {"value": "100nF", "package": "0402"}, "severity": "error", "evidence_required": ["zener_test"]},
+    {"id": "REQ-004", "type": "component", "description": "L1 shall be 10uH in package 0402", "subject": "L1", "constraints": {"value": "10uH", "package": "0402"}, "severity": "error", "evidence_required": ["zener_test"]},
+    {"id": "REQ-005", "type": "component", "description": "FB1 package shall be 0402 with 220ohm impedance", "subject": "FB1", "constraints": {"value": "220ohm", "package": "0402"}, "severity": "error", "evidence_required": ["zener_test"]},
+    {"id": "REQ-006", "type": "component", "description": "D3 shall be 5V TVS in package DO-219AB", "subject": "D3", "constraints": {"value": "5V", "package": "DO-219AB"}, "severity": "error", "evidence_required": ["zener_test"]},
+    {"id": "REQ-007", "type": "connectivity", "description": "R1.P1 sits on VCC", "subject": "VCC", "constraints": {"members": ["R1.P1"]}, "severity": "error", "evidence_required": ["zener_test"]}
+  ],
+  "fabrication": {"automatic_approval": false, "human_approval_required": true}
+}

@@ -1,0 +1,8 @@
+[workspace]
+repository = "example.invalid/pcb-agent/invalid-value"
+pcb-version = "0.4"
+
+[board]
+name = "invalid-value"
+path = "src/blinky.zen"
+description = "Negative fixture with wrong current-limiting resistor value."

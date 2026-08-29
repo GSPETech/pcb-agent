@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "/home/rendra/.local/bin/pcb",
+    "build",
+    "src/blinky.zen"
+  ],
+  "stdout": "",
+  "stderr": "\u2713 blinky.zen (2 components)\n",
+  "exit_code": 0,
+  "duration": 0.6700620450000088
+}

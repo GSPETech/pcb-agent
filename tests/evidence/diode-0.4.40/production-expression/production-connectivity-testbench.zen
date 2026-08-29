@@ -1,0 +1,60 @@
+M = Module("../src/board.zen")
+def _check_connectivity(module, inputs):
+    components = module.components()
+    nets = module.nets()
+    check("R1.R" in components, "missing component R1.R")
+    check("D1.LED" in components, "missing component D1.LED")
+    check("C1.C" in components, "missing component C1.C")
+    check("L1.L" in components, "missing component L1.L")
+    check("FB1.FB" in components, "missing component FB1.FB")
+    check("TH1.TH" in components, "missing component TH1.TH")
+    check("DZ1.D" in components, "missing component DZ1.D")
+    check("D2.D" in components, "missing component D2.D")
+    check("D3.D" in components, "missing component D3.D")
+    observed_0 = nets.get("VCC", [])
+    check(("PcbAgentConnectivity__contract.R1.R", "1") in observed_0, "missing member R1.P1 in net VCC")
+    check(("PcbAgentConnectivity__contract.C1.C", "1") in observed_0, "missing member C1.P1 in net VCC")
+    check(("PcbAgentConnectivity__contract.L1.L", "1") in observed_0, "missing member L1.P1 in net VCC")
+    check(("PcbAgentConnectivity__contract.FB1.FB", "1") in observed_0, "missing member FB1.P1 in net VCC")
+    check(("PcbAgentConnectivity__contract.TH1.TH", "1") in observed_0, "missing member TH1.P1 in net VCC")
+    check(("PcbAgentConnectivity__contract.DZ1.D", "K") in observed_0, "missing member DZ1.K in net VCC")
+    check(("PcbAgentConnectivity__contract.D2.D", "K") in observed_0, "missing member D2.K in net VCC")
+    check(("PcbAgentConnectivity__contract.D3.D", "K") in observed_0, "missing member D3.K in net VCC")
+    check(len(observed_0) == 8, "net VCC has unlisted members")
+
+    observed_1 = nets.get("LED_ANODE", [])
+    check(("PcbAgentConnectivity__contract.R1.R", "2") in observed_1, "missing member R1.P2 in net LED_ANODE")
+    check(("PcbAgentConnectivity__contract.D1.LED", "A") in observed_1, "missing member D1.A in net LED_ANODE")
+    check(len(observed_1) == 2, "net LED_ANODE has unlisted members")
+
+    observed_2 = nets.get("GND", [])
+    check(("PcbAgentConnectivity__contract.D1.LED", "K") in observed_2, "missing member D1.K in net GND")
+    check(("PcbAgentConnectivity__contract.C1.C", "2") in observed_2, "missing member C1.P2 in net GND")
+    check(("PcbAgentConnectivity__contract.DZ1.D", "A") in observed_2, "missing member DZ1.A in net GND")
+    check(("PcbAgentConnectivity__contract.D2.D", "A") in observed_2, "missing member D2.A in net GND")
+    check(("PcbAgentConnectivity__contract.D3.D", "A") in observed_2, "missing member D3.A in net GND")
+    check(len(observed_2) == 5, "net GND has unlisted members")
+
+    observed_3 = nets.get("INDUCTOR_MID", [])
+    check(("PcbAgentConnectivity__contract.L1.L", "2") in observed_3, "missing member L1.P2 in net INDUCTOR_MID")
+    check(len(observed_3) == 1, "net INDUCTOR_MID has unlisted members")
+
+    observed_4 = nets.get("FB_MID", [])
+    check(("PcbAgentConnectivity__contract.FB1.FB", "2") in observed_4, "missing member FB1.P2 in net FB_MID")
+    check(len(observed_4) == 1, "net FB_MID has unlisted members")
+
+    observed_5 = nets.get("TH_MID", [])
+    check(("PcbAgentConnectivity__contract.TH1.TH", "2") in observed_5, "missing member TH1.P2 in net TH_MID")
+    check(len(observed_5) == 1, "net TH_MID has unlisted members")
+
+    expected_net_names = set(["VCC", "LED_ANODE", "GND", "INDUCTOR_MID", "FB_MID", "TH_MID"])
+    check(set(nets.keys()) == expected_net_names, "unlisted nets found")
+    check("VCC" in nets, "missing power net VCC")
+    check("GND" in nets, "missing power net GND")
+
+TestBench(
+    name="PcbAgentConnectivity",
+    module=M,
+    test_cases={"contract": {}},
+    checks=[_check_connectivity],
+)

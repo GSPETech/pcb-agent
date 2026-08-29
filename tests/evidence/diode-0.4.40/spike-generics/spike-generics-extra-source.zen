@@ -1,0 +1,12 @@
+Capacitor = Module("@stdlib/generics/Capacitor.zen")
+Crystal = Module("@stdlib/generics/Crystal.zen")
+
+VCC = Power()
+GND = Ground()
+VIN = Net()
+XIN_NET = Net()
+XOUT_NET = Net()
+
+Capacitor(name="C1", value="100nF", package="0402", P1=VCC, P2=GND)
+Crystal(name="Y1", frequency="8MHz", package="3215_2Pin", XIN=XIN_NET, XOUT=XOUT_NET)
+Board(name="spike_generics", layers=4, layout_path="layout/spike_generics")

@@ -1,0 +1,13 @@
+{
+  "schema_version": "1",
+  "components": {
+    "R1": {"kind": "resistor", "value": "1kohm", "package": "0402"},
+    "D1": {"kind": "led", "package": "0402"}
+  },
+  "nets": {
+    "VCC": {"members": ["R1.P1"]},
+    "LED_ANODE": {"members": ["R1.P2", "D1.A"]},
+    "GND": {"members": ["D1.K"]}
+  },
+  "rules": {"forbid_unlisted_members": true, "required_power_nets": ["VCC", "GND"]}
+}

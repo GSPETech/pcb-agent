@@ -1,0 +1,8 @@
+[workspace]
+repository = "example.invalid/pcb-agent/green-real"
+pcb-version = "0.4"
+
+[board]
+name = "green-real"
+path = "src/board.zen"
+description = "Real-toolchain green project for the net-naming spike."

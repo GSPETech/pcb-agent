@@ -1,8 +1,0 @@
-# Diode net-naming spike evidence, pcbc 0.4.40, 2026-08-29
-# valid-blinky.json   = locked Zener TestBench asserting resistor+led mapping
-# spike-generics.json = generated evidence testbench asserting capacitor,
-#                       crystal (2pin/4pin), inductor, ferrite bead, thermistor,
-#                       zener, rectifier, tvs mappings and value/package accessors
-02c6cb60bfaf371e640e34ed0ff7b707074cfad0789b38a25c014cfa66cfac11  valid-blinky.json
-3320a8aa668f5f28dc19b4240f9f92e22333805ead12e36cb4c5a3c3b1636267  spike-generics.json
-54665c6f1140ec4fa31dad8c288429273ac5bbd1a7d09d91b11b013741bd6b91  green-real-report.json

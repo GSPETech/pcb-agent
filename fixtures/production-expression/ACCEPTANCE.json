@@ -1,0 +1,16 @@
+{
+  "schema_version": "1",
+  "checks": [
+    {"id": "ACC-001", "requirement": "REQ-001", "kind": "zener_test", "expected": "PASS", "test": "ProductionExpression.default"},
+    {"id": "ACC-002", "requirement": "REQ-002", "kind": "zener_test", "expected": "PASS", "test": "ProductionExpression.default"},
+    {"id": "ACC-003", "requirement": "REQ-003", "kind": "zener_test", "expected": "PASS", "test": "ProductionExpression.default"},
+    {"id": "ACC-004", "requirement": "REQ-004", "kind": "zener_test", "expected": "PASS", "test": "ProductionExpression.default"},
+    {"id": "ACC-005", "requirement": "REQ-005", "kind": "zener_test", "expected": "PASS", "test": "ProductionExpression.default"},
+    {"id": "ACC-006", "requirement": "REQ-006", "kind": "zener_test", "expected": "PASS", "test": "ProductionExpression.default"},
+    {"id": "ACC-007", "requirement": "REQ-007", "kind": "zener_test", "expected": "PASS", "test": "ProductionExpression.default"},
+    {"id": "ACC-008", "requirement": "REQ-008", "kind": "zener_test", "expected": "PASS", "test": "ProductionExpression.default"},
+    {"id": "ACC-009", "requirement": "REQ-009", "kind": "zener_test", "expected": "PASS", "test": "ProductionExpression.default"}
+  ],
+  "production_ready": false,
+  "fabrication_approved": false
+}

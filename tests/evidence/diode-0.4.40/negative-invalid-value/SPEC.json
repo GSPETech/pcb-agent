@@ -1,0 +1,6 @@
+{
+  "schema_version": "1",
+  "project": {"name": "invalid-value", "pcb_version": "0.4", "layers": 4},
+  "requirements": [{"id": "REQ-001", "type": "component", "description": "R1 shall be 1kohm", "subject": "R1", "constraints": {"value": "1kohm"}, "severity": "error", "evidence_required": ["zener_test"]}],
+  "fabrication": {"automatic_approval": false, "human_approval_required": true}
+}

@@ -1,0 +1,1 @@
+{"cwd":"fixtures/spike-generics","command":["pcb","test","tests/spike_evidence.zen","-f","json"],"tool":"pcbc 0.4.40","kind":"evidence-testbench"}
