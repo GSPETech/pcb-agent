@@ -1,0 +1,21 @@
+﻿{
+    "wsl":  {
+                "transcript_sha256":  "sha256:c83b3fe84159191beff5d6db490bf95438d4ebb66cda69f32984b4d5d6dff3b5",
+                "timestamp":  "2026-08-29T15:11:59.068Z",
+                "transcript":  "verification/wsl-manifest.txt",
+                "command":  "sha256sum -c manifest.sha256",
+                "exit":  0,
+                "revision":  "4744783889cda31c8132a75850a27a55d171d0a1",
+                "cwd":  "/home/rendra/pcbagent-full/tests/evidence/diode-0.4.40"
+            },
+    "primary_manifest_sha256":  "dbb0ebcbfb35b8666cde780535b7b465c61e5e7001c30e77e0124e9d1c6dca01",
+    "windows":  {
+                    "transcript_sha256":  "sha256:2b0993c017ab83398159c7b4398fe3f78798d6af9e0b7ee8ca9c1822b90be98c",
+                    "timestamp":  "2026-08-29T15:11:59.068Z",
+                    "transcript":  "verification/windows-manifest.txt",
+                    "command":  "sha256sum -c manifest.sha256",
+                    "exit":  0,
+                    "revision":  "4744783889cda31c8132a75850a27a55d171d0a1",
+                    "cwd":  "C:\\Users\\jrjua\\diodeinc\\tests\\evidence\\diode-0.4.40"
+                }
+}
