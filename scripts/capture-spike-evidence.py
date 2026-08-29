@@ -262,6 +262,10 @@ def _capture_verify(
     _write_text(target / "environment.txt", _capture_environment(repo_root, revision))
 
     if sanitize_run_raw:
+        _write_bytes(
+            target / f"{prefix}-report.sanitized.json",
+            sanitize_json(stdout),
+        )
         for name in ("connectivity-result", "specification-result"):
             raw = target / "run" / "raw" / f"{name}.json"
             if raw.exists():
