@@ -1,0 +1,16 @@
+{
+  "results": [
+    {
+      "case_name": "alt_case",
+      "check_name": "check_prefix",
+      "file_path": "<sanitized>/fixtures/spike-generics/tests/prefix_evidence.zen",
+      "status": "pass",
+      "test_bench_name": "RenamedBench"
+    }
+  ],
+  "summary": {
+    "failed": 0,
+    "passed": 1,
+    "total": 1
+  }
+}

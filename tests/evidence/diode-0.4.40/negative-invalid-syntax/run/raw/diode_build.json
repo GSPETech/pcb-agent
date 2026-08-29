@@ -7,5 +7,5 @@
   "stdout": "",
   "stderr": "Error: Parse error: unexpected identifier 'VCC', expected symbol ')'\n   \u256d\u2500[ /home/rendra/pcbagent-full/fixtures/invalid-syntax/src/blinky.zen:4:1 ]\n   \u2502\n 4 \u2502 VCC = Power()\n   \u2502 \u2500\u252c\u2500  \n   \u2502  \u2570\u2500\u2500\u2500 Parse error: unexpected identifier 'VCC', expected symbol ')'\n\u2500\u2500\u2500\u256f\n\nStack trace (most recent call last):\n    /home/rendra/pcbagent-full/fixtures/invalid-syntax/src/blinky.zen:4:1 (Parse error: unexpected identifier 'VCC', expected symbol ')')\n\n\u2717 blinky.zen: Build failed\nError: Build failed with errors\n",
   "exit_code": 1,
-  "duration": 1.589759173999937
+  "duration": 1.0169986480000048
 }

@@ -1,0 +1,23 @@
+{
+  "results": [
+    {
+      "case_name": "default",
+      "check_name": "component_value",
+      "file_path": "<sanitized>/fixtures/valid-blinky/tests/blinky_test.zen",
+      "status": "pass",
+      "test_bench_name": "BlinkyTest"
+    },
+    {
+      "case_name": "default",
+      "check_name": "connectivity",
+      "file_path": "<sanitized>/fixtures/valid-blinky/tests/blinky_test.zen",
+      "status": "pass",
+      "test_bench_name": "BlinkyTest"
+    }
+  ],
+  "summary": {
+    "failed": 0,
+    "passed": 2,
+    "total": 2
+  }
+}

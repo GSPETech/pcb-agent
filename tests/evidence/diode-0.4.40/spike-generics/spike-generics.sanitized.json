@@ -1,0 +1,16 @@
+{
+  "results": [
+    {
+      "case_name": "default",
+      "check_name": "spike_evidence",
+      "file_path": "<sanitized>/fixtures/spike-generics/tests/spike_evidence.zen",
+      "status": "pass",
+      "test_bench_name": "SpikeAllGenerics"
+    }
+  ],
+  "summary": {
+    "failed": 0,
+    "passed": 1,
+    "total": 1
+  }
+}

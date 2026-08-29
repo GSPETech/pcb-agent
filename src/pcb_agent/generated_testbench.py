@@ -10,7 +10,7 @@ import json
 import posixpath
 import re
 from dataclasses import dataclass
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping
 
 from .state import ProjectState
@@ -40,6 +40,9 @@ class ComponentAdapter:
     pins: Mapping[str, str]
     verified_pcbc_versions: frozenset[str]
     evidence_sha256: str
+    evidence_result_path: str = ""
+    evidence_source_path: str = ""
+    evidence_source_sha256: str = ""
     value_accessor: str | None = None
     package_accessor: str | None = None
     mpn_accessor: str | None = None
@@ -66,7 +69,14 @@ def build_adapter_registry(entries: Iterable[ComponentAdapter]) -> dict[str, Com
 _CAPTURED_PCBC_VERSION = "0.4.40"
 _CAPTURED_BLINKY_EVIDENCE = "sha256:02c6cb60bfaf371e640e34ed0ff7b707074cfad0789b38a25c014cfa66cfac11"
 _CAPTURED_GENERICS_EVIDENCE = "sha256:3320a8aa668f5f28dc19b4240f9f92e22333805ead12e36cb4c5a3c3b1636267"
+_CAPTURED_BLINKY_SOURCE = "sha256:4e4533b947babc249f9e1ccbb51fc7dc4b4c4022c20c58db19919adb5d770a5b"
+_CAPTURED_GENERICS_SOURCE = "sha256:b268cc42821459d724affb68716b39c865be27f8dfd119d9812fee84996c76ea"
 _PACKAGE_ACCESSOR = "properties['package']"
+
+_EVIDENCE_BLINKY_RESULT = "valid-blinky/valid-blinky.json"
+_EVIDENCE_BLINKY_SOURCE = "valid-blinky/valid-blinky-testbench.zen"
+_EVIDENCE_GENERICS_RESULT = "spike-generics/spike-generics.json"
+_EVIDENCE_GENERICS_SOURCE = "spike-generics/spike-generics-testbench.zen"
 
 
 def captured_adapter_registry() -> dict[str, ComponentAdapter]:
@@ -88,6 +98,9 @@ def captured_adapter_registry() -> dict[str, ComponentAdapter]:
                 pins={"P1": "1", "P2": "2"},
                 verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
                 evidence_sha256=_CAPTURED_BLINKY_EVIDENCE,
+                evidence_result_path=_EVIDENCE_BLINKY_RESULT,
+                evidence_source_path=_EVIDENCE_BLINKY_SOURCE,
+                evidence_source_sha256=_CAPTURED_BLINKY_SOURCE,
                 value_accessor="resistance",
                 package_accessor=_PACKAGE_ACCESSOR,
                 pullup_pin_pair=("P1", "P2"),
@@ -98,6 +111,9 @@ def captured_adapter_registry() -> dict[str, ComponentAdapter]:
                 pins={"A": "A", "K": "K"},
                 verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
                 evidence_sha256=_CAPTURED_BLINKY_EVIDENCE,
+                evidence_result_path=_EVIDENCE_BLINKY_RESULT,
+                evidence_source_path=_EVIDENCE_BLINKY_SOURCE,
+                evidence_source_sha256=_CAPTURED_BLINKY_SOURCE,
                 value_accessor=None,
                 package_accessor=_PACKAGE_ACCESSOR,
                 pullup_pin_pair=None,
@@ -108,6 +124,9 @@ def captured_adapter_registry() -> dict[str, ComponentAdapter]:
                 pins={"P1": "1", "P2": "2"},
                 verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
                 evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                evidence_result_path=_EVIDENCE_GENERICS_RESULT,
+                evidence_source_path=_EVIDENCE_GENERICS_SOURCE,
+                evidence_source_sha256=_CAPTURED_GENERICS_SOURCE,
                 value_accessor="capacitance",
                 package_accessor=_PACKAGE_ACCESSOR,
                 pullup_pin_pair=None,
@@ -118,6 +137,9 @@ def captured_adapter_registry() -> dict[str, ComponentAdapter]:
                 pins={"P1": "1", "P2": "2"},
                 verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
                 evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                evidence_result_path=_EVIDENCE_GENERICS_RESULT,
+                evidence_source_path=_EVIDENCE_GENERICS_SOURCE,
+                evidence_source_sha256=_CAPTURED_GENERICS_SOURCE,
                 value_accessor="inductance",
                 package_accessor=_PACKAGE_ACCESSOR,
                 pullup_pin_pair=None,
@@ -128,6 +150,9 @@ def captured_adapter_registry() -> dict[str, ComponentAdapter]:
                 pins={"P1": "1", "P2": "2"},
                 verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
                 evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                evidence_result_path=_EVIDENCE_GENERICS_RESULT,
+                evidence_source_path=_EVIDENCE_GENERICS_SOURCE,
+                evidence_source_sha256=_CAPTURED_GENERICS_SOURCE,
                 value_accessor="impedance",
                 package_accessor=_PACKAGE_ACCESSOR,
                 pullup_pin_pair=None,
@@ -138,6 +163,9 @@ def captured_adapter_registry() -> dict[str, ComponentAdapter]:
                 pins={"P1": "1", "P2": "2"},
                 verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
                 evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                evidence_result_path=_EVIDENCE_GENERICS_RESULT,
+                evidence_source_path=_EVIDENCE_GENERICS_SOURCE,
+                evidence_source_sha256=_CAPTURED_GENERICS_SOURCE,
                 value_accessor="resistance",
                 package_accessor=_PACKAGE_ACCESSOR,
                 pullup_pin_pair=None,
@@ -148,6 +176,9 @@ def captured_adapter_registry() -> dict[str, ComponentAdapter]:
                 pins={"A": "A", "K": "K"},
                 verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
                 evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                evidence_result_path=_EVIDENCE_GENERICS_RESULT,
+                evidence_source_path=_EVIDENCE_GENERICS_SOURCE,
+                evidence_source_sha256=_CAPTURED_GENERICS_SOURCE,
                 value_accessor="zener_voltage",
                 package_accessor=_PACKAGE_ACCESSOR,
                 pullup_pin_pair=None,
@@ -158,6 +189,9 @@ def captured_adapter_registry() -> dict[str, ComponentAdapter]:
                 pins={"A": "A", "K": "K"},
                 verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
                 evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                evidence_result_path=_EVIDENCE_GENERICS_RESULT,
+                evidence_source_path=_EVIDENCE_GENERICS_SOURCE,
+                evidence_source_sha256=_CAPTURED_GENERICS_SOURCE,
                 value_accessor="reverse_voltage",
                 package_accessor=_PACKAGE_ACCESSOR,
                 pullup_pin_pair=None,
@@ -168,6 +202,9 @@ def captured_adapter_registry() -> dict[str, ComponentAdapter]:
                 pins={"A": "A", "K": "K"},
                 verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
                 evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                evidence_result_path=_EVIDENCE_GENERICS_RESULT,
+                evidence_source_path=_EVIDENCE_GENERICS_SOURCE,
+                evidence_source_sha256=_CAPTURED_GENERICS_SOURCE,
                 value_accessor="reverse_standoff_voltage",
                 package_accessor=_PACKAGE_ACCESSOR,
                 pullup_pin_pair=None,
@@ -177,6 +214,33 @@ def captured_adapter_registry() -> dict[str, ComponentAdapter]:
 
 
 _ADAPTERS: dict[str, ComponentAdapter] = captured_adapter_registry()
+
+
+def evidence_root() -> Path:
+    """Repository-owned evidence root for the captured Diode run.
+
+    Resolved relative to this source file so the bundle travels with the
+    repository and is never read from arbitrary home paths.
+    """
+    from pathlib import Path as _Path
+
+    root = _Path(__file__).resolve().parent.parent.parent
+    return root / "tests" / "evidence" / f"diode-{_CAPTURED_PCBC_VERSION}"
+
+
+def validate_captured_registry() -> None:
+    """Fail closed if the captured registry's evidence bundle is incomplete.
+
+    Validates every production adapter against the repository-owned manifest
+    and version record. Raises `EvidenceError` on the first inconsistency.
+    """
+    from .evidence import validate_registry_provenance
+
+    validate_registry_provenance(
+        captured_adapter_registry(),
+        evidence_root(),
+        evidence_root() / "manifest.sha256",
+    )
 
 
 def set_adapter_registry(registry: Mapping[str, ComponentAdapter]) -> None:
