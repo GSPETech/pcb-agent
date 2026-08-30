@@ -1,0 +1,8 @@
+command: python -m pyright
+cwd: C:\Users\jrjua\diodeinc
+timestamp: 2026-08-30T03:39:57.000Z
+revision: 0a7b0e28d50467cab575e13f2d698e95451fa3e1
+exit_code: 0
+platform: windows (win32, Python 3.13.2, Pyright 1.1.411)
+--- output ---
+0 errors, 0 warnings, 0 informations

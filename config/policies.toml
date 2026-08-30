@@ -19,7 +19,7 @@ deny = [
   "tests/**",
   "config/**",
   "schemas/**",
-  "reports/raw/**",
+  "reports/**",
 ]
 
 [commands]

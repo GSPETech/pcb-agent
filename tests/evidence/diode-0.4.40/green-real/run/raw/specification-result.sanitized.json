@@ -1,0 +1,16 @@
+{
+  "results": [
+    {
+      "case_name": "contract",
+      "check_name": "_check_specification",
+      "file_path": "<sanitized>-stmiw3ah/tests/.pcb-agent-specification.generated.zen",
+      "status": "pass",
+      "test_bench_name": "PcbAgentSpecification"
+    }
+  ],
+  "summary": {
+    "failed": 0,
+    "passed": 1,
+    "total": 1
+  }
+}

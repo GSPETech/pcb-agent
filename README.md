@@ -49,27 +49,67 @@ requires the expected TestBench and check record to be present and passing.
 
 Rules:
 
-- Component kinds are resolved through a versioned adapter registry. Each
-  adapter records the exact verified `pcbc` versions and the SHA-256 of the
-  captured evidence that established the mapping.
-- The registry is currently empty. No mapping has been verified against
-  captured Diode output, so every generated check reports `BLOCKED`. See
-  `docs/spike-diode-net-naming.md`.
+- Component kinds are resolved through a versioned adapter registry keyed by
+  component kind. Each adapter records the exact verified `pcbc` versions, the
+  SHA-256 of the captured evidence that established the mapping, the exact
+  result and source evidence paths, and the property accessors and pull-up pin
+  pair that were observed.
+- The registry is populated from captured Diode 0.4.40 evidence
+  (`captured_adapter_registry()` in `src/pcb_agent/generated_testbench.py`)
+  and validated lazily against the repository-owned evidence bundle
+  (`tests/evidence/diode-0.4.40/manifest.sha256`) on the first generated
+  TestBench use; validation fails closed if any referenced artifact is
+  missing or its hash does not match. `doctor` and `build` never trigger the
+  check. Registered kinds: `resistor`, `led`, `capacitor`, `inductor`, `ferrite_bead`,
+  `thermistor`, `zener`, `rectifier`, `tvs`. Crystal is intentionally absent
+  because the adapter model cannot represent its one-to-many four-pin GND
+  mapping. See `docs/spike-diode-net-naming.md`.
+- The `pcbc` version comes from probing the installed toolchain, not from the
+  contract. A probe that fails or cannot be parsed is `BLOCKED`.
 - Unsupported component kind, unsupported pin, unverified toolchain version,
   unsupported constraint, or unsupported contract semantics all raise a
   generator error and become `BLOCKED`. They never become `PASS`.
 - Contract-controlled values never become Zener identifiers and are always
   emitted through a single escaping helper.
+- Every top-level result record must carry a recognized status. `SKIPPED`,
+  `BLOCKED`, unknown, and missing statuses are treated as incompatible
+  evidence and produce `BLOCKED`.
+- The summary must reconcile exactly with observed record statuses:
+  `total` equals the record count, `passed` and `failed` equal the counted
+  recognized statuses, and their sum equals `total`.
 - Exit code zero alone is not sufficient. Empty results, inconsistent summary
-  counts, malformed JSON, truncated output, or a missing expected record are
-  all `BLOCKED`.
+  counts, malformed JSON, truncated output, a missing expected record, or any
+  positive `failed`, `failures`, or `errors` counter are all `BLOCKED`.
+- When `failures` or `errors` is present it must be a non-negative integer.
+  Booleans, strings, floats, and null are malformed evidence.
+- Exactly one top-level record may match the expected TestBench and check
+  identity. Duplicates and nested diagnostic metadata do not satisfy the gate.
+- The status is parsed from the retained, hash-verified evidence bytes, not
+  from captured stdout, so `result_sha256` attests the input that produced the
+  verdict.
 - A structured assertion failure for the expected generated check is `FAIL`.
   Compiler, environment, and evidence problems are `BLOCKED`.
+- Every populated `value` and `package` in either contract must receive a
+  generated assertion, or the check reports `BLOCKED`. Conflicting values
+  between `SPEC.json` and `expected-connectivity.json` are a generator error.
+  The number of emitted assertions is compared against the number of processed
+  constraints, so a constraint branch that emits nothing cannot pass silently.
+- `mpn` has no verified accessor and is always `BLOCKED`.
+- Requirements of type `connectivity` accept only a `members` constraint. A
+  `value` or `package` constraint declared there is a generator error.
+- `required_pullup` verifies exact topology: one adapter pin on the signal net
+  and the opposite adapter pin on the declared rail. Name existence alone is
+  not sufficient. Adapters without a verified pull-up pin pair are `BLOCKED`.
+- A failed or blocked prerequisite makes dependent gates `BLOCKED`, never
+  `FAIL`. `FAIL` is reserved for gates that ran and found a real mismatch.
 - Source-level coverage scanners remain available as advisory diagnostics only
   and cannot determine a required check status.
 
 Every generated run records both the generated source and the raw result JSON
-with their SHA-256 digests in the report evidence.
+with their SHA-256 digests in the report evidence. All evidence paths are stored
+relative to the project root, and both generated artifacts are re-read and
+rehashed immediately before the check is built. A missing, mutated, symlinked,
+or escaping artifact produces `BLOCKED`.
 
 ## Status And Exit
 
@@ -134,6 +174,11 @@ Empirical run on 2026-08-24:
 - Generated `valid-blinky` layout correctly remained `FAIL`: missing board
   outline, five silkscreen warnings, and one unconnected item. No routing or
   fabrication artifact was generated.
+
+The Diode net-naming spike (2026-08-29) captured real `pcbc 0.4.40` evidence on
+WSL2 ext4, populated the production adapter registry, and verified a committed
+green project reaches full PASS. See `docs/spike-diode-net-naming.md` and
+`docs/report-spike-execution.md`.
 
 Fixture syntax and TestBench APIs were corrected against real Diode 0.4.34 and
 source snapshot `ee4e7e2b90fbe5f787d165a0780eba42664449ab`.

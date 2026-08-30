@@ -1,0 +1,6 @@
+{
+  "schema_version": "1",
+  "components": {},
+  "nets": {},
+  "rules": {"forbid_unlisted_members": false, "required_power_nets": []}
+}

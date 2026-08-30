@@ -50,7 +50,13 @@ class RealExecutionIntegrationTests(unittest.TestCase):
         self.assertEqual(statuses.get("CONNECTIVITY"), CheckStatus.BLOCKED)
         self.assertEqual(statuses.get("SPECIFICATION"), CheckStatus.BLOCKED)
 
-    def test_invalid_syntax_build_fails_and_dependents_inherit(self) -> None:
+    def test_failed_build_blocks_dependent_gates(self) -> None:
+        """A failed build must not report FAIL for gates that never ran.
+
+        DIODE_BUILD is a real compiler verdict, so it stays FAIL. The schematic
+        gates collected no evidence, so they are BLOCKED rather than inheriting
+        a verdict they did not produce.
+        """
         fixture = self.root / "invalid-syntax"
         write_contract(fixture, name="invalid-syntax")
         (fixture / "src" / "board.zen").write_text("invalid_syntax", encoding="utf-8")
@@ -63,9 +69,40 @@ class RealExecutionIntegrationTests(unittest.TestCase):
 
         statuses = {check.id: check.status for check in checks}
         self.assertEqual(statuses.get("DIODE_BUILD"), CheckStatus.FAIL)
-        self.assertEqual(statuses.get("ZENER_TEST"), CheckStatus.FAIL)
-        self.assertEqual(statuses.get("CONNECTIVITY"), CheckStatus.FAIL)
-        self.assertEqual(statuses.get("SPECIFICATION"), CheckStatus.FAIL)
+        self.assertEqual(statuses.get("ZENER_TEST"), CheckStatus.BLOCKED)
+        self.assertEqual(statuses.get("CONNECTIVITY"), CheckStatus.BLOCKED)
+        self.assertEqual(statuses.get("SPECIFICATION"), CheckStatus.BLOCKED)
+
+    def test_failed_build_makes_overall_status_blocked(self) -> None:
+        from pcb_agent.models import VerificationReport
+
+        fixture = self.root / "invalid-syntax"
+        write_contract(fixture, name="invalid-syntax")
+        (fixture / "src" / "board.zen").write_text("invalid_syntax", encoding="utf-8")
+
+        project = load_project(fixture)
+        run = new_run(project, self.root / "reports")
+
+        with patch("pcb_agent.diode.probe", return_value=_probe_ok()):
+            checks = cli._verify(project, run, "schematic")
+
+        report = VerificationReport(project.name, tuple(checks))
+        self.assertEqual(report.status, CheckStatus.BLOCKED)
+
+    def test_dependent_messages_name_the_failed_prerequisite(self) -> None:
+        fixture = self.root / "invalid-syntax"
+        write_contract(fixture, name="invalid-syntax")
+        (fixture / "src" / "board.zen").write_text("invalid_syntax", encoding="utf-8")
+
+        project = load_project(fixture)
+        run = new_run(project, self.root / "reports")
+
+        with patch("pcb_agent.diode.probe", return_value=_probe_ok()):
+            checks = cli._verify(project, run, "schematic")
+
+        messages = {check.id: check.message for check in checks}
+        for gate in ("ZENER_TEST", "CONNECTIVITY", "SPECIFICATION"):
+            self.assertIn("Diode build did not pass", messages[gate])
 
 
 if __name__ == "__main__":

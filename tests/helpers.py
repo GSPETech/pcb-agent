@@ -87,27 +87,47 @@ def make_fake_pcb(directory: Path) -> Path:
         """import pathlib, sys, json
 if '--help' in sys.argv:
     raise SystemExit(0)
+if '--version' in sys.argv:
+    print('pcb 0.2.6')
+    print('pcbc 0.4.34')
+    raise SystemExit(0)
 source = next((arg for arg in sys.argv[1:] if arg.endswith('.zen')), '')
 if source and ('invalid-syntax' in source or 'invalid_syntax' in pathlib.Path(source).read_text(errors='ignore')):
     print('fixture rejected', file=sys.stderr)
     raise SystemExit(1)
 if '-f' in sys.argv and 'json' in sys.argv:
-    test_bench = "BlinkyTest"
-    check_name = "default"
     if 'connectivity' in source:
-        test_bench = "PcbAgentConnectivity"
-        check_name = "_check_connectivity"
+        records = [("PcbAgentConnectivity", "_check_connectivity")]
     elif 'specification' in source:
-        test_bench = "PcbAgentSpecification"
-        check_name = "_check_specification"
-        
+        records = [("PcbAgentSpecification", "_check_specification")]
+    else:
+        # The locked acceptance for the reference fixture names two checks.
+        records = [("BlinkyTest", "component_value"), ("BlinkyTest", "connectivity")]
+
     status = "PASS"
     if 'invalid-' in source and ('connectivity' in source or 'value' in source):
         status = "FAIL"
-        
+
+    results = [
+        {
+            "test_bench_name": bench,
+            "check_name": check,
+            "status": status,
+            "name": bench + "." + check,
+        }
+        for bench, check in records
+    ]
+    passed = len(results) if status == "PASS" else 0
+    failed = len(results) if status == "FAIL" else 0
     payload = {
-        "results": [{"test_bench_name": test_bench, "check_name": check_name, "status": status, "name": f"{test_bench}.{check_name}"}],
-        "summary": {"total": 1, "passed": 1 if status == "PASS" else 0, "failed": 1 if status == "FAIL" else 0, "failures": 0, "errors": 0}
+        "results": results,
+        "summary": {
+            "total": len(results),
+            "passed": passed,
+            "failed": failed,
+            "failures": failed,
+            "errors": 0,
+        },
     }
     print(json.dumps(payload))
     raise SystemExit(0)

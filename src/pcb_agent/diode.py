@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 import json
 import hashlib
+import re
 import shutil
 import tempfile
 from dataclasses import dataclass
@@ -36,9 +37,9 @@ _GENERATED_TEST_ENVIRONMENT_FRAGMENTS = (
 @dataclass(frozen=True)
 class GeneratedTestResult:
     process: ProcessResult
-    generated_path: Path
+    generated_path: str
     generated_sha256: str
-    result_path: Path
+    result_path: str
     result_sha256: str
 
 
@@ -47,10 +48,6 @@ class GeneratedEvidenceError(ValueError):
 
 
 class GeneratedCompatibilityError(GeneratedEvidenceError):
-    pass
-
-
-class GeneratedAssertionFailure(GeneratedEvidenceError):
     pass
 
 
@@ -93,20 +90,65 @@ def doctor_probes(project: ProjectState) -> tuple[ProcessResult, ...]:
     return tuple(results)
 
 
-def _records(value: object) -> list[Mapping[str, Any]]:
-    out: list[Mapping[str, Any]] = []
+_PCBC_VERSION_PATTERN = re.compile(r"\bpcbc\s+(?P<version>\d+\.\d+\.\d+)\b")
 
-    def walk(item: object) -> None:
-        if isinstance(item, dict):
-            out.append(item)
-            for child in item.values():
-                walk(child)
-        elif isinstance(item, list):
-            for child in item:
-                walk(child)
 
-    walk(value)
-    return out
+def probe_pcbc_version(project: ProjectState) -> str:
+    """Return the exact installed pcbc build version.
+
+    The output shape of `pcb --version` has not been verified against a real
+    toolchain, so the parser is deliberately strict. Anything it cannot parse
+    is treated as an unusable toolchain rather than guessed at. See
+    docs/spike-diode-net-naming.md.
+    """
+    result = run_process(project.root, ["pcb", "--version"], timeout=30)
+    if result.timed_out:
+        raise GeneratedCompatibilityError("pcb --version timed out")
+    if result.returncode != 0:
+        raise GeneratedCompatibilityError(
+            f"pcb --version exited {result.returncode}"
+        )
+    match = _PCBC_VERSION_PATTERN.search(result.stdout)
+    if match is None:
+        raise GeneratedCompatibilityError(
+            "cannot parse pcbc version from pcb --version output"
+        )
+    return match.group("version")
+
+
+_PASS_STATUSES = frozenset({"PASS", "PASSED", "OK"})
+_FAIL_STATUSES = frozenset({"FAIL", "FAILED", "ERROR"})
+_EVIDENCE_DIGEST_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
+
+def _top_level_record_counts(payload: Mapping[str, Any]) -> tuple[int, int] | None:
+    passed = 0
+    failed = 0
+    for record in payload.get("results", []):
+        if not isinstance(record, dict):
+            return None
+        status = str(record.get("status", "")).upper()
+        if not status:
+            return None
+        if status in _PASS_STATUSES:
+            passed += 1
+        elif status in _FAIL_STATUSES:
+            failed += 1
+        else:
+            return None
+    return passed, failed
+
+def _summary_matches_records(payload: Mapping[str, Any]) -> bool:
+    counts = _top_level_record_counts(payload)
+    if counts is None:
+        return False
+    passed, failed = counts
+    summary = payload.get("summary", {})
+    return (
+        summary.get("total") == len(payload.get("results", []))
+        and summary.get("passed") == passed
+        and summary.get("failed") == failed
+        and passed + failed == summary.get("total")
+    )
 
 
 def _int_or_none(value: object) -> int | None:
@@ -141,26 +183,32 @@ def _validate_test_payload(payload: object) -> Mapping[str, Any]:
     if passed + failed != total:
         raise GeneratedEvidenceError("pcb test JSON summary passed+failed mismatches total")
     for key in ("failures", "errors"):
-        value = _int_or_none(summary.get(key))
-        if value is not None and value > 0:
-            raise GeneratedEvidenceError(f"pcb test JSON reports {key}")
+        if key in summary:
+            value = _int_or_none(summary[key])
+            if value is None or value < 0:
+                raise GeneratedEvidenceError(f"pcb test JSON summary {key} must be non-negative integer")
     return payload
 
 
 def _record_identity(record: Mapping[str, Any]) -> tuple[str | None, str | None]:
-    bench = record.get("test_bench_name") or record.get("test_bench")
-    check = record.get("check_name") or record.get("name")
+    bench = record.get("test_bench_name")
+    check = record.get("check_name")
     if isinstance(bench, str) and isinstance(check, str):
         return bench, check
     return None, None
 
 
 def _find_record(payload: Mapping[str, Any], bench_name: str, check_name: str) -> Mapping[str, Any] | None:
-    for record in _records(payload["results"]):
+    matches: list[Mapping[str, Any]] = []
+    for record in payload["results"]:
+        if not isinstance(record, dict):
+            return None
         rb, rc = _record_identity(record)
         if rb == bench_name and rc == check_name:
-            return record
-    return None
+            matches.append(record)
+    if len(matches) != 1:
+        return None
+    return matches[0]
 
 
 def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None) -> ProcessResult:
@@ -184,7 +232,6 @@ def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(source, target)
         snapshot_command = list(command)
-        snapshot_command[snapshot_command.index(project.test)] = project.test
         result = run_process(snapshot, snapshot_command, timeout=300)
         snapshot_test_hash = "sha256:" + hashlib.sha256((snapshot / project.test).read_bytes()).hexdigest()
         result = ProcessResult(result.argv, result.returncode, result.stdout, result.stderr,
@@ -230,13 +277,22 @@ def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None
     return result
 
 
+def _relative_evidence_path(path: Path, evidence_root: Path) -> str:
+    from .paths import PathViolation, relative_evidence_path
+
+    try:
+        return relative_evidence_path(path, evidence_root)
+    except (PathViolation, OSError) as error:
+        raise GeneratedCompatibilityError(
+            "generated evidence escapes evidence root"
+        ) from error
+
+
 def execute_generated_test(
     project: ProjectState,
     generated_source: str,
     evidence_root: Path,
     check_id: str,
-    bench_name: str,
-    case_name: str,
 ) -> GeneratedTestResult:
     if check_id not in GENERATED_TESTS:
         raise ConfigurationError(f"unknown generated check_id: {check_id}")
@@ -267,20 +323,24 @@ def execute_generated_test(
         test_rel = rel_path.replace("\\", "/")
         test_path = snapshot / test_rel
         test_path.parent.mkdir(parents=True, exist_ok=True)
-        test_path.write_text(generated_source, encoding="utf-8")
+        generated_bytes = generated_source.encode("utf-8")
+        test_path.write_bytes(generated_bytes)
 
         result = run_process(snapshot, command, timeout=300)
 
         evidence_root.mkdir(parents=True, exist_ok=True)
         evidence_source = evidence_root / evidence_name
-        evidence_source.write_text(generated_source, encoding="utf-8")
+        evidence_source.write_bytes(generated_bytes)
         retained_hash = hashlib.sha256(evidence_source.read_bytes()).hexdigest()
-        if retained_hash != hashlib.sha256(generated_source.encode("utf-8")).hexdigest():
+        if retained_hash != hashlib.sha256(generated_bytes).hexdigest():
             raise GeneratedCompatibilityError("retained generated source hash mismatch")
 
         raw_path = evidence_root / f"{check_id.lower()}-result.json"
-        raw_path.write_text(result.stdout, encoding="utf-8")
+        result_bytes = result.stdout.encode("utf-8")
+        raw_path.write_bytes(result_bytes)
         raw_hash = hashlib.sha256(raw_path.read_bytes()).hexdigest()
+        if raw_hash != hashlib.sha256(result_bytes).hexdigest():
+            raise GeneratedCompatibilityError("retained result hash mismatch")
 
         input_hashes = {
             "testbench": f"sha256:{retained_hash}",
@@ -300,55 +360,97 @@ def execute_generated_test(
 
     return GeneratedTestResult(
         process=process,
-        generated_path=evidence_source,
+        generated_path=_relative_evidence_path(evidence_source, evidence_root),
         generated_sha256=f"sha256:{retained_hash}",
-        result_path=raw_path,
+        result_path=_relative_evidence_path(raw_path, evidence_root),
         result_sha256=f"sha256:{raw_hash}",
     )
 
 
-def _classify_generated_check(check_id: str, outcome: GeneratedTestResult, bench_name: str, check_name: str) -> CheckStatus:
-    proc = outcome.process
-    if proc.timed_out:
+def _classify_generated_check(
+    result_bytes: bytes,
+    process: ProcessResult,
+    bench_name: str,
+    check_name: str,
+) -> CheckStatus:
+    """Decide status from the retained, hash-verified evidence bytes.
+
+    `process` supplies only out-of-band signals: timeout, exit code, stderr,
+    and truncation. The verdict itself comes from `result_bytes`, which is the
+    same byte sequence the report attests via `result_sha256`.
+    """
+    if process.timed_out:
         return CheckStatus.BLOCKED
-    lower = proc.stderr.lower()
+    lower = process.stderr.lower()
     if any(fragment in lower for fragment in _GENERATED_TEST_ENVIRONMENT_FRAGMENTS):
         return CheckStatus.BLOCKED
-    if proc.returncode != 0:
-        if proc.output_truncated:
-            return CheckStatus.BLOCKED
-        try:
-            payload = json.loads(proc.stdout)
-        except json.JSONDecodeError:
-            return CheckStatus.BLOCKED
-        try:
-            _validate_test_payload(payload)
-        except GeneratedEvidenceError as error:
-            return CheckStatus.BLOCKED
-        record = _find_record(payload, bench_name, check_name)
-        if record is None:
-            return CheckStatus.BLOCKED
-        status_text = str(record.get("status", "")).upper()
-        if status_text in {"PASS", "PASSED", "OK"}:
-            return CheckStatus.BLOCKED
-        if status_text in {"FAIL", "FAILED", "ERROR"}:
-            return CheckStatus.FAIL
+    if process.output_truncated:
         return CheckStatus.BLOCKED
+
     try:
-        payload = json.loads(proc.stdout)
-    except json.JSONDecodeError:
+        payload = json.loads(result_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
         return CheckStatus.BLOCKED
     try:
         _validate_test_payload(payload)
     except GeneratedEvidenceError:
         return CheckStatus.BLOCKED
+
+    if not _summary_matches_records(payload):
+        return CheckStatus.BLOCKED
+
     record = _find_record(payload, bench_name, check_name)
     if record is None:
         return CheckStatus.BLOCKED
+
     status_text = str(record.get("status", "")).upper()
-    if status_text in {"PASS", "PASSED", "OK"}:
-        return CheckStatus.PASS
+
+    summary = payload["summary"]
+    failed_count = _int_or_none(summary.get("failed")) or 0
+    failures_count = _int_or_none(summary.get("failures")) or 0
+    errors_count = _int_or_none(summary.get("errors")) or 0
+
+    if errors_count > 0:
+        return CheckStatus.BLOCKED
+
+    if status_text in _PASS_STATUSES:
+        if process.returncode != 0:
+            return CheckStatus.BLOCKED
+        if failed_count == 0 and failures_count == 0:
+            return CheckStatus.PASS
+        return CheckStatus.BLOCKED
+
+    if status_text in _FAIL_STATUSES:
+        return CheckStatus.FAIL
+
     return CheckStatus.BLOCKED
+
+
+def _verify_retained_artifact(
+    evidence_root: Path,
+    relative_path: str,
+    expected_sha256: str,
+) -> bytes:
+    from .paths import resolve_workspace_path, require_regular_file
+
+    if not _EVIDENCE_DIGEST_PATTERN.match(expected_sha256 or ""):
+        raise GeneratedCompatibilityError(
+            f"malformed evidence digest for {relative_path}"
+        )
+    try:
+        path = resolve_workspace_path(evidence_root, relative_path, must_exist=True)
+        require_regular_file(path)
+        data = path.read_bytes()
+    except (OSError, ValueError) as error:
+        raise GeneratedCompatibilityError(
+            f"evidence validation failed: {error}"
+        ) from error
+    actual = "sha256:" + hashlib.sha256(data).hexdigest()
+    if actual != expected_sha256:
+        raise GeneratedCompatibilityError(
+            f"evidence hash mismatch for {relative_path}"
+        )
+    return data
 
 
 def generated_check(
@@ -356,27 +458,42 @@ def generated_check(
     outcome: GeneratedTestResult,
     bench_name: str,
     check_name: str,
+    evidence_root: Path,
     required: bool = True,
 ) -> Check:
-    status = _classify_generated_check(check_id, outcome, bench_name, check_name)
-    if status == CheckStatus.PASS:
-        message = f"{check_id.lower()} generated assertion passed"
-    elif status == CheckStatus.FAIL:
-        message = f"{check_id.lower()} generated assertion failed"
-    elif status == CheckStatus.BLOCKED:
-        if outcome.process.timed_out:
-            message = "generated test timed out"
-        else:
-            message = "generated test evidence is missing or malformed"
+    try:
+        _verify_retained_artifact(
+            evidence_root, outcome.generated_path, outcome.generated_sha256
+        )
+        result_bytes = _verify_retained_artifact(
+            evidence_root, outcome.result_path, outcome.result_sha256
+        )
+    except GeneratedCompatibilityError as error:
+        status = CheckStatus.BLOCKED
+        message = str(error)
     else:
-        message = f"generated test status {status}"
+        status = _classify_generated_check(
+            result_bytes, outcome.process, bench_name, check_name
+        )
+        if status == CheckStatus.PASS:
+            message = f"{check_id.lower()} generated assertion passed"
+        elif status == CheckStatus.FAIL:
+            message = f"{check_id.lower()} generated assertion failed"
+        elif status == CheckStatus.BLOCKED:
+            if outcome.process.timed_out:
+                message = "generated test timed out"
+            else:
+                message = "generated test evidence is missing or malformed"
+        else:
+            message = f"generated test status {status}"
+
     evidence = {
         "generated_testbench": {
-            "path": str(outcome.generated_path),
+            "path": outcome.generated_path,
             "sha256": outcome.generated_sha256,
         },
         "result": {
-            "path": str(outcome.result_path),
+            "path": outcome.result_path,
             "sha256": outcome.result_sha256,
         },
         "stdout": outcome.process.stdout,
@@ -387,7 +504,9 @@ def generated_check(
         status,
         Severity.ERROR,
         message,
-        "harness",
+        # The verdict comes from the tool's own structured output, so the
+        # evidence is tool-provenance even though the harness parses it.
+        "tool",
         outcome.process.argv,
         outcome.process.returncode,
         outcome.process.duration_seconds,

@@ -1,4 +1,17 @@
-"""Minimal JSON Schema subset validator, standard library only."""
+"""Minimal JSON Schema subset validator, standard library only.
+
+Deliberate deviations from draft 2020-12, all stricter than the spec:
+
+- `required: []` and `enum: []` are rejected. Both are legal in the draft, but
+  an empty array is almost always a mistake in a hand-written schema, and no
+  schema in this repository uses one.
+- Only local `#/$defs/NAME` references are supported. Remote and pointer refs
+  are rejected rather than silently ignored.
+- Any keyword outside the supported set is an error, not something to skip.
+
+Every deviation fails closed: a schema this validator rejects is never treated
+as satisfied.
+"""
 
 from __future__ import annotations
 
@@ -87,11 +100,11 @@ def validate_schema(schema: Any, root: Mapping[str, Any] | None = None, path: st
         return
     if not isinstance(schema, dict):
         raise SchemaError(f"{path}: schema fragment must be object or bool")
-    
+
     unknown = set(schema) - _SUPPORTED
     if unknown:
         raise SchemaError(f"{path}: unsupported schema keywords: {sorted(unknown)}")
-    
+
     if "$ref" in schema:
         ref = schema["$ref"]
         if not isinstance(ref, str) or not ref.startswith("#/$defs/"):
@@ -116,7 +129,7 @@ def validate_schema(schema: Any, root: Mapping[str, Any] | None = None, path: st
             if not isinstance(val, (bool, dict)):
                 raise SchemaError(f"{path}: {keyword} must be bool or object")
             validate_schema(val, root or schema, f"{path}.{keyword}")
-            
+
     if "type" in schema:
         t = schema["type"]
         if not isinstance(t, str) and not (isinstance(t, list) and all(isinstance(x, str) for x in t)):
@@ -155,10 +168,16 @@ def validate_schema(schema: Any, root: Mapping[str, Any] | None = None, path: st
 
 def validate(instance: Any, schema: dict[str, Any], path: str = "<root>") -> None:
     validate_schema(schema, schema, path + "_schema")
-    _validate(instance, schema, schema, path)
+    _validate(instance, schema, schema, path, frozenset())
 
 
-def _validate(instance: Any, schema: Any, root: dict[str, Any], path: str) -> None:
+def _validate(
+    instance: Any,
+    schema: Any,
+    root: dict[str, Any],
+    path: str,
+    active_refs: frozenset[str] = frozenset(),
+) -> None:
     if isinstance(schema, bool):
         if not schema:
             raise SchemaError(f"{path}: schema is false")
@@ -183,7 +202,12 @@ def _validate(instance: Any, schema: Any, root: dict[str, Any], path: str) -> No
         defs = root.get("$defs")
         if not isinstance(defs, dict) or name not in defs:
             raise SchemaError(f"{path}: unresolved $ref {ref}")
-        _validate(instance, defs[name], root, path)
+        if ref in active_refs:
+            # A self-referential $defs entry would otherwise raise
+            # RecursionError, which is not a ValueError and so escapes the
+            # handlers in contracts.load_project_contract and cli.main.
+            raise SchemaError(f"{path}: circular $ref {ref}")
+        _validate(instance, defs[name], root, path, active_refs | {ref})
 
     if "type" in schema:
         _check_type(instance, schema["type"], path)
@@ -255,13 +279,16 @@ def _validate(instance: Any, schema: Any, root: dict[str, Any], path: str) -> No
 
         import re as _re
 
+        compiled_patterns: list[tuple[Any, Any]] = []
+        for pattern, sub in pattern_props.items():
+            try:
+                compiled_patterns.append((_re.compile(pattern), sub))
+            except _re.error as e:
+                raise SchemaError(f"{path}: invalid patternProperty regex {pattern}: {e}")
+
         for key, value in instance.items():
-            for pattern, sub in pattern_props.items():
-                try:
-                    _re.compile(pattern)
-                except _re.error as e:
-                    raise SchemaError(f"{path}: invalid patternProperty regex {pattern}: {e}")
-                if _re.search(pattern, key):
+            for compiled, sub in compiled_patterns:
+                if compiled.search(key):
                     _validate(value, sub, root, f"{path}.{key}")
 
         if "additionalProperties" in schema:
@@ -269,7 +296,7 @@ def _validate(instance: Any, schema: Any, root: dict[str, Any], path: str) -> No
             if not isinstance(extra, (bool, dict)):
                 raise SchemaError(f"{path}: additionalProperties must be bool or object")
             extras = {k for k in instance.keys() if k not in handled and
-                      not any(_re.search(p, k) for p in pattern_props)}
+                      not any(compiled.search(k) for compiled, _ in compiled_patterns)}
             if extra is False:
                 if extras:
                     sample = sorted(extras)[:3]
@@ -343,21 +370,31 @@ def _check_type(instance: Any, type_value: Any, path: str) -> None:
         raise SchemaError(f"{path}: expected {type_value}, got {type(instance).__name__}")
 
 
-def collect_used_keywords(schema: dict[str, Any]) -> set[str]:
+def collect_used_keywords(schema: Any) -> set[str]:
+    """Return every keyword used anywhere in a schema tree.
+
+    Walks into per-property subschemas, which the previous implementation
+    missed: the children of `properties` are property *names*, not keywords,
+    so recursing on them by name never reached the nested schemas. Callers
+    compare the result against the supported set; this function deliberately
+    does not filter, otherwise the comparison could never fail.
+
+    Property and `$defs` names are not collected as keywords.
+    """
     used: set[str] = set()
 
     def walk(node: Any) -> None:
-        if isinstance(node, bool):
+        if isinstance(node, bool) or not isinstance(node, dict):
             return
-        if not isinstance(node, dict):
-            return
-        used.update(node)
-        for key, value in node.items():
-            if key in {"$defs"}:
-                walk(value)
-            elif key in {"properties", "patternProperties", "items",
-                          "additionalProperties"}:
-                walk(value)
+        used.update(node.keys())
+        for container in ("$defs", "properties", "patternProperties"):
+            value = node.get(container)
+            if isinstance(value, dict):
+                for sub in value.values():
+                    walk(sub)
+        for direct in ("items", "additionalProperties"):
+            if direct in node:
+                walk(node[direct])
 
     walk(schema)
-    return {k for k in used if k in _SUPPORTED - {"$schema", "$id", "title", "description"}}
+    return used

@@ -1,0 +1,8 @@
+[workspace]
+repository = "example.invalid/pcb-agent/invalid-syntax"
+pcb-version = "0.4"
+
+[board]
+name = "invalid-syntax"
+path = "src/blinky.zen"
+description = "Negative fixture containing deliberate Zener parse error."

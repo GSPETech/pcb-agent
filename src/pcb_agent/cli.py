@@ -17,6 +17,7 @@ from typing import Callable, Sequence
 from . import diode, kicad
 from .backends import BackendError, CodexBackend, CommandBackend
 from .models import Check, CheckStatus, Severity, VerificationReport
+from .paths import relative_evidence_path
 from .policy import PolicyViolation, ProtectedHashes, WorkspaceLock, WorkspaceSnapshot
 from .policy_config import Policy, PolicyConfigError, matches as policy_matches
 from .state import (
@@ -54,7 +55,7 @@ def _parser() -> argparse.ArgumentParser:
         if name == "report":
             item.add_argument("--run")
     check = sub.add_parser("check")
-    check.add_argument("profile", choices=("schematic", "spec", "connectivity"), nargs="?", default="schematic")
+    check.add_argument("scope", choices=("schematic", "spec", "connectivity"), nargs="?", default="schematic")
     check.add_argument("project", nargs="?", default=".")
     check.add_argument("--project", dest="project_option")
     check.add_argument("--format", choices=("human", "json"), default="human")
@@ -78,12 +79,33 @@ def _check(check_id: str, status: CheckStatus, message: str, *, required: bool =
     return Check(id=check_id, status=status, severity=Severity.ERROR, message=message, required=required)
 
 
+def _tool_versions(project: ProjectState) -> dict[str, str]:
+    """Best-effort exact toolchain versions for the verification report.
+
+    Version capture is diagnostic and never gates verification: a probe
+    failure yields an empty mapping rather than a BLOCKED run. The pcbc
+    version is the exact installed build, not the contract's `pcb_version`.
+    """
+    versions: dict[str, str] = {}
+    try:
+        versions["pcbc"] = diode.probe_pcbc_version(project)
+    except (FileNotFoundError, OSError, ValueError, diode.GeneratedCompatibilityError):
+        pass
+    try:
+        result = diode.run_process(project.root, ["pcb", "--version"], timeout=30)
+        if result.returncode == 0 and not result.timed_out:
+            versions["pcb"] = result.stdout.strip()
+    except (FileNotFoundError, OSError, ValueError):
+        pass
+    return versions
+
+
 def _persist(project: ProjectState, run: RunState, checks: Sequence[Check], output_format: str,
              profile: str = "schematic", exit_override: int | None = None) -> int:
     artifacts = tuple(check.evidence for check in checks if check.evidence)
     report = VerificationReport(project.name, tuple(checks), profile=profile, run_id=run.run_id,
                                 source_dirty=source_is_dirty(project.root), hashes=project.hashes,
-                                artifacts=artifacts)
+                                versions=_tool_versions(project), artifacts=artifacts)
     path = write_run_report(run, report, project)
     payload = json.loads(path.read_text(encoding="utf-8"))
     if output_format == "json":
@@ -157,7 +179,10 @@ def _diode_command(project: ProjectState, key: str, check_id: str,
                                  indent=2) + "\n"
             evidence_path.write_text(payload, encoding="utf-8", newline="\n")
             digest = "sha256:" + hashlib.sha256(evidence_path.read_bytes()).hexdigest()
-            evidence = {"path": str(evidence_path), "sha256": digest}
+            evidence = {
+                "path": relative_evidence_path(evidence_path, trusted_root),
+                "sha256": digest,
+            }
             if key == "test-command":
                 evidence["testbench_sha256"] = result.input_hashes["testbench"]
             check = replace(check, evidence=evidence)
@@ -175,7 +200,11 @@ def _schematic_checks(project: ProjectState, run: RunState | None = None) -> lis
 
 def _connectivity_check(project: ProjectState, test: Check, run: RunState | None) -> Check:
     if test.status != CheckStatus.PASS:
-        return _check("CONNECTIVITY", test.status, "Zener TestBench did not pass")
+        return _check(
+            "CONNECTIVITY",
+            CheckStatus.BLOCKED,
+            "locked Zener TestBench did not pass; connectivity was not verified",
+        )
     connectivity = project.connectivity
     if not connectivity.get("components") and not connectivity.get("nets"):
         return _check("CONNECTIVITY", CheckStatus.SKIPPED,
@@ -184,7 +213,16 @@ def _connectivity_check(project: ProjectState, test: Check, run: RunState | None
 
     from .generated_testbench import render_connectivity_testbench, GeneratorError
     try:
-        source = render_connectivity_testbench(project)
+        pcbc_version = diode.probe_pcbc_version(project)
+    except diode.GeneratedCompatibilityError as error:
+        return _check("CONNECTIVITY", CheckStatus.BLOCKED,
+                      f"toolchain version unknown: {error}")
+    except (FileNotFoundError, OSError, ValueError) as error:
+        return _check("CONNECTIVITY", CheckStatus.BLOCKED,
+                      f"toolchain version probe blocked: {error}")
+
+    try:
+        source = render_connectivity_testbench(project, pcbc_version)
     except GeneratorError as error:
         return _check("CONNECTIVITY", CheckStatus.BLOCKED, f"cannot generate evidence: {error}")
 
@@ -194,7 +232,6 @@ def _connectivity_check(project: ProjectState, test: Check, run: RunState | None
     try:
         outcome = diode.execute_generated_test(
             project, source, run.raw_directory, "CONNECTIVITY",
-            "PcbAgentConnectivity", "contract",
         )
     except diode.GeneratedCompatibilityError as error:
         return _check("CONNECTIVITY", CheckStatus.BLOCKED, f"generated test blocked: {error}")
@@ -202,17 +239,31 @@ def _connectivity_check(project: ProjectState, test: Check, run: RunState | None
         return _check("CONNECTIVITY", CheckStatus.BLOCKED, f"generated test execution blocked: {error}")
 
     return diode.generated_check(
-        "CONNECTIVITY", outcome, "PcbAgentConnectivity", "_check_connectivity"
+        "CONNECTIVITY", outcome, "PcbAgentConnectivity", "_check_connectivity",
+        run.raw_directory,
     )
 
 
 def _specification_check(project: ProjectState, test: Check, run: RunState | None) -> Check:
     if test.status != CheckStatus.PASS:
-        return _check("SPECIFICATION", test.status, "Zener TestBench did not pass")
+        return _check(
+            "SPECIFICATION",
+            CheckStatus.BLOCKED,
+            "locked Zener TestBench did not pass; specification was not verified",
+        )
 
     from .generated_testbench import render_specification_testbench, GeneratorError
     try:
-        source = render_specification_testbench(project)
+        pcbc_version = diode.probe_pcbc_version(project)
+    except diode.GeneratedCompatibilityError as error:
+        return _check("SPECIFICATION", CheckStatus.BLOCKED,
+                      f"toolchain version unknown: {error}")
+    except (FileNotFoundError, OSError, ValueError) as error:
+        return _check("SPECIFICATION", CheckStatus.BLOCKED,
+                      f"toolchain version probe blocked: {error}")
+
+    try:
+        source = render_specification_testbench(project, pcbc_version)
     except GeneratorError as error:
         return _check("SPECIFICATION", CheckStatus.BLOCKED, f"cannot generate evidence: {error}")
 
@@ -222,7 +273,6 @@ def _specification_check(project: ProjectState, test: Check, run: RunState | Non
     try:
         outcome = diode.execute_generated_test(
             project, source, run.raw_directory, "SPECIFICATION",
-            "PcbAgentSpecification", "contract",
         )
     except diode.GeneratedCompatibilityError as error:
         return _check("SPECIFICATION", CheckStatus.BLOCKED, f"generated test blocked: {error}")
@@ -230,7 +280,8 @@ def _specification_check(project: ProjectState, test: Check, run: RunState | Non
         return _check("SPECIFICATION", CheckStatus.BLOCKED, f"generated test execution blocked: {error}")
 
     return diode.generated_check(
-        "SPECIFICATION", outcome, "PcbAgentSpecification", "_check_specification"
+        "SPECIFICATION", outcome, "PcbAgentSpecification", "_check_specification",
+        run.raw_directory,
     )
 
 
@@ -242,11 +293,14 @@ def _verify(project: ProjectState, run: RunState, profile: str) -> list[Check]:
     if checks[-1].status == CheckStatus.PASS:
         checks.extend(_schematic_checks(project, run))
     else:
-        dependent_status = checks[-1].status
+        # A failed or blocked build means no schematic evidence was gathered at
+        # all. Inheriting FAIL would report "checked and wrong" for gates that
+        # never ran, so dependent gates are BLOCKED. This matches the layout
+        # branch below, which already uses BLOCKED for the same situation.
         checks.extend([
-            _check("ZENER_TEST", dependent_status, "build did not pass"),
-            _check("CONNECTIVITY", dependent_status, "build did not pass"),
-            _check("SPECIFICATION", dependent_status, "build did not pass"),
+            _check("ZENER_TEST", CheckStatus.BLOCKED, "Diode build did not pass"),
+            _check("CONNECTIVITY", CheckStatus.BLOCKED, "Diode build did not pass"),
+            _check("SPECIFICATION", CheckStatus.BLOCKED, "Diode build did not pass"),
         ])
     if profile == "layout" and all(check.status == CheckStatus.PASS for check in checks):
         generation = _diode_command(project, "layout-command", "LAYOUT_GENERATE")
@@ -257,7 +311,11 @@ def _verify(project: ProjectState, run: RunState, profile: str) -> list[Check]:
         checks.append(layout)
         if generation.status == CheckStatus.PASS:
             try:
-                checks.append(kicad.result_check(kicad.drc(project, run), run.raw_directory / "kicad-drc.json"))
+                checks.append(kicad.result_check(
+                    kicad.drc(project, run),
+                    run.raw_directory / "kicad-drc.json",
+                    run.raw_directory,
+                ))
             except (ConfigurationError, FileNotFoundError, OSError, ValueError) as error:
                 checks.append(_check("KICAD_DRC", CheckStatus.BLOCKED, str(error)))
         else:
@@ -512,10 +570,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             checks = [_diode_command(project, "build-command", "DIODE_BUILD", run.raw_directory)]
         elif args.command == "check":
             checks = _schematic_checks(project, run)
-            if args.profile == "spec":
-                checks = [checks[2]]
-            elif args.profile == "connectivity":
-                checks = [checks[1]]
+            if args.scope == "spec":
+                checks = [next(item for item in checks if item.id == "SPECIFICATION")]
+            elif args.scope == "connectivity":
+                checks = [next(item for item in checks if item.id == "CONNECTIVITY")]
         elif args.command == "layout":
             generation = _diode_command(project, "layout-command", "LAYOUT_GENERATE")
             checks = [generation]
@@ -526,7 +584,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                                      "layout generation did not pass"))
         elif args.command == "drc":
             try:
-                checks = [kicad.result_check(kicad.drc(project, run), run.raw_directory / "kicad-drc.json")]
+                checks = [kicad.result_check(
+                    kicad.drc(project, run),
+                    run.raw_directory / "kicad-drc.json",
+                    run.raw_directory,
+                )]
             except (ConfigurationError, FileNotFoundError, OSError, ValueError) as error:
                 checks = [_check("KICAD_DRC", CheckStatus.BLOCKED, str(error))]
         elif args.command == "verify":

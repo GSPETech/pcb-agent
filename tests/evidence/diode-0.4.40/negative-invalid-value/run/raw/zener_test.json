@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/home/rendra/.local/bin/pcb",
+    "test",
+    "tests/blinky_test.zen",
+    "-f",
+    "json"
+  ],
+  "stdout": "{\n  \"results\": [\n    {\n      \"test_bench_name\": \"ValueTest\",\n      \"case_name\": \"default\",\n      \"check_name\": \"component_value\",\n      \"file_path\": \"/tmp/pcb-agent-trusted-test-9c1sx8ge/tests/blinky_test.zen\",\n      \"status\": \"fail\"\n    }\n  ],\n  \"summary\": {\n    \"total\": 1,\n    \"passed\": 0,\n    \"failed\": 1\n  }\n}\n",
+  "stderr": "Error: R1 must be 1kohm\n    \u256d\u2500[ /tmp/pcb-agent-trusted-test-9c1sx8ge/tests/blinky_test.zen:7:5 ]\n    \u2502\n  7 \u2502         check(components[\"R1.R\"].resistance.matches(\"1kohm\"), \"R1 must be 1kohm\")\n    \u2502         \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500  \n    \u2502                                             \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 R1 must be 1kohm\n    \u2502 \n  9 \u2502 \u256d\u2500\u25b6 TestBench(\n    \u2506 \u2506   \n 14 \u2502 \u251c\u2500\u25b6 )\n    \u2502 \u2502       \n    \u2502 \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500 TestBench 'ValueTest' case 'default' check 'component_value' failed\n\u2500\u2500\u2500\u2500\u256f\n\nStack trace (most recent call last):\n    /tmp/pcb-agent-trusted-test-9c1sx8ge/tests/blinky_test.zen:9:1 (TestBench 'ValueTest' case 'default' check 'component_value' failed)\n    /tmp/pcb-agent-trusted-test-9c1sx8ge/tests/blinky_test.zen:7:5 (R1 must be 1kohm)\n      \u251c\u2500 component_value\n      \u2570\u2500 check (called from /tmp/pcb-agent-trusted-test-9c1sx8ge/tests/blinky_test.zen:7:5-78)\n\nError: Test run failed\n",
+  "exit_code": 1,
+  "duration": 0.11475836700000741
+}

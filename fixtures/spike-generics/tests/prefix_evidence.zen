@@ -1,0 +1,23 @@
+AllGenerics = Module("../src/all_generics.zen")
+
+def check_prefix(module, inputs):
+    nets = module.nets()
+    check(
+        ("RenamedBench__alt_case.Y1.Y", "1") in nets.get("XIN_NET", []),
+        "expected RenamedBench__alt_case.Y1.Y pin 1 on XIN_NET",
+    )
+    check(
+        ("RenamedBench__alt_case.R1.R", "1") in nets.get("VCC", []),
+        "expected RenamedBench__alt_case.R1.R pin 1 on VCC",
+    )
+    check(
+        ("RenamedBench__alt_case.D1.LED", "A") in nets.get("LED_ANODE", []),
+        "expected RenamedBench__alt_case.D1.LED pin A on LED_ANODE",
+    )
+
+TestBench(
+    name = "RenamedBench",
+    module = AllGenerics,
+    test_cases = {"alt_case": {}},
+    checks = [check_prefix],
+)

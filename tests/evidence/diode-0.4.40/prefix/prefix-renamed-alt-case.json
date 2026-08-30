@@ -1,0 +1,16 @@
+{
+  "results": [
+    {
+      "test_bench_name": "RenamedBench",
+      "case_name": "alt_case",
+      "check_name": "check_prefix",
+      "file_path": "/home/rendra/pcbagent-full/fixtures/spike-generics/tests/prefix_evidence.zen",
+      "status": "pass"
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0
+  }
+}

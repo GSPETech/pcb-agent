@@ -1,0 +1,6 @@
+{
+  "schema_version": "1",
+  "project": {"name": "invalid-syntax", "pcb_version": "0.4", "layers": 4},
+  "requirements": [{"id": "REQ-001", "type": "syntax", "description": "Board source shall parse and build", "severity": "error", "evidence_required": ["diode_build"]}],
+  "fabrication": {"automatic_approval": false, "human_approval_required": true}
+}

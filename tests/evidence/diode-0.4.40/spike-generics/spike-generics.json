@@ -1,0 +1,16 @@
+{
+  "results": [
+    {
+      "test_bench_name": "SpikeAllGenerics",
+      "case_name": "default",
+      "check_name": "spike_evidence",
+      "file_path": "/home/rendra/pcbagent-full/fixtures/spike-generics/tests/spike_evidence.zen",
+      "status": "pass"
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0
+  }
+}

@@ -1,0 +1,6 @@
+# Deliberate parse error: closing parenthesis omitted.
+Resistor = Module("@stdlib/generics/Resistor.zen"
+
+VCC = Power()
+GND = Ground()
+Board(name="invalid_syntax", layers=4, layout_path="layout/invalid_syntax")

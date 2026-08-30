@@ -49,12 +49,15 @@ class ProjectContract:
 
 
 def _reject_unsafe_relative_path(value: str, field: str) -> PurePosixPath:
-    from pathlib import PurePosixPath
     normalized = value.replace("\\", "/")
+    raw_segments = normalized.split("/")
+    if any(segment in {"", "."} for segment in raw_segments):
+        raise ContractError(f"{field} must be a canonical workspace-relative path")
     path = PurePosixPath(normalized)
-    if path.is_absolute() or any(part in {"", ".", ".."} for part in path.parts):
+    if path.is_absolute() or any(part == ".." for part in path.parts):
         raise ContractError(f"{field} must be a canonical workspace-relative path")
     return path
+
 
 def _read_required(root: Path, name: str) -> bytes:
     if (root / name).is_symlink():
@@ -179,7 +182,7 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
                     raise ContractError(f"connectivity required_pullup references unknown component {comp}")
                 if rail not in connectivity.get("nets", {}):
                     raise ContractError(f"connectivity required_pullup references unknown net {rail}")
-    
+
     rules = connectivity.get("rules")
     if isinstance(rules, dict):
         for net in rules.get("required_power_nets", []):

@@ -1,0 +1,3 @@
+# Spike evidence must stay byte-identical to the captured tool output.
+# Git line-ending conversion would change hashes and break provenance checks.
+tests/evidence/** -text

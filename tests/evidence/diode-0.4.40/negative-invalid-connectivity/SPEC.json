@@ -1,0 +1,6 @@
+{
+  "schema_version": "1",
+  "project": {"name": "invalid-connectivity", "pcb_version": "0.4", "layers": 4},
+  "requirements": [{"id": "REQ-001", "type": "connectivity", "description": "D1.K shall connect to GND", "subject": "D1.K", "constraints": {"net": "GND"}, "severity": "error", "evidence_required": ["zener_test"]}],
+  "fabrication": {"automatic_approval": false, "human_approval_required": true}
+}

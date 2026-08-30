@@ -43,6 +43,21 @@ def require_regular_file(path: Path, *, reject_symlink: bool = True) -> Path:
     return path
 
 
+def relative_evidence_path(path: Path | str, base: Path | str) -> str:
+    """Return a POSIX path relative to `base`.
+
+    Reports must not carry absolute host paths: they leak the operator's home
+    directory and stop the report from being verifiable after the project moves.
+    Callers pass the run directory, so an evidence path is always expressed
+    relative to the report that references it.
+    """
+    resolved_base = Path(base).resolve(strict=True)
+    resolved_path = Path(path).resolve(strict=True)
+    if not _is_relative_to(resolved_path, resolved_base):
+        raise PathViolation(f"evidence path escapes evidence root: {path}")
+    return resolved_path.relative_to(resolved_base).as_posix()
+
+
 def validate_executable(
     executable: str,
     *,

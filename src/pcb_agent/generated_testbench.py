@@ -6,13 +6,15 @@ classification belong to diode.execute_generated_test and cli._generated_check.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import posixpath
 import re
 from dataclasses import dataclass
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping
 
+from .evidence import EvidenceError
 from .state import ProjectState
 
 
@@ -24,36 +26,292 @@ GENERATED_TEST_DIRECTORY = PurePosixPath("tests")
 _IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_]{0,63}$")
 _NET_NAME_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,63}$")
 _PIN_NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,31}$")
+_EVIDENCE_DIGEST_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
 _CONNECTIVITY_FIELDS: dict[str, frozenset[str]] = {
     "components": frozenset({"kind", "value", "package", "mpn"}),
     "nets": frozenset({"members", "required_pullup"}),
     "rules": frozenset({"forbid_unlisted_members", "required_power_nets"}),
 }
+_CONNECTIVITY_REQUIREMENT_CONSTRAINTS = frozenset({"members"})
 
 
 @dataclass(frozen=True)
 class ComponentAdapter:
+    kind: str
     instance_suffix: str
     pins: Mapping[str, str]
     verified_pcbc_versions: frozenset[str]
     evidence_sha256: str
+    evidence_result_path: str = ""
+    evidence_source_path: str = ""
+    evidence_source_sha256: str = ""
+    value_accessor: str | None = None
+    package_accessor: str | None = None
+    mpn_accessor: str | None = None
+    pullup_pin_pair: tuple[str, str] | None = None
 
 
 def build_adapter_registry(entries: Iterable[ComponentAdapter]) -> dict[str, ComponentAdapter]:
     registry: dict[str, ComponentAdapter] = {}
     for adapter in entries:
-        if not isinstance(adapter.evidence_sha256, str) or not adapter.evidence_sha256:
-            raise ValueError("adapter evidence_sha256 must be non-empty string")
-        registry[adapter.instance_suffix] = adapter
+        if not isinstance(adapter.kind, str) or not _IDENTIFIER_PATTERN.match(adapter.kind):
+            raise ValueError("adapter kind must be a valid identifier")
+        if not isinstance(adapter.instance_suffix, str) or not adapter.instance_suffix:
+            raise ValueError("adapter instance_suffix must be non-empty string")
+        if not _EVIDENCE_DIGEST_PATTERN.match(adapter.evidence_sha256 or ""):
+            raise ValueError("adapter evidence_sha256 must be sha256:<64 hex>")
+        if not adapter.verified_pcbc_versions:
+            raise ValueError("adapter must declare at least one verified pcbc version")
+        if adapter.kind in registry:
+            raise ValueError(f"duplicate adapter kind: {adapter.kind}")
+        registry[adapter.kind] = adapter
     return registry
 
 
-_ADAPTERS: dict[str, ComponentAdapter] = {}
+_CAPTURED_PCBC_VERSION = "0.4.40"
+_CAPTURED_BLINKY_EVIDENCE = "sha256:02c6cb60bfaf371e640e34ed0ff7b707074cfad0789b38a25c014cfa66cfac11"
+_CAPTURED_GENERICS_EVIDENCE = "sha256:3320a8aa668f5f28dc19b4240f9f92e22333805ead12e36cb4c5a3c3b1636267"
+_CAPTURED_BLINKY_SOURCE = "sha256:4e4533b947babc249f9e1ccbb51fc7dc4b4c4022c20c58db19919adb5d770a5b"
+_CAPTURED_GENERICS_SOURCE = "sha256:b268cc42821459d724affb68716b39c865be27f8dfd119d9812fee84996c76ea"
+_PACKAGE_ACCESSOR = "properties['package']"
+
+_EVIDENCE_BLINKY_RESULT = "valid-blinky/valid-blinky.json"
+_EVIDENCE_BLINKY_SOURCE = "valid-blinky/valid-blinky-testbench.zen"
+_EVIDENCE_GENERICS_RESULT = "spike-generics/spike-generics.json"
+_EVIDENCE_GENERICS_SOURCE = "spike-generics/spike-generics-testbench.zen"
+
+
+def captured_adapter_registry() -> dict[str, ComponentAdapter]:
+    """Production adapters verified against captured Diode 0.4.40 output.
+
+    The raw `pcb test -f json` results stored under
+    `tests/evidence/diode-0.4.40/` carry only result identity and status. The
+    mapping/accessor values are established by the hash-bound TestBench source
+    that produced each PASS result (assertion source + module source), whose
+    digests are also retained in the evidence manifest. See
+    docs/spike-diode-net-naming.md. Crystal is intentionally absent: the
+    adapter model cannot represent its one-to-many four-pin GND mapping.
+    """
+    return build_adapter_registry(
+        [
+            ComponentAdapter(
+                kind="resistor",
+                instance_suffix="R",
+                pins={"P1": "1", "P2": "2"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_BLINKY_EVIDENCE,
+                evidence_result_path=_EVIDENCE_BLINKY_RESULT,
+                evidence_source_path=_EVIDENCE_BLINKY_SOURCE,
+                evidence_source_sha256=_CAPTURED_BLINKY_SOURCE,
+                value_accessor="resistance",
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=("P1", "P2"),
+            ),
+            ComponentAdapter(
+                kind="led",
+                instance_suffix="LED",
+                pins={"A": "A", "K": "K"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_BLINKY_EVIDENCE,
+                evidence_result_path=_EVIDENCE_BLINKY_RESULT,
+                evidence_source_path=_EVIDENCE_BLINKY_SOURCE,
+                evidence_source_sha256=_CAPTURED_BLINKY_SOURCE,
+                value_accessor=None,
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=None,
+            ),
+            ComponentAdapter(
+                kind="capacitor",
+                instance_suffix="C",
+                pins={"P1": "1", "P2": "2"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                evidence_result_path=_EVIDENCE_GENERICS_RESULT,
+                evidence_source_path=_EVIDENCE_GENERICS_SOURCE,
+                evidence_source_sha256=_CAPTURED_GENERICS_SOURCE,
+                value_accessor="capacitance",
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=None,
+            ),
+            ComponentAdapter(
+                kind="inductor",
+                instance_suffix="L",
+                pins={"P1": "1", "P2": "2"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                evidence_result_path=_EVIDENCE_GENERICS_RESULT,
+                evidence_source_path=_EVIDENCE_GENERICS_SOURCE,
+                evidence_source_sha256=_CAPTURED_GENERICS_SOURCE,
+                value_accessor="inductance",
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=None,
+            ),
+            ComponentAdapter(
+                kind="ferrite_bead",
+                instance_suffix="FB",
+                pins={"P1": "1", "P2": "2"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                evidence_result_path=_EVIDENCE_GENERICS_RESULT,
+                evidence_source_path=_EVIDENCE_GENERICS_SOURCE,
+                evidence_source_sha256=_CAPTURED_GENERICS_SOURCE,
+                value_accessor="impedance",
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=None,
+            ),
+            ComponentAdapter(
+                kind="thermistor",
+                instance_suffix="TH",
+                pins={"P1": "1", "P2": "2"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                evidence_result_path=_EVIDENCE_GENERICS_RESULT,
+                evidence_source_path=_EVIDENCE_GENERICS_SOURCE,
+                evidence_source_sha256=_CAPTURED_GENERICS_SOURCE,
+                value_accessor="resistance",
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=None,
+            ),
+            ComponentAdapter(
+                kind="zener",
+                instance_suffix="D",
+                pins={"A": "A", "K": "K"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                evidence_result_path=_EVIDENCE_GENERICS_RESULT,
+                evidence_source_path=_EVIDENCE_GENERICS_SOURCE,
+                evidence_source_sha256=_CAPTURED_GENERICS_SOURCE,
+                value_accessor="zener_voltage",
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=None,
+            ),
+            ComponentAdapter(
+                kind="rectifier",
+                instance_suffix="D",
+                pins={"A": "A", "K": "K"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                evidence_result_path=_EVIDENCE_GENERICS_RESULT,
+                evidence_source_path=_EVIDENCE_GENERICS_SOURCE,
+                evidence_source_sha256=_CAPTURED_GENERICS_SOURCE,
+                value_accessor="reverse_voltage",
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=None,
+            ),
+            ComponentAdapter(
+                kind="tvs",
+                instance_suffix="D",
+                pins={"A": "A", "K": "K"},
+                verified_pcbc_versions=frozenset({_CAPTURED_PCBC_VERSION}),
+                evidence_sha256=_CAPTURED_GENERICS_EVIDENCE,
+                evidence_result_path=_EVIDENCE_GENERICS_RESULT,
+                evidence_source_path=_EVIDENCE_GENERICS_SOURCE,
+                evidence_source_sha256=_CAPTURED_GENERICS_SOURCE,
+                value_accessor="reverse_standoff_voltage",
+                package_accessor=_PACKAGE_ACCESSOR,
+                pullup_pin_pair=None,
+            ),
+        ]
+    )
+
+
+_GENERATION = 0
+_ADAPTERS: dict[str, ComponentAdapter] = captured_adapter_registry()
+
+
+def evidence_root() -> Path:
+    """Repository-owned evidence root for the captured Diode run.
+
+    Resolved relative to this source file so the bundle travels with the
+    repository and is never read from arbitrary home paths or the current
+    working directory.
+    """
+    from pathlib import Path as _Path
+
+    root = _Path(__file__).resolve().parent.parent.parent
+    return root / "tests" / "evidence" / f"diode-{_CAPTURED_PCBC_VERSION}"
+
+
+def validate_captured_registry(root_override: Path | None = None) -> None:
+    """Fail closed if the captured registry's evidence bundle is incomplete.
+
+    Validates every production adapter against the repository-owned manifest
+    and version record. Raises `EvidenceError` on the first inconsistency.
+    The evidence root is resolved relative to the package by default; a test
+    may pass `root_override` to validate against a temporary bundle.
+    """
+    from .evidence import validate_registry_provenance
+
+    root = root_override if root_override is not None else evidence_root()
+    validate_registry_provenance(
+        captured_adapter_registry(),
+        root,
+        root / "manifest.sha256",
+    )
+
+
+_PROVENANCE_CACHE: tuple[int, tuple[bool, str]] | None = None
+
+
+def _run_provenance_validation() -> None:
+    validate_captured_registry()
+
+
+def _bump_generation() -> None:
+    global _GENERATION
+    _GENERATION += 1
+
+
+def ensure_registry_provenance() -> None:
+    """Validate the active registry snapshot lazily before generated use.
+
+    The verdict is cached against the registry generation. Any mutation of the
+    active registry bumps the generation, so the next validation re-runs
+    instead of trusting a stale verdict. On failure the registry is emptied
+    (fail closed) and a `GeneratorError` is raised so generated gates report
+    `BLOCKED`. Unrelated commands never call this, so `doctor` and `build`
+    keep working even when the evidence bundle is invalid.
+    """
+    global _ADAPTERS, _PROVENANCE_CACHE
+    if _PROVENANCE_CACHE is not None and _PROVENANCE_CACHE[0] == _GENERATION:
+        ok, err = _PROVENANCE_CACHE[1]
+        if ok:
+            return
+        raise GeneratorError(f"captured registry provenance invalid: {err}")
+    try:
+        _run_provenance_validation()
+    except EvidenceError as error:
+        _ADAPTERS = {}
+        _bump_generation()
+        _PROVENANCE_CACHE = (_GENERATION, (False, str(error)))
+        raise GeneratorError(f"captured registry provenance invalid: {error}") from error
+    _PROVENANCE_CACHE = (_GENERATION, (True, ""))
+
+
+def reset_registry_provenance() -> None:
+    """Test hook: restore the captured registry and invalidate the cache."""
+    global _ADAPTERS, _PROVENANCE_CACHE
+    _ADAPTERS = captured_adapter_registry()
+    _PROVENANCE_CACHE = None
+    _bump_generation()
 
 
 def set_adapter_registry(registry: Mapping[str, ComponentAdapter]) -> None:
-    global _ADAPTERS
+    global _ADAPTERS, _PROVENANCE_CACHE
     _ADAPTERS = dict(registry)
+    _PROVENANCE_CACHE = None
+    _bump_generation()
+
+
+@contextlib.contextmanager
+def temporary_test_registry(registry: Mapping[str, ComponentAdapter]):
+    """Swap in a test registry and restore the previous snapshot on exit."""
+    previous = dict(_ADAPTERS)
+    set_adapter_registry(registry)
+    try:
+        yield
+    finally:
+        set_adapter_registry(previous)
 
 
 def known_kinds() -> frozenset[str]:
@@ -99,18 +357,7 @@ def _module_path_from_generated_test(source: str) -> str:
         source_path.as_posix(),
         GENERATED_TEST_DIRECTORY.as_posix(),
     )
-    if relative.startswith("/"):
-        raise GeneratorError("source path must resolve within workspace")
     return relative
-
-
-def _check_connector_ref(ref: str, members: Iterable[str]) -> None:
-    for member in members:
-        if not isinstance(member, str) or "." not in member:
-            raise GeneratorError(f"invalid pin member: {member!r}")
-        head, _, _ = member.partition(".")
-        if head != ref:
-            raise GeneratorError(f"member {member!r} does not match ref {ref}")
 
 
 def _supported_connectivity_fields() -> dict[str, frozenset[str]]:
@@ -182,6 +429,12 @@ def _validate_connectivity_shape(connectivity: Mapping[str, Any]) -> None:
                     f"net {net_name} member {member} references unknown component"
                 )
 
+    unexpected_rules = set(rules) - supported["rules"]
+    if unexpected_rules:
+        raise GeneratorError(
+            f"rules declares unsupported fields: {sorted(unexpected_rules)}"
+        )
+
     power_nets = rules.get("required_power_nets", [])
     if power_nets:
         if not isinstance(power_nets, list):
@@ -193,36 +446,66 @@ def _validate_connectivity_shape(connectivity: Mapping[str, Any]) -> None:
                 )
 
 
-def _check_required_pullup(net_name: str, definition: Mapping[str, Any]) -> str:
+def _check_required_pullup(
+    net_name: str,
+    definition: Mapping[str, Any],
+    components: Mapping[str, Any],
+    pcbc_version: str,
+    bench_name: str,
+    case_name: str,
+) -> str:
     pullup = definition.get("required_pullup")
     if not isinstance(pullup, dict):
         return ""
     component = pullup.get("component")
     rail = pullup.get("rail")
-    if not isinstance(component, str) or component not in _ADAPTERS:
+
+    comp_def = components.get(component) if isinstance(component, str) else None
+    if not isinstance(comp_def, dict):
         raise GeneratorError(
             f"net {net_name} required_pullup references unknown component {component}"
         )
+    kind = comp_def.get("kind")
+    if not isinstance(kind, str):
+        raise GeneratorError(f"component {component} missing kind")
+
+    adapter = adapter_for(kind, pcbc_version)
+    if adapter.pullup_pin_pair is None:
+        raise GeneratorError(f"adapter for {kind} lacks verified pullup_pin_pair")
+
     if not isinstance(rail, str) or not rail:
         raise GeneratorError(
             f"net {net_name} required_pullup rail must be string"
         )
+
+    pin_a, pin_b = adapter.pullup_pin_pair
+    diode_pin_a = adapter.pins.get(pin_a)
+    diode_pin_b = adapter.pins.get(pin_b)
+    if not diode_pin_a or not diode_pin_b:
+        raise GeneratorError(f"adapter for {kind} missing pullup pins")
+
+    diode_ref = f"{bench_name}__{case_name}.{component}.{adapter.instance_suffix}"
+
+    # Assert that one pin is on the signal net (we don't know which one, but exactly one)
+    # and the OTHER pin is on the rail net.
     return (
-        f"    pullup_component = {_zener_string(component)}\n"
-        f"    pullup_rail = {_zener_string(rail)}\n"
-        f"    component_present = pullup_component in components\n"
-        f"    check(component_present, {_zener_string(f'net {net_name} pullup component missing')})\n"
-        f"    rail_present = pullup_rail in nets\n"
-        f"    check(rail_present, {_zener_string(f'net {net_name} pullup rail missing')})\n"
+        f"    pin_a_on_signal = ({_zener_string(diode_ref)}, {_zener_string(diode_pin_a)}) in nets.get({_zener_string(net_name)}, [])\n"
+        f"    pin_b_on_signal = ({_zener_string(diode_ref)}, {_zener_string(diode_pin_b)}) in nets.get({_zener_string(net_name)}, [])\n"
+        f"    check(pin_a_on_signal != pin_b_on_signal, {_zener_string(f'net {net_name} must contain exactly one pullup pin from {component}')})\n"
+        f"    if pin_a_on_signal:\n"
+        f"        check(({_zener_string(diode_ref)}, {_zener_string(diode_pin_b)}) in nets.get({_zener_string(rail)}, []), {_zener_string(f'{component} must pull up to {rail}')})\n"
+        f"    else:\n"
+        f"        check(({_zener_string(diode_ref)}, {_zener_string(diode_pin_a)}) in nets.get({_zener_string(rail)}, []), {_zener_string(f'{component} must pull up to {rail}')})\n"
     )
 
 
 def render_connectivity_testbench(
     project: ProjectState,
+    pcbc_version: str,
     bench_name: str = "PcbAgentConnectivity",
     case_name: str = "contract",
-    pcbc_version: str = "unknown",
 ) -> str:
+    ensure_registry_provenance()
     bench_name = validate_identifier(bench_name, "bench_name")
     case_name = validate_identifier(case_name, "case_name")
 
@@ -243,12 +526,10 @@ def render_connectivity_testbench(
 
     for comp_ref, comp_def in components.items():
         adapter = adapter_for(comp_def["kind"], pcbc_version)
-        diode_ref = (
-            f"{bench_name}__{case_name}.{comp_ref}.{adapter.instance_suffix}"
-        )
+        component_ref = f"{comp_ref}.{adapter.instance_suffix}"
         lines.append(
-            f"    check({_zener_string(diode_ref)} in components, "
-            f"{_zener_string(f'missing component {diode_ref}')})"
+            f"    check({_zener_string(component_ref)} in components, "
+            f"{_zener_string(f'missing component {component_ref}')})"
         )
 
     expected_net_names: list[str] = []
@@ -278,7 +559,7 @@ def render_connectivity_testbench(
                 f"{_zener_string(f'net {net_name} has unlisted members')})"
             )
 
-        lines.append(_check_required_pullup(net_name, definition))
+        lines.append(_check_required_pullup(net_name, definition, components, pcbc_version, bench_name, case_name))
 
     if rules.get("forbid_unlisted_members"):
         names_literal = ", ".join(_zener_string(n) for n in expected_net_names)
@@ -312,10 +593,11 @@ def render_connectivity_testbench(
 
 def render_specification_testbench(
     project: ProjectState,
+    pcbc_version: str,
     bench_name: str = "PcbAgentSpecification",
     case_name: str = "contract",
-    pcbc_version: str = "unknown",
 ) -> str:
+    ensure_registry_provenance()
     bench_name = validate_identifier(bench_name, "bench_name")
     case_name = validate_identifier(case_name, "case_name")
 
@@ -338,7 +620,9 @@ def render_specification_testbench(
         "    components = module.components()",
     ]
 
-    unsupported_constraint_seen = False
+    components_with_assertions: set[str] = set()
+    expected_constraints = 0
+    asserted_constraints = 0
     for requirement in requirements:
         if not isinstance(requirement, dict):
             continue
@@ -347,12 +631,31 @@ def render_specification_testbench(
             continue
         rtype = requirement.get("type")
         subject = requirement.get("subject")
-        constraints = requirement.get("constraints")
+        constraints = dict(requirement.get("constraints", {}))
 
         if rtype == "connectivity":
+            unexpected = set(constraints) - _CONNECTIVITY_REQUIREMENT_CONSTRAINTS
+            if unexpected:
+                raise GeneratorError(
+                    f"requirement {rid} of type connectivity declares "
+                    f"unsupported constraints: {sorted(unexpected)}"
+                )
             continue
 
-        if not isinstance(constraints, dict) or not constraints:
+        comp = components.get(subject) if isinstance(subject, str) else None
+        if isinstance(comp, dict):
+            # Transfer constraints from connectivity if present
+            for field in ("value", "package", "mpn"):
+                if field in comp:
+                    if field not in constraints:
+                        constraints[field] = comp[field]
+                    elif str(constraints[field]) != str(comp[field]):
+                        raise GeneratorError(
+                            f"requirement {rid} constraint {field}={constraints[field]!r} "
+                            f"conflicts with connectivity field={comp[field]!r}"
+                        )
+
+        if not constraints:
             continue
 
         kinds = check_kinds.get(rid, [])
@@ -377,34 +680,63 @@ def render_specification_testbench(
             raise GeneratorError(f"subject {subject} in {rid} is missing kind")
 
         adapter = adapter_for(kind, pcbc_version)
-        diode_ref = f"{bench_name}__{case_name}.{subject}.{adapter.instance_suffix}"
-        lines.append(
-            f"    check({_zener_string(diode_ref)} in components, "
-            f"{_zener_string(f'missing component {diode_ref}')})"
-        )
+        component_ref = f"{subject}.{adapter.instance_suffix}"
+        if subject not in components_with_assertions:
+            lines.append(
+                f"    check({_zener_string(component_ref)} in components, "
+                f"{_zener_string(f'missing component {component_ref}')})"
+            )
+            components_with_assertions.add(subject)
 
         for key, expected_value in constraints.items():
+            expected_constraints += 1
             if key == "value":
+                if adapter.value_accessor is None:
+                    raise GeneratorError(f"adapter for {kind} has no verified value accessor")
                 lines.append(
                     "    check(components["
-                    f"{_zener_string(diode_ref)}"
-                    "].resistance.matches("
+                    f"{_zener_string(component_ref)}"
+                    f"].{adapter.value_accessor}.matches("
                     f"{_zener_string(str(expected_value))}"
                     f"), {_zener_string(f'wrong value for {subject}')})"
                 )
+                asserted_constraints += 1
             elif key == "package":
+                if adapter.package_accessor is None:
+                    raise GeneratorError(f"adapter for {kind} has no verified package accessor")
                 lines.append(
                     "    check(components["
-                    f"{_zener_string(diode_ref)}"
-                    "].properties['package'].value == "
+                    f"{_zener_string(component_ref)}"
+                    f"].{adapter.package_accessor}.value == "
                     f"{_zener_string(str(expected_value))}, "
                     f"{_zener_string(f'wrong package for {subject}')})"
                 )
+                asserted_constraints += 1
+            elif key == "mpn":
+                raise GeneratorError(
+                    f"mpn assertion is unsupported for {kind}; "
+                    f"no verified accessor has been captured"
+                )
             else:
-                unsupported_constraint_seen = True
                 raise GeneratorError(
                     f"unsupported constraint {key} in {rid}"
                 )
+
+    for comp_ref, comp_def in components.items():
+        if comp_ref in components_with_assertions:
+            continue
+        unasserted_props = {k: v for k, v in comp_def.items() if k in ("value", "package", "mpn")}
+        if unasserted_props:
+            raise GeneratorError(
+                f"component {comp_ref} declares properties {list(unasserted_props.keys())} "
+                f"but has no specification requirement covering it"
+            )
+
+    if asserted_constraints != expected_constraints:
+        raise GeneratorError(
+            f"generated {expected_constraints} constraints but only "
+            f"{asserted_constraints} assertions; refusing incomplete evidence"
+        )
 
     if not lines[3:]:
         raise GeneratorError("specification produced no assertions")

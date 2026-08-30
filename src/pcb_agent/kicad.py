@@ -48,7 +48,11 @@ def drc(project: ProjectState, run: RunState) -> ProcessResult:
     return result
 
 
-def result_check(result: ProcessResult, artifact: Path | None = None) -> Check:
+def result_check(
+    result: ProcessResult,
+    artifact: Path | None = None,
+    evidence_root: Path | None = None,
+) -> Check:
     if result.timed_out:
         status, message = CheckStatus.BLOCKED, "KiCad DRC timed out"
     elif result.returncode == 0:
@@ -61,6 +65,27 @@ def result_check(result: ProcessResult, artifact: Path | None = None) -> Check:
         status, message = CheckStatus.BLOCKED, f"KiCad DRC could not complete ({result.returncode})"
     evidence = {}
     if artifact is not None and artifact.is_file():
-        evidence = {"path": str(artifact), "sha256": "sha256:" + hashlib.sha256(artifact.read_bytes()).hexdigest()}
+        digest = "sha256:" + hashlib.sha256(artifact.read_bytes()).hexdigest()
+        if evidence_root is not None:
+            from .paths import PathViolation, relative_evidence_path
+
+            try:
+                artifact_path = relative_evidence_path(artifact, evidence_root)
+            except (PathViolation, OSError):
+                return Check(
+                    "KICAD_DRC",
+                    CheckStatus.BLOCKED,
+                    Severity.ERROR,
+                    "KiCad DRC artifact escapes evidence root",
+                    "tool",
+                    result.argv,
+                    result.returncode,
+                    result.duration_seconds,
+                    {},
+                    True,
+                )
+        else:
+            artifact_path = artifact.name
+        evidence = {"path": artifact_path, "sha256": digest}
     return Check("KICAD_DRC", status, Severity.ERROR, message, "tool", result.argv,
                  result.returncode, result.duration_seconds, evidence, True)

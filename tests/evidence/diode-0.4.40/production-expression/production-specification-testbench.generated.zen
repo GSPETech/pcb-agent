@@ -1,0 +1,36 @@
+M = Module("../src/board.zen")
+def _check_specification(module, inputs):
+    components = module.components()
+    check("R1.R" in components, "missing component R1.R")
+    check(components["R1.R"].resistance.matches("1kohm"), "wrong value for R1")
+    check(components["R1.R"].properties['package'].value == "0402", "wrong package for R1")
+    check("D1.LED" in components, "missing component D1.LED")
+    check(components["D1.LED"].properties['package'].value == "0402", "wrong package for D1")
+    check("C1.C" in components, "missing component C1.C")
+    check(components["C1.C"].capacitance.matches("100nF"), "wrong value for C1")
+    check(components["C1.C"].properties['package'].value == "0402", "wrong package for C1")
+    check("L1.L" in components, "missing component L1.L")
+    check(components["L1.L"].inductance.matches("10uH"), "wrong value for L1")
+    check(components["L1.L"].properties['package'].value == "0402", "wrong package for L1")
+    check("FB1.FB" in components, "missing component FB1.FB")
+    check(components["FB1.FB"].impedance.matches("220ohm"), "wrong value for FB1")
+    check(components["FB1.FB"].properties['package'].value == "0402", "wrong package for FB1")
+    check("TH1.TH" in components, "missing component TH1.TH")
+    check(components["TH1.TH"].resistance.matches("10kohm"), "wrong value for TH1")
+    check(components["TH1.TH"].properties['package'].value == "0402", "wrong package for TH1")
+    check("DZ1.D" in components, "missing component DZ1.D")
+    check(components["DZ1.D"].zener_voltage.matches("3.3V"), "wrong value for DZ1")
+    check(components["DZ1.D"].properties['package'].value == "SOD-123", "wrong package for DZ1")
+    check("D2.D" in components, "missing component D2.D")
+    check(components["D2.D"].reverse_voltage.matches("40V"), "wrong value for D2")
+    check(components["D2.D"].properties['package'].value == "SOD-123", "wrong package for D2")
+    check("D3.D" in components, "missing component D3.D")
+    check(components["D3.D"].reverse_standoff_voltage.matches("5V"), "wrong value for D3")
+    check(components["D3.D"].properties['package'].value == "DO-219AB", "wrong package for D3")
+
+TestBench(
+    name="PcbAgentSpecification",
+    module=M,
+    test_cases={"contract": {}},
+    checks=[_check_specification],
+)

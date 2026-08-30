@@ -1,0 +1,9 @@
+{
+  "schema_version": "1",
+  "checks": [
+    {"id": "ACC-001", "requirement": "REQ-001", "kind": "zener_test", "expected": "PASS", "test": "BlinkyTest.component_value"},
+    {"id": "ACC-002", "requirement": "REQ-002", "kind": "zener_test", "expected": "PASS", "test": "BlinkyTest.connectivity"}
+  ],
+  "production_ready": false,
+  "fabrication_approved": false
+}
