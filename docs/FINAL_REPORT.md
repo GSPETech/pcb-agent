@@ -29,12 +29,17 @@ attestation, reach green CI, and document the verified end state.
 | **A1 (attestations)** | `5001b1ea48d4ba21bdee79f10b1992340928202c` | `test: retain final post-evidence verification attestations` — 7 verification transcripts, 148‑entry primary manifest, external `manifest-attestation.json` |
 | **D1 (docs)** | `fdb065381f35e67d93471dce76c491b14a62b8b8` | `docs: finalize verified spike remediation state` |
 | **D2 (docs)** | `158c9077ed295584fe0e42fd88d150cf22f4e86c` | `docs: correct final spike audit wording` |
+| **D3 (docs)** | `f322060c2e9b2ec91448b5a49495d74b6973e9a1` | `docs: reconcile final spike reports at D2` |
 
 The capture was executed from WSL2 Ubuntu‑24.04 (ext4) with the real
 `pcbc 0.4.40` at `/home/rendra/.local/bin/pcb`, from a fully clean tree at
-revision `1373b0d`. At D2, local HEAD, remote branch HEAD, and PR head were
-equal at `158c9077ed295584fe0e42fd88d150cf22f4e86c` (verified via `git
+revision `1373b0d`. At D3, local HEAD, remote branch HEAD, and PR head were
+equal at `f322060c2e9b2ec91448b5a49495d74b6973e9a1` (verified via `git
 rev-parse` and `gh pr view 5 --json headRefOid`).
+
+The documentation tree may advance by the commit containing this statement;
+verify the current immutable documentation head with `git rev-parse HEAD`;
+D3 is the last explicitly named predecessor.
 
 ---
 
@@ -77,9 +82,8 @@ rev-parse` and `gh pr view 5 --json headRefOid`).
 
 The exact counts below are backed by retained transcripts (headers record
 command argv, cwd, timestamp, revision, exit code, platform) for the E1-time
-runs. Where no retained transcript exists (local A1/D1-tree runs), no exact
-local count is stated; the green status there is backed by the CI test
-matrix.
+runs. The A1/D1/D2/D3 green state is backed by CI. No exact local
+A1/D1/D2/D3 counts are claimed without retained transcripts.
 
 ### pytest (full suite, `python -m pytest tests/ -v`)
 
@@ -87,8 +91,8 @@ matrix.
 |---|---|
 | Windows, against E1 (retained `verification/windows-pytest.txt`, exit 1) | 269 passed, 3 failed, 18 skipped — the 3 failures are exactly the attestation bootstrap subtests asserting the `verification/*` files that A1 adds |
 | WSL2 ext4, against E1 (retained `verification/wsl-pytest.txt`, exit 1) | 285 passed, 3 failed, 2 skipped — same bootstrap subtests |
-| Windows/WSL, A1 and D1 trees (local) | no retained local transcripts — exact local counts deliberately not stated |
-| **CI at A1 and D1** (Ubuntu 3.11/3.13, Windows 3.11/3.13) | **all green** |
+| Windows/WSL, A1/D1/D2/D3 trees (local) | no retained local transcripts — no exact local counts claimed |
+| **CI at A1/D1/D2/D3** (Ubuntu 3.11/3.13, Windows 3.11/3.13) | **all green** |
 
 ### Pyright (`python -m pyright`, Pyright 1.1.411)
 
@@ -116,8 +120,8 @@ exists.
 
 - `git diff --check`: clean at every commit.
 - `git status --short`: clean (only untracked `docs/FINAL_REPORT.md` before D1).
-- At D2, local HEAD, remote branch HEAD, and PR #5 head were equal at
-  `158c9077ed295584fe0e42fd88d150cf22f4e86c`.
+- At D3, local HEAD, remote branch HEAD, and PR #5 head were equal at
+  `f322060c2e9b2ec91448b5a49495d74b6973e9a1`.
 
 ---
 
@@ -135,9 +139,9 @@ exists.
   report; `human_review_required` is `true`.
 - The E1‑time pytest transcripts record the expected attestation bootstrap
   failures (exit 1); they are superseded by the green CI test matrix and are
-  retained as the exact record of the E1 state. Exact local A1/D1‑tree pytest
-  counts are not stated because no local transcripts were retained for those
-  trees.
+  retained as the exact record of the E1 state. No exact local A1/D1/D2/D3
+  pytest counts are claimed because no local transcripts were retained for
+  those trees.
 - Green‑real exercises six buildable kinds: resistor, led, capacitor,
   inductor, ferrite_bead, tvs. Thermistor, zener, and rectifier
   package/value behavior is proven through `production-expression` evidence

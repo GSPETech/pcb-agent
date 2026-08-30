@@ -58,7 +58,8 @@ fabrication approval.
 | A1 attestations commit | `5001b1ea48d4ba21bdee79f10b1992340928202c` |
 | D1 docs commit | `fdb065381f35e67d93471dce76c491b14a62b8b8` |
 | D2 docs commit | `158c9077ed295584fe0e42fd88d150cf22f4e86c` |
-| Local/remote/PR head | At D2, local HEAD, remote branch HEAD, and PR head were equal at `158c9077ed295584fe0e42fd88d150cf22f4e86c` (verified via `git rev-parse` + `gh pr view 5 --json headRefOid`) |
+| D3 docs commit | `f322060c2e9b2ec91448b5a49495d74b6973e9a1` (`docs: reconcile final spike reports at D2`) |
+| Local/remote/PR head | At D3, local HEAD, remote branch HEAD, and PR head were equal at `f322060c2e9b2ec91448b5a49495d74b6973e9a1` (verified via `git rev-parse` + `gh pr view 5 --json headRefOid`) |
 | Primary manifest entry count | 148 (143 primary evidence + 5 ordinary verification transcripts) |
 | Primary manifest SHA-256 | `5a22245ff49e72cb7a8ca72a67793f7cb367b463707ddab7e576883e2fa6728e` |
 | External attestation files | 3 (`manifest-attestation.json`, `verification/windows-manifest.txt`, `verification/wsl-manifest.txt`) |
@@ -71,6 +72,10 @@ recomputation reproduces the 148-entry manifest byte-for-byte on the second
 platform; that recomputation is a verification step, not a separately
 retained transcript.
 
+The documentation tree may advance by the commit containing this statement;
+verify the current immutable documentation head with `git rev-parse HEAD`;
+D3 is the last explicitly named predecessor.
+
 ## Docs status reconciliation
 
 `docs/report-spike-execution.md` and `docs/spike-diode-net-naming.md` cover the
@@ -79,7 +84,8 @@ inventory). `docs/report-spike-remediation.md` and this handoff cover the
 provenance completion, which is now `COMPLETE` (task 11 done): the evidence
 bundle was recaptured from the `1373b0d` barrier (E1 `0a7b0e2`), verification
 transcripts and the external attestation were retained (A1 `5001b1e`), and CI
-is green.
+is green for A1/D1/D2/D3 (no exact local A1/D1/D2/D3 counts are claimed
+without retained transcripts).
 
 ## Completed
 
@@ -295,6 +301,7 @@ separately from evidence/docs commits. Correct all docs and PR body. Run:
 ## Commits (newest first, final cycle highlighted)
 
 ```
+f322060c2e9b2ec91448b5a49495d74b6973e9a1 docs: reconcile final spike reports at D2               (D3)
 158c9077ed295584fe0e42fd88d150cf22f4e86c docs: correct final spike audit wording                (D2)
 fdb065381f35e67d93471dce76c491b14a62b8b8 docs: finalize verified spike remediation state (D1)
 5001b1e test: retain final post-evidence verification attestations            (A1)

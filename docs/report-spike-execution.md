@@ -116,7 +116,8 @@ crystal remains `BLOCKED / REQUIRES IMPLEMENTATION`.
 
 - E1 retained Windows transcript: 269 passed, 3 failed, 18 skipped
 - E1 retained WSL transcript: 285 passed, 3 failed, 2 skipped
-- A1/D1/D2 green state: backed by CI, no exact local counts claimed
+- A1/D1/D2/D3 green state: backed by CI, no exact local A1/D1/D2/D3 counts
+  claimed without retained transcripts
 - pyright: 0 errors (Pyright 1.1.411, Windows + WSL)
 - `sha256sum -c manifest.sha256`: 148/148 OK on Windows and WSL
 - Real toolchain (pcbc 0.4.40): `fixtures/green-real` → all required gates PASS;

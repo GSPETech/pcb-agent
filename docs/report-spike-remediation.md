@@ -94,6 +94,12 @@ Final recapture cycle (provenance completion, this report set to `COMPLETE`):
 - D1 (`fdb065381f35e67d93471dce76c491b14a62b8b8`): docs finalized.
 - D2 (`158c9077ed295584fe0e42fd88d150cf22f4e86c`): `docs: correct final
   spike audit wording`.
+- D3 (`f322060c2e9b2ec91448b5a49495d74b6973e9a1`): `docs: reconcile final
+  spike reports at D2`.
+
+The documentation tree may advance by the commit containing this statement;
+verify the current immutable documentation head with `git rev-parse HEAD`;
+D3 is the last explicitly named predecessor.
 
 ## Evidence inventory
 
@@ -136,7 +142,9 @@ documented but not registered, and crystal contracts fail closed with
 
 The exact counts below are backed by retained transcripts under
 `tests/evidence/diode-0.4.40/verification/` for the E1-time runs, and by the
-CI test matrix for the D1 green status. The pytest transcripts record the
+CI test matrix for the A1/D1/D2/D3 green state. No exact local
+A1/D1/D2/D3 counts are claimed without retained transcripts. The pytest
+transcripts record the
 exact run against the immutable evidence commit E1
 (`0a7b0e2`); at that revision the only failures are the attestation bootstrap
 subtests asserting the `verification/*` files that A1 adds. They are
@@ -147,8 +155,9 @@ are not stated (no local transcripts were retained for those trees):
   269 passed, 3 failed, 18 skipped
 - WSL pytest at E1 (retained `verification/wsl-pytest.txt`, exit 1): 285
   passed, 3 failed, 2 skipped
-- A1/D1 trees: green status proven by the CI test matrix below (no retained
-  local transcripts, so no exact local counts are claimed)
+- A1/D1/D2/D3 trees: green state backed by the CI test matrix below (no
+  retained local transcripts, so no exact local A1/D1/D2/D3 counts are
+  claimed)
 - pyright (Pyright 1.1.411): 0 errors, 0 warnings, 0 informations on Windows
   (`verification/pyright.txt` = `verification/windows-pyright.txt`) and WSL
   (`verification/wsl-pyright.txt`)
@@ -187,6 +196,6 @@ are not stated (no local transcripts were retained for those trees):
   are proven via the `production-expression` run instead.
 - The retained E1-time pytest transcripts honestly record exit 1: at that
   revision the attestation bootstrap subtests assert the `verification/*`
-  files that A1 adds. Exact local A1/D1-tree pytest counts are not stated
-  (no local transcripts were retained for those trees); the D1 CI test
-  matrix is all green.
+  files that A1 adds. No exact local A1/D1/D2/D3 pytest counts are claimed
+  (no local transcripts were retained for those trees); the A1/D1/D2/D3 CI
+  test matrix is all green.
