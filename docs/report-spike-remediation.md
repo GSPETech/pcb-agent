@@ -92,12 +92,17 @@ Final recapture cycle (provenance completion, this report set to `COMPLETE`):
 - `5001b1e` (A1): Windows/WSL verification transcripts, 148-entry primary
   manifest, external `manifest-attestation.json`.
 - D1 (`fdb065381f35e67d93471dce76c491b14a62b8b8`): docs finalized.
+- D2 (`158c9077ed295584fe0e42fd88d150cf22f4e86c`): `docs: correct final
+  spike audit wording`.
 
 ## Evidence inventory
 
 All under `tests/evidence/diode-0.4.40/` (primary manifest: **148 entries**,
-`sha256sum -c` 148/148 OK on both Windows and WSL; the three self-attesting
-files below the manifest are verified by `manifest-attestation.json`):
+`sha256sum -c` 148/148 OK on both Windows and WSL). The three
+external-to-primary-manifest attestation artifacts are outside the primary
+manifest: `manifest-attestation.json` attests the primary manifest digest
+and both manifest transcript digests, does not attest itself, and its own
+SHA-256 is reported externally in `docs/FINAL_REPORT.md` and the PR body.
 
 - `environment.txt` — pwd, git commit, uname, /etc/os-release, findmnt (ext4), `command -v pcb`
 - `pcb-version.txt` — exact `pcbc 0.4.40`

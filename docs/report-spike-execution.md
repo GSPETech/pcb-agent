@@ -114,10 +114,9 @@ crystal remains `BLOCKED / REQUIRES IMPLEMENTATION`.
 
 ## Verification
 
-- Windows pytest at E1 (retained transcript, exit 1): 269 passed, 3 failed,
-  18 skipped; at the A1 tree (local) 271 passed, 16 skipped, exit 0
-- WSL pytest at E1 (retained transcript, exit 1): 285 passed, 3 failed,
-  2 skipped; at the A1 tree (local, ext4) 287 passed, exit 0
+- E1 retained Windows transcript: 269 passed, 3 failed, 18 skipped
+- E1 retained WSL transcript: 285 passed, 3 failed, 2 skipped
+- A1/D1/D2 green state: backed by CI, no exact local counts claimed
 - pyright: 0 errors (Pyright 1.1.411, Windows + WSL)
 - `sha256sum -c manifest.sha256`: 148/148 OK on Windows and WSL
 - Real toolchain (pcbc 0.4.40): `fixtures/green-real` → all required gates PASS;

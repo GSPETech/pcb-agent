@@ -28,12 +28,13 @@ attestation, reach green CI, and document the verified end state.
 | **E1 (evidence)** | `0a7b0e28d50467cab575e13f2d698e95451fa3e1` | `test: recapture final spike evidence from revision 1373b0d` — 8 runs, 143‑entry primary manifest, no verification/attestation files |
 | **A1 (attestations)** | `5001b1ea48d4ba21bdee79f10b1992340928202c` | `test: retain final post-evidence verification attestations` — 7 verification transcripts, 148‑entry primary manifest, external `manifest-attestation.json` |
 | **D1 (docs)** | `fdb065381f35e67d93471dce76c491b14a62b8b8` | `docs: finalize verified spike remediation state` |
+| **D2 (docs)** | `158c9077ed295584fe0e42fd88d150cf22f4e86c` | `docs: correct final spike audit wording` |
 
 The capture was executed from WSL2 Ubuntu‑24.04 (ext4) with the real
 `pcbc 0.4.40` at `/home/rendra/.local/bin/pcb`, from a fully clean tree at
-revision `1373b0d`. The final local HEAD, remote branch HEAD, and PR head
-were equal at D1 (verified via `git rev-parse` and `gh pr view 5 --json
-headRefOid`).
+revision `1373b0d`. At D2, local HEAD, remote branch HEAD, and PR head were
+equal at `158c9077ed295584fe0e42fd88d150cf22f4e86c` (verified via `git
+rev-parse` and `gh pr view 5 --json headRefOid`).
 
 ---
 
@@ -115,7 +116,8 @@ exists.
 
 - `git diff --check`: clean at every commit.
 - `git status --short`: clean (only untracked `docs/FINAL_REPORT.md` before D1).
-- Local HEAD = remote HEAD = PR #5 head at A1 and at D1.
+- At D2, local HEAD, remote branch HEAD, and PR #5 head were equal at
+  `158c9077ed295584fe0e42fd88d150cf22f4e86c`.
 
 ---
 

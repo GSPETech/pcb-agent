@@ -57,7 +57,8 @@ fabrication approval.
 | E1 evidence commit | `0a7b0e28d50467cab575e13f2d698e95451fa3e1` |
 | A1 attestations commit | `5001b1ea48d4ba21bdee79f10b1992340928202c` |
 | D1 docs commit | `fdb065381f35e67d93471dce76c491b14a62b8b8` |
-| Local/remote/PR head | final local HEAD, remote branch HEAD, and PR head were equal at D1 (verified via `git rev-parse` + `gh pr view 5 --json headRefOid`) |
+| D2 docs commit | `158c9077ed295584fe0e42fd88d150cf22f4e86c` |
+| Local/remote/PR head | At D2, local HEAD, remote branch HEAD, and PR head were equal at `158c9077ed295584fe0e42fd88d150cf22f4e86c` (verified via `git rev-parse` + `gh pr view 5 --json headRefOid`) |
 | Primary manifest entry count | 148 (143 primary evidence + 5 ordinary verification transcripts) |
 | Primary manifest SHA-256 | `5a22245ff49e72cb7a8ca72a67793f7cb367b463707ddab7e576883e2fa6728e` |
 | External attestation files | 3 (`manifest-attestation.json`, `verification/windows-manifest.txt`, `verification/wsl-manifest.txt`) |
@@ -284,7 +285,8 @@ separately from evidence/docs commits. Correct all docs and PR body. Run:
 - Local toolchain: Python 3.13.2, pytest 9.0.2; pyproject `pythonpath=["src"]`;
   pyright `include=["src"]`, typeCheckingMode standard.
 - Manifest rebuild (WSL, ext4) — the implemented exclusion model keeps the
-  three self-attesting files out of the primary manifest:
+  three external-to-primary-manifest attestation artifacts out of the
+  primary manifest:
   `cd tests/evidence/diode-0.4.40 && find . -type f ! -name manifest.sha256 ! -name manifest-attestation.json ! -name windows-manifest.txt ! -name wsl-manifest.txt -print0 | sort -z | xargs -0 sha256sum > manifest.sha256 && sha256sum -c manifest.sha256`
 - Final verification: `python -m pytest tests/ -v`, `python -m pyright`,
   `git diff --check`, `git status --short`, `gh pr checks 5` on both Windows and
@@ -293,6 +295,7 @@ separately from evidence/docs commits. Correct all docs and PR body. Run:
 ## Commits (newest first, final cycle highlighted)
 
 ```
+158c9077ed295584fe0e42fd88d150cf22f4e86c docs: correct final spike audit wording                (D2)
 fdb065381f35e67d93471dce76c491b14a62b8b8 docs: finalize verified spike remediation state (D1)
 5001b1e test: retain final post-evidence verification attestations            (A1)
 0a7b0e2 test: recapture final spike evidence from revision 1373b0d           (E1)
