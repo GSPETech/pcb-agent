@@ -1,6 +1,6 @@
 # Diode Net-Naming Spike — Execution Report
 
-Date: 2026-08-29
+Date: 2026-08-29 (finalized 2026-08-30)
 Branch: `feat/diode-adapter-registry`
 PR: https://github.com/GSPETech/pcb-agent/pull/5
 Status: `COMPLETE`
@@ -10,11 +10,11 @@ artifacts under `tests/evidence/diode-0.4.40/` (`manifest.sha256` passes
 `sha256sum -c`), and the production adapter registry is validated lazily
 against that bundle on the first generated TestBench use.
 
-The evidence bundle was re-captured from a clean tracked commit (`ff1b472`) on
-WSL2 ext4 against the real `pcbc 0.4.40` toolchain; the executed revision and
-clean `git status` are recorded per run in `capture-provenance.json`,
-`commands.json`, and each run directory's `run-provenance.json`. See
-`docs/report-spike-remediation.md`.
+The evidence bundle was re-captured from a clean tracked commit
+(`1373b0d`, the final capture barrier) on WSL2 ext4 against the real `pcbc
+0.4.40` toolchain; the executed revision and clean `git status` are recorded
+per run in `capture-provenance.json`, `commands.json`, and each run directory's
+`run-provenance.json`. See `docs/report-spike-remediation.md`.
 
 ## Task
 
@@ -43,7 +43,8 @@ unblock automatic TestBench generation.
 5. Confirmed the prefix hypothesis `{TestBenchName}__{case_key}.` by varying
    both values; retained as `prefix/prefix-renamed-alt-case.json`.
 6. Captured all evidence under `tests/evidence/diode-0.4.40/` with a
-   `manifest.sha256` (144 artifacts, all hashes verify on Windows and WSL).
+   `manifest.sha256` (primary manifest, 148 entries; all hashes verify on
+   Windows and WSL).
 7. Built the production adapter registry (`captured_adapter_registry()`) from
    the captured evidence, with exact result/source path + digest bindings.
 8. Ran `pcb-agent verify` end-to-end against the real toolchain:
@@ -108,14 +109,17 @@ crystal remains `BLOCKED / REQUIRES IMPLEMENTATION`.
   `negative-invalid-value/`: verify reports + run dirs + raw artifacts
 - `verification/`: retained Windows/WSL pytest, pyright, and manifest transcripts
 - `.sanitized.json` companions for publication (path fields only rewritten)
-- `manifest.sha256`: 144 artifacts, all hashes verified
+- `manifest.sha256`: primary manifest, 148 entries, all hashes verified
+- `manifest-attestation.json`: external attestation (outside the primary manifest)
 
 ## Verification
 
-- Windows pytest: 249 passed, 14 skipped, 395 subtests passed
-- WSL pytest: 263 passed, 404 subtests passed
-- pyright: 0 errors
-- `sha256sum -c manifest.sha256`: all OK
+- Windows pytest at E1 (retained transcript, exit 1): 269 passed, 3 failed,
+  18 skipped; at the A1 tree (local) 271 passed, 16 skipped, exit 0
+- WSL pytest at E1 (retained transcript, exit 1): 285 passed, 3 failed,
+  2 skipped; at the A1 tree (local, ext4) 287 passed, exit 0
+- pyright: 0 errors (Pyright 1.1.411, Windows + WSL)
+- `sha256sum -c manifest.sha256`: 148/148 OK on Windows and WSL
 - Real toolchain (pcbc 0.4.40): `fixtures/green-real` → all required gates PASS;
   invalid-syntax/invalid-connectivity/invalid-value → BLOCKED fail-closed with
   retained reports

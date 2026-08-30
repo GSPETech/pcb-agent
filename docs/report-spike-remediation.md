@@ -1,9 +1,9 @@
 # Spike Evidence Remediation — Execution Report
 
-Date: 2026-08-29
+Date: 2026-08-29 (finalized 2026-08-30)
 Branch: `feat/diode-adapter-registry`
 PR: https://github.com/GSPETech/pcb-agent/pull/5
-Status: `PARTIAL — artifact integrity complete, per-run provenance enforcement pending`
+Status: `COMPLETE — artifact integrity and per-run provenance enforcement verified; evidence recaptured from the 1373b0d barrier, attestations retained, CI green`
 
 This report documents the remediation of every evidence and provenance finding
 from the final review of the Diode net-naming spike, as specified in
@@ -15,11 +15,13 @@ The prior spike evidence bundle was incomplete: it hashed only three result
 JSONs, referenced missing artifacts, overclaimed crystal, and lacked
 environment/version/source provenance. All findings are now remediated:
 
-- The bundle is re-captured from a **clean tracked commit** (`ff1b472`) on WSL2
-  ext4 against the real `pcbc 0.4.40` toolchain. The capture orchestrator
-  verified a clean tree once before beginning the capture sequence; per-run
-  records carry that verified status. Per-run re-measurement of source
-  cleanliness is pending.
+- The bundle is re-captured from a **clean tracked commit** (`1373b0d`, the
+  final capture barrier) on WSL2 ext4 against the real `pcbc 0.4.40`
+  toolchain. The capture orchestrator verified a clean tree before beginning
+  the capture sequence **and re-measured source cleanliness before every
+  individual run and immediately before external tool execution**; every
+  run's `run-provenance.json` records its own measured clean status, diff
+  digests, and exclusion pathspec.
 - `pcb-version.txt` is bound to the manifest and must be the exact single
   `pcbc <major>.<minor>.<patch>` record verified by every adapter.
 - Registry provenance is enforced lazily before any generated TestBench use;
@@ -33,18 +35,21 @@ environment/version/source provenance. All findings are now remediated:
 ## Source provenance
 
 The evidence bundle was re-captured from a clean tree at commit
-`ff1b4726b93d2e96cc73e229fba459ab0c76069b` (branch
-`feat/diode-adapter-registry`) on WSL2 Ubuntu-24.04 ext4 with the real
+`1373b0d863f7339d19081dd97238376cb504cf09` (the final capture barrier S2,
+branch `feat/diode-adapter-registry`) on WSL2 Ubuntu-24.04 ext4 with the real
 `pcbc 0.4.40` (`/home/rendra/.local/bin/pcb`). The capture required an empty
-`git status --short` and empty `git diff --binary` before executing any run:
+`git status --short` and empty `git diff --binary` before executing any run,
+and re-measured the same cleanliness before every individual run:
 
-- `repo-revision.txt` — the executed revision (`ff1b472`)
+- `repo-revision.txt` — the executed revision (`1373b0d`)
 - `capture-provenance.json` — revision, empty `git_status`, empty binary diff,
   `ext4`, `pcbc 0.4.40`, capture timestamp, script digest
 - `commands.json` — every run's exact argv, cwd, executable, exit code,
   timestamp, revision, and stdout/stderr artifacts
-- per-run `run-provenance.json` — executed revision, the orchestrator-verified
-  clean status, argv/exit/digests for each of the eight run directories
+- per-run `run-provenance.json` — executed revision, that run's own measured
+  clean status (empty filtered source status, empty staged/unstaged diff
+  digests, recorded exclusion pathspec), argv/exit/digests for each of the
+  eight run directories
 - `scripts/` — the executed capture scripts, hashed in the manifest
 
 ## Task-by-task remediation
@@ -75,14 +80,28 @@ Follow-up CI fixes:
 - `31aaf79`: re-enabled tracking of `verify-report.json`/`.md` under `tests/evidence/` (global `.gitignore` had silently excluded them).
 - `a850a4b`: `.gitattributes -text` for `tests/evidence/**` so Windows checkouts cannot alter evidence bytes and break manifest hashes.
 
+Final recapture cycle (provenance completion, this report set to `COMPLETE`):
+- `ca4ac93`: per-run source cleanliness measurement (task 1 of the follow-up plan).
+- `cea6b99` / `605401d` / `4e41734` / `037f594` / `4744783`: version
+  validation, registry cache, production command provenance, provenance
+  relations, and the non-circular transcript-attestation model.
+- `3263d38` (S1) / `1373b0d` (S2, capture barrier): final source alignment of
+  the capture scripts; no source edit after S2.
+- `0a7b0e2` (E1): evidence recaptured from the S2 barrier on WSL2 ext4
+  (8 runs, 143-entry primary manifest).
+- `5001b1e` (A1): Windows/WSL verification transcripts, 148-entry primary
+  manifest, external `manifest-attestation.json`.
+- D1 (this commit): docs finalized.
+
 ## Evidence inventory
 
-All under `tests/evidence/diode-0.4.40/` (144 artifacts, `manifest.sha256`
-`sha256sum -c` clean on both Windows and WSL):
+All under `tests/evidence/diode-0.4.40/` (primary manifest: **148 entries**,
+`sha256sum -c` 148/148 OK on both Windows and WSL; the three self-attesting
+files below the manifest are verified by `manifest-attestation.json`):
 
 - `environment.txt` — pwd, git commit, uname, /etc/os-release, findmnt (ext4), `command -v pcb`
 - `pcb-version.txt` — exact `pcbc 0.4.40`
-- `repo-revision.txt` — executed revision `ff1b472`
+- `repo-revision.txt` — executed revision `1373b0d`
 - `capture-provenance.json` — clean-tree capture record
 - `commands.json` — exact argv/cwd/executable/exit/timestamp/revision for every run
 - `scripts/` — retained capture scripts (hashed)
@@ -92,7 +111,8 @@ All under `tests/evidence/diode-0.4.40/` (144 artifacts, `manifest.sha256`
 - `green-real/` — full `pcb-agent verify` report, complete run directory (`run/`), source/contract copies
 - `production-expression/` — exact production-generated connectivity + specification testbenches and raw results, `production-summary.json`, captured stdout/stderr
 - `negative-invalid-syntax/`, `negative-invalid-connectivity/`, `negative-invalid-value/` — verify reports + run dirs + raw artifacts
-- `verification/` — retained transcripts (windows-pytest, wsl-pytest, pyright, windows-manifest, wsl-manifest)
+- `verification/` — retained transcripts (windows-pytest, wsl-pytest, pyright, windows-pyright, wsl-pyright, windows-manifest, wsl-manifest)
+- `manifest-attestation.json` — external attestation (outside the primary manifest)
 - `.sanitized.json` companions — path fields rewritten for publication; raw files authoritative and byte-identical
 
 ## Registered vs blocked kinds
@@ -110,15 +130,26 @@ documented but not registered, and crystal contracts fail closed with
 ## Verification
 
 Exact counts are backed by retained transcripts under
-`tests/evidence/diode-0.4.40/verification/` (recorded at revision `dbdc013`):
+`tests/evidence/diode-0.4.40/verification/`. The pytest transcripts record the
+exact run against the immutable evidence commit E1
+(`0a7b0e2`); at that revision the only failures are the attestation bootstrap
+subtests asserting the `verification/*` files that A1 adds. They are
+superseded by the green A1-tree local runs and the green CI:
 
-- Windows pytest: 249 passed, 14 skipped, 395 subtests passed
-  (`verification/windows-pytest.txt`)
-- WSL pytest (Ubuntu-24.04, ext4): 263 passed, 404 subtests passed
-  (`verification/wsl-pytest.txt`)
-- pyright: 0 errors, 0 warnings, 0 informations (`verification/pyright.txt`)
-- `sha256sum -c manifest.sha256`: 144/144 OK on Windows and WSL
-  (`verification/windows-manifest.txt`, `verification/wsl-manifest.txt`)
+- Windows pytest at E1 (retained `verification/windows-pytest.txt`, exit 1):
+  269 passed, 3 failed, 18 skipped; at the A1 tree (local) 271 passed, 16
+  skipped, exit 0
+- WSL pytest at E1 (retained `verification/wsl-pytest.txt`, exit 1): 285
+  passed, 3 failed, 2 skipped; at the A1 tree (local, Ubuntu-24.04 ext4) 287
+  passed, exit 0
+- pyright (Pyright 1.1.411): 0 errors, 0 warnings, 0 informations on Windows
+  (`verification/pyright.txt` = `verification/windows-pyright.txt`) and WSL
+  (`verification/wsl-pyright.txt`)
+- `sha256sum -c manifest.sha256`: 148/148 OK on Windows and WSL
+  (`verification/windows-manifest.txt`, `verification/wsl-manifest.txt`);
+  primary manifest SHA-256
+  `5a22245ff49e72cb7a8ca72a67793f7cb367b463707ddab7e576883e2fa6728e`,
+  reproduced byte-for-byte by an independent rebuild on the second platform
 - Real pcbc 0.4.40:
   - `fixtures/green-real` → **PASS** (CONTRACT, DIODE_BUILD, ZENER_TEST,
     CONNECTIVITY, SPECIFICATION); report `versions` populated
@@ -145,3 +176,6 @@ Exact counts are backed by retained transcripts under
   ferrite_bead, tvs); thermistor/zener/rectifier stdlib generics fail
   `pcb build` BOM part-info checks, so their exact package/value expressions
   are proven via the `production-expression` run instead.
+- The retained E1-time pytest transcripts honestly record exit 1: at that
+  revision the attestation bootstrap subtests assert the `verification/*`
+  files that A1 adds. The A1-tree local runs and all CI jobs are green.

@@ -23,8 +23,8 @@ underlying generic module.
 
 ## Captured evidence
 
-The bundle was re-captured from a clean tracked commit (`ff1b472`) on WSL2
-Ubuntu-24.04 ext4. All raw output was produced by the real `pcb` toolchain on
+The bundle was re-captured from a clean tracked commit (`1373b0d`, the final
+capture barrier) on WSL2 Ubuntu-24.04 ext4. All raw output was produced by the real `pcb` toolchain on
 an ext4 filesystem. Exact tool version, environment, and source revision are
 retained, and the clean-tree status is recorded per run in
 `capture-provenance.json`, `commands.json`, and each run directory's

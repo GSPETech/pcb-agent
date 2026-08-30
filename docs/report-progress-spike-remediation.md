@@ -1,10 +1,12 @@
 # Progress Handoff — Final Spike Provenance & Registry Remediation (PR #5)
 
-Date: 2026-08-29
+Date: 2026-08-29 (finalized 2026-08-30)
 Branch: `feat/diode-adapter-registry`
 PR: https://github.com/GSPETech/pcb-agent/pull/5 (OPEN, not merged)
 Author: `jrjuarendra <jrjuarendra@gmail.com>`
-Status: `PARTIAL` — follow-up tasks 1–11 pending; this file is the executable plan.
+Status: `COMPLETE` — follow-up tasks 0–11 executed, evidence recaptured from the
+`1373b0d` barrier, verification transcripts + external attestation retained,
+CI green; this file records the verified end state.
 
 ## Objective
 
@@ -46,41 +48,47 @@ fabrication approval.
 - Per-run source cleanliness belongs only to Task 1 and is consumed by the
   Task 9 recapture. Task 5 and Task 7 do **not** claim it.
 
-## Verified state at handoff
+## Verified final state (2026-08-30)
 
 | Field | Value |
 |---|---|
 | Local branch name | `feat/diode-adapter-registry` |
-| Local HEAD | `ce8e7bcb6bf7efb4600c47aad74466c820d59865` |
-| Remote branch HEAD (`origin/feat/diode-adapter-registry`) | `ce8e7bcb6bf7efb4600c47aad74466c820d59865` |
-| PR head SHA | `ce8e7bcb6bf7efb4600c47aad74466c820d59865` |
-| Manifest entry count | 144 |
-| Evidence file count (non-manifest) | 144 |
-| Manifest verification | `sha256sum -c manifest.sha256` → 144/144 OK, exit 0 |
-| Task 1 | PLANNED / not started |
-| PR #5 CI | green |
+| Capture source revision (barrier S2) | `1373b0d863f7339d19081dd97238376cb504cf09` |
+| E1 evidence commit | `0a7b0e28d50467cab575e13f2d698e95451fa3e1` |
+| A1 attestations commit | `5001b1ea48d4ba21bdee79f10b1992340928202c` |
+| D1 docs commit | this commit |
+| Local/remote/PR head | equal at each pushed step (verified via `git rev-parse` + `gh pr view 5 --json headRefOid`) |
+| Primary manifest entry count | 148 (143 primary evidence + 5 ordinary verification transcripts) |
+| Primary manifest SHA-256 | `5a22245ff49e72cb7a8ca72a67793f7cb367b463707ddab7e576883e2fa6728e` |
+| External attestation files | 3 (`manifest-attestation.json`, `verification/windows-manifest.txt`, `verification/wsl-manifest.txt`) |
+| Manifest verification | `sha256sum -c manifest.sha256` → 148/148 OK on Windows and WSL |
+| PR #5 CI | green (Ubuntu/Windows, Python 3.11/3.13, typecheck) |
 
-Local HEAD equals remote HEAD equals PR head SHA: the branch is pushed and in
-sync. All 144 current evidence hashes verify.
+The branch is pushed and in sync. All 148 primary manifest hashes verify on
+both platforms; the primary manifest is reproduced byte-for-byte by an
+independent rebuild on the second platform.
 
 ## Docs status reconciliation
 
 `docs/report-spike-execution.md` and `docs/spike-diode-net-naming.md` cover the
-already-executed spike results (mapping table, negative behaviour, evidence
+executed spike results (mapping table, negative behaviour, evidence
 inventory). `docs/report-spike-remediation.md` and this handoff cover the
-remaining provenance completion. The two execution/design docs stay `COMPLETE`
-with respect to the executed spike; provenance completion status is owned by
-this file and is `PARTIAL` until task 11.
+provenance completion, which is now `COMPLETE` (task 11 done): the evidence
+bundle was recaptured from the `1373b0d` barrier (E1 `0a7b0e2`), verification
+transcripts and the external attestation were retained (A1 `5001b1e`), and CI
+is green.
 
 ## Completed
 
 ### Follow-up task 0 — this handoff (superseded by task 0A revision)
 
-`docs/report-spike-remediation.md` is `PARTIAL — artifact integrity complete,
-per-run provenance enforcement pending`. The earlier claim that "every run
-records its own clean git status" was corrected: the capture orchestrator
-verified a clean tree once before the sequence; per-run source re-measurement
-is what Task 1 below adds.
+At the time of this handoff `docs/report-spike-remediation.md` was
+`PARTIAL — artifact integrity complete, per-run provenance enforcement
+pending`. The earlier claim that "every run records its own clean git status"
+was corrected: the capture orchestrator verified a clean tree once before the
+sequence; per-run source re-measurement is what Task 1 below adds. That state
+is now superseded — Task 1 landed, the evidence was recaptured from the
+`1373b0d` barrier (E1 `0a7b0e2`), and the report was set to `COMPLETE` in D1.
 
 ## Follow-up task plan (0–11)
 
@@ -90,17 +98,17 @@ original remediation report's own 0–15 numbering.
 | Task | Status | Commit |
 |---|---|---|
 | 0A | **DONE** — authoritative executable handoff | `docs: make spike remediation handoff executable` |
-| 1 | **PLANNED — not started** | `fix: measure source cleanliness for every evidence run` |
-| 2 | PLANNED | `fix: harden manifest-bound tool version validation` |
-| 3 | PLANNED | `fix: prevent adapter provenance cache bypass` |
-| 4 | **IMPLEMENTED — audit required** | `test: complete generated renderer evidence binding` only if changed |
-| 5 | PLANNED | `test: enforce executable production command provenance` |
-| 6 | PLANNED | `test: enforce final spike provenance relations` |
-| 7 | PLANNED | `test: bind verification transcripts to independent attestation` |
-| 8 | PLANNED | (no new commit — commits all capture-affecting code, pushes, records executed SHA) |
-| 9 | PLANNED | `test: recapture spike evidence from clean tracked source` |
-| 10 | PLANNED | `test: retain final spike verification attestations` |
-| 11 | PLANNED | `docs: finalize fully audited spike remediation` |
+| 1 | **DONE** — per-run source cleanliness measured, recorded, enforced | `fix: measure source cleanliness for every evidence run` (`ca4ac93`) + final alignment in S1/S2 |
+| 2 | **DONE** — exact `pcbc X.Y.Z\n` validation, symlink rejection | `fix: harden manifest-bound tool version validation` (`cea6b99`) |
+| 3 | **DONE** — generation-keyed registry cache, fail-closed | `fix: prevent adapter provenance cache bypass` (`605401d`) |
+| 4 | **DONE** — renderer audit, all ten checks pass, no commit required | (no commit) |
+| 5 | **DONE** — structured per-gate command provenance | `fix: enforce executable production command provenance` (`4e41734`) |
+| 6 | **DONE** — provenance relation tests over all artifacts | `test: enforce final spike provenance relations` (`037f594`) |
+| 7 | **DONE** — non-circular attestation model | `test: bind verification transcripts to independent attestation` (`4744783`) + `a89fb23` |
+| 8 | **DONE** — barrier re-established after follow-up source fixes | S2 `1373b0d` (executed capture revision, pushed) |
+| 9 | **DONE** — WSL2 ext4 recapture, 8 runs, 143-entry primary manifest | E1 `0a7b0e2` `test: recapture final spike evidence from revision 1373b0d` |
+| 10 | **DONE** — Windows/WSL transcripts, 148-entry manifest, external attestation | A1 `5001b1e` `test: retain final post-evidence verification attestations` |
+| 11 | **DONE** — all docs finalized, PR body COMPLETE | D1 `docs: finalize verified spike remediation state` |
 
 ## Task specifications
 
@@ -273,15 +281,30 @@ separately from evidence/docs commits. Correct all docs and PR body. Run:
   (`reject_symlink=True`) exist for symlink-safe path handling (used by task 2).
 - Local toolchain: Python 3.13.2, pytest 9.0.2; pyproject `pythonpath=["src"]`;
   pyright `include=["src"]`, typeCheckingMode standard.
-- Manifest rebuild (WSL, ext4):
-  `cd tests/evidence/diode-0.4.40 && find . -type f ! -name manifest.sha256 -print0 | sort -z | xargs -0 sha256sum > manifest.sha256 && sha256sum -c manifest.sha256`
+- Manifest rebuild (WSL, ext4) — the implemented exclusion model keeps the
+  three self-attesting files out of the primary manifest:
+  `cd tests/evidence/diode-0.4.40 && find . -type f ! -name manifest.sha256 ! -name manifest-attestation.json ! -name windows-manifest.txt ! -name wsl-manifest.txt -print0 | sort -z | xargs -0 sha256sum > manifest.sha256 && sha256sum -c manifest.sha256`
 - Final verification: `python -m pytest tests/ -v`, `python -m pyright`,
   `git diff --check`, `git status --short`, `gh pr checks 5` on both Windows and
   WSL.
 
-## Commits so far (newest first)
+## Commits (newest first, final cycle highlighted)
 
 ```
+(D1)     docs: finalize verified spike remediation state                       (this commit)
+5001b1e test: retain final post-evidence verification attestations            (A1)
+0a7b0e2 test: recapture final spike evidence from revision 1373b0d           (E1)
+1373b0d fix: align pcb-test run provenance git status model                  (S2 barrier)
+3263d38 fix: align capture script call sites and evidence manifest model     (S1)
+a89fb23 fix: finalize source cleanliness implementation and attestation formatting
+146e06a test: retain final spike verification attestations                   (prior cycle, superseded by A1)
+f86e8cc test: recapture spike evidence from clean tracked source             (prior cycle, superseded by E1)
+4744783 test: bind verification transcripts to independent attestation
+037f594 test: enforce final spike provenance relations
+4e41734 fix: enforce executable production command provenance
+605401d fix: prevent adapter provenance cache bypass
+cea6b99 fix: harden manifest-bound tool version validation
+ca4ac93 fix: measure source cleanliness for every evidence run
 ce8e7bc docs: correct spike remediation progress handoff
 15d85f4 docs: correct remaining spike provenance claims
 90cd006 test: compare capture scripts across platform line endings
