@@ -141,3 +141,8 @@ e275bcedb263aaab975fe1ba067b629cb511e53413dea266e17f480dcde85196  ./valid-blinky
 02c6cb60bfaf371e640e34ed0ff7b707074cfad0789b38a25c014cfa66cfac11  ./valid-blinky/valid-blinky.json
 1561cddc743b315a348c0a84b042be077c0f6358f8070bb2401ddf58fdf117be  ./valid-blinky/valid-blinky.sanitized.json
 8cdbf793b4acbb45ba86577d41843a24e8b0943d380d3a6ba57a604038b98e36  ./valid-blinky/valid-blinky.stderr
+bc29244ce1682b84733d80270723a7d8c8590163a1119cdaddca10a4e627fb58  ./verification/pyright.txt
+bc29244ce1682b84733d80270723a7d8c8590163a1119cdaddca10a4e627fb58  ./verification/windows-pyright.txt
+25450555530296bac2dfaee8f15907077ab55e79fec27c2b969cea08cbf294a9  ./verification/windows-pytest.txt
+8061b778007cbe56053781d1b3e2a42901c0cd4b3261390059ec181b995a881b  ./verification/wsl-pyright.txt
+5532ccf55f3d5f56e42e5e3696d5bb3b11169b6fa82d0d1811c6a7f1984c4b0f  ./verification/wsl-pytest.txt
