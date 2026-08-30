@@ -2,11 +2,11 @@
   "artifacts": [
     {
       "path": "diode_build.json",
-      "sha256": "sha256:d7c7b934eabdc2d4168cad9188a096f0a94c5dab8596eadab1cef35e825f3a0d"
+      "sha256": "sha256:310a6277084828e953dc3d095996961c70254554a4928ce9ed12b5a582208862"
     },
     {
       "path": "zener_test.json",
-      "sha256": "sha256:91fe44b31803411e1686164f491740e4adecd9f11f40ba2be121f8c238e16057",
+      "sha256": "sha256:5b312f9cf9a6d2f46c5fb20c24eb08605d61b83493aacdf6ca6f50e698bbc3d7",
       "testbench_sha256": "sha256:2a92d9f1f5c552dc3c3f1d158faacc7da7dd7e562de458de0f6694a3999c9573"
     },
     {
@@ -16,10 +16,10 @@
       },
       "result": {
         "path": "connectivity-result.json",
-        "sha256": "sha256:bf9edd234187d1bbf946e29190de107dc6ce02c7e239f5c2c8ff49e3b3cb1c17"
+        "sha256": "sha256:aa4d28e2024e4c8f7a434c3b4530e144de9ff2536666e829cedc3b7b14ab07e8"
       },
       "stderr": "\u2713 PcbAgentConnectivity: 1 check passed across 1 case\n",
-      "stdout": "{\n  \"results\": [\n    {\n      \"test_bench_name\": \"PcbAgentConnectivity\",\n      \"case_name\": \"contract\",\n      \"check_name\": \"_check_connectivity\",\n      \"file_path\": \"/tmp/pcb-agent-connectivity-wno8yfcp/tests/.pcb-agent-connectivity.generated.zen\",\n      \"status\": \"pass\"\n    }\n  ],\n  \"summary\": {\n    \"total\": 1,\n    \"passed\": 1,\n    \"failed\": 0\n  }\n}\n"
+      "stdout": "{\n  \"results\": [\n    {\n      \"test_bench_name\": \"PcbAgentConnectivity\",\n      \"case_name\": \"contract\",\n      \"check_name\": \"_check_connectivity\",\n      \"file_path\": \"/tmp/pcb-agent-connectivity-5samlquj/tests/.pcb-agent-connectivity.generated.zen\",\n      \"status\": \"pass\"\n    }\n  ],\n  \"summary\": {\n    \"total\": 1,\n    \"passed\": 1,\n    \"failed\": 0\n  }\n}\n"
     },
     {
       "generated_testbench": {
@@ -28,10 +28,10 @@
       },
       "result": {
         "path": "specification-result.json",
-        "sha256": "sha256:b099bec5eb9da0badc37eb52466b08f710d7b41796a23cfe9ff66e202f44f4d4"
+        "sha256": "sha256:5e7c6ca5229a72e08176f5128d82fbadc8c391519ffe153fff34e09469e2c4b3"
       },
       "stderr": "\u2713 PcbAgentSpecification: 1 check passed across 1 case\n",
-      "stdout": "{\n  \"results\": [\n    {\n      \"test_bench_name\": \"PcbAgentSpecification\",\n      \"case_name\": \"contract\",\n      \"check_name\": \"_check_specification\",\n      \"file_path\": \"/tmp/pcb-agent-specification-7oqk8zep/tests/.pcb-agent-specification.generated.zen\",\n      \"status\": \"pass\"\n    }\n  ],\n  \"summary\": {\n    \"total\": 1,\n    \"passed\": 1,\n    \"failed\": 0\n  }\n}\n"
+      "stdout": "{\n  \"results\": [\n    {\n      \"test_bench_name\": \"PcbAgentSpecification\",\n      \"case_name\": \"contract\",\n      \"check_name\": \"_check_specification\",\n      \"file_path\": \"/tmp/pcb-agent-specification-stmiw3ah/tests/.pcb-agent-specification.generated.zen\",\n      \"status\": \"pass\"\n    }\n  ],\n  \"summary\": {\n    \"total\": 1,\n    \"passed\": 1,\n    \"failed\": 0\n  }\n}\n"
     }
   ],
   "checks": [
@@ -53,10 +53,10 @@
         "build",
         "src/board.zen"
       ],
-      "duration": 0.4174928829999942,
+      "duration": 0.4668510539999886,
       "evidence": {
         "path": "diode_build.json",
-        "sha256": "sha256:d7c7b934eabdc2d4168cad9188a096f0a94c5dab8596eadab1cef35e825f3a0d"
+        "sha256": "sha256:310a6277084828e953dc3d095996961c70254554a4928ce9ed12b5a582208862"
       },
       "exit_code": 0,
       "id": "DIODE_BUILD",
@@ -74,10 +74,10 @@
         "-f",
         "json"
       ],
-      "duration": 0.1739823150000035,
+      "duration": 0.11495137,
       "evidence": {
         "path": "zener_test.json",
-        "sha256": "sha256:91fe44b31803411e1686164f491740e4adecd9f11f40ba2be121f8c238e16057",
+        "sha256": "sha256:5b312f9cf9a6d2f46c5fb20c24eb08605d61b83493aacdf6ca6f50e698bbc3d7",
         "testbench_sha256": "sha256:2a92d9f1f5c552dc3c3f1d158faacc7da7dd7e562de458de0f6694a3999c9573"
       },
       "exit_code": 0,
@@ -96,7 +96,7 @@
         "-f",
         "json"
       ],
-      "duration": 0.11460880100000281,
+      "duration": 0.11536824300000603,
       "evidence": {
         "generated_testbench": {
           "path": "connectivity-testbench.zen",
@@ -104,10 +104,10 @@
         },
         "result": {
           "path": "connectivity-result.json",
-          "sha256": "sha256:bf9edd234187d1bbf946e29190de107dc6ce02c7e239f5c2c8ff49e3b3cb1c17"
+          "sha256": "sha256:aa4d28e2024e4c8f7a434c3b4530e144de9ff2536666e829cedc3b7b14ab07e8"
         },
         "stderr": "\u2713 PcbAgentConnectivity: 1 check passed across 1 case\n",
-        "stdout": "{\n  \"results\": [\n    {\n      \"test_bench_name\": \"PcbAgentConnectivity\",\n      \"case_name\": \"contract\",\n      \"check_name\": \"_check_connectivity\",\n      \"file_path\": \"/tmp/pcb-agent-connectivity-wno8yfcp/tests/.pcb-agent-connectivity.generated.zen\",\n      \"status\": \"pass\"\n    }\n  ],\n  \"summary\": {\n    \"total\": 1,\n    \"passed\": 1,\n    \"failed\": 0\n  }\n}\n"
+        "stdout": "{\n  \"results\": [\n    {\n      \"test_bench_name\": \"PcbAgentConnectivity\",\n      \"case_name\": \"contract\",\n      \"check_name\": \"_check_connectivity\",\n      \"file_path\": \"/tmp/pcb-agent-connectivity-5samlquj/tests/.pcb-agent-connectivity.generated.zen\",\n      \"status\": \"pass\"\n    }\n  ],\n  \"summary\": {\n    \"total\": 1,\n    \"passed\": 1,\n    \"failed\": 0\n  }\n}\n"
       },
       "exit_code": 0,
       "id": "CONNECTIVITY",
@@ -125,7 +125,7 @@
         "-f",
         "json"
       ],
-      "duration": 0.1147968709999958,
+      "duration": 0.11465444699999239,
       "evidence": {
         "generated_testbench": {
           "path": "specification-testbench.zen",
@@ -133,10 +133,10 @@
         },
         "result": {
           "path": "specification-result.json",
-          "sha256": "sha256:b099bec5eb9da0badc37eb52466b08f710d7b41796a23cfe9ff66e202f44f4d4"
+          "sha256": "sha256:5e7c6ca5229a72e08176f5128d82fbadc8c391519ffe153fff34e09469e2c4b3"
         },
         "stderr": "\u2713 PcbAgentSpecification: 1 check passed across 1 case\n",
-        "stdout": "{\n  \"results\": [\n    {\n      \"test_bench_name\": \"PcbAgentSpecification\",\n      \"case_name\": \"contract\",\n      \"check_name\": \"_check_specification\",\n      \"file_path\": \"/tmp/pcb-agent-specification-7oqk8zep/tests/.pcb-agent-specification.generated.zen\",\n      \"status\": \"pass\"\n    }\n  ],\n  \"summary\": {\n    \"total\": 1,\n    \"passed\": 1,\n    \"failed\": 0\n  }\n}\n"
+        "stdout": "{\n  \"results\": [\n    {\n      \"test_bench_name\": \"PcbAgentSpecification\",\n      \"case_name\": \"contract\",\n      \"check_name\": \"_check_specification\",\n      \"file_path\": \"/tmp/pcb-agent-specification-stmiw3ah/tests/.pcb-agent-specification.generated.zen\",\n      \"status\": \"pass\"\n    }\n  ],\n  \"summary\": {\n    \"total\": 1,\n    \"passed\": 1,\n    \"failed\": 0\n  }\n}\n"
       },
       "exit_code": 0,
       "id": "SPECIFICATION",
@@ -206,11 +206,11 @@
   "production_ready": false,
   "profile": "schematic",
   "project": "green-real",
-  "run_id": "20260829T143016.832012Z-792",
+  "run_id": "20260829T202213.819370Z-632",
   "schema_version": "1",
   "source_dirty": true,
   "status": "PASS",
-  "timestamp": "2026-08-29T14:30:17.783393+00:00",
+  "timestamp": "2026-08-29T20:22:14.755438+00:00",
   "versions": {
     "pcb": "pcbc 0.4.40",
     "pcbc": "0.4.40"

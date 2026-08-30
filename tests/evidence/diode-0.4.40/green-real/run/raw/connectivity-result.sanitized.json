@@ -3,7 +3,7 @@
     {
       "case_name": "contract",
       "check_name": "_check_connectivity",
-      "file_path": "<sanitized>-wno8yfcp/tests/.pcb-agent-connectivity.generated.zen",
+      "file_path": "<sanitized>-5samlquj/tests/.pcb-agent-connectivity.generated.zen",
       "status": "pass",
       "test_bench_name": "PcbAgentConnectivity"
     }

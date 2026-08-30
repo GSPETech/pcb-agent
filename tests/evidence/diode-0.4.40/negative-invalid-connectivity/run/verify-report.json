@@ -2,11 +2,11 @@
   "artifacts": [
     {
       "path": "diode_build.json",
-      "sha256": "sha256:0e4e5b10863f54faa3a7c92d44489c5f05e3c51327842bba3c9aa455c472567f"
+      "sha256": "sha256:e84936f2597d8e661874a1942d317c7a045efacce6a7f7ba684b2392b4a1a831"
     },
     {
       "path": "zener_test.json",
-      "sha256": "sha256:3ddb6d07d34aa49348fb6d1d89f108ed86efee7a6227fb1beb05ea46b2e5a79b",
+      "sha256": "sha256:62c2ceb0c9b5d458ee74c41bab75e80ff5163541191b15fd8f739da5348a5ea7",
       "testbench_sha256": "sha256:187cd15a4da791b34c4baca1019df7df69bfd246c6651e69a058a0d90b4f203f"
     }
   ],
@@ -29,10 +29,10 @@
         "build",
         "src/blinky.zen"
       ],
-      "duration": 0.41596201699999824,
+      "duration": 3.333240711000002,
       "evidence": {
         "path": "diode_build.json",
-        "sha256": "sha256:0e4e5b10863f54faa3a7c92d44489c5f05e3c51327842bba3c9aa455c472567f"
+        "sha256": "sha256:e84936f2597d8e661874a1942d317c7a045efacce6a7f7ba684b2392b4a1a831"
       },
       "exit_code": 0,
       "id": "DIODE_BUILD",
@@ -50,10 +50,10 @@
         "-f",
         "json"
       ],
-      "duration": 0.11486426399999061,
+      "duration": 0.1659004409999909,
       "evidence": {
         "path": "zener_test.json",
-        "sha256": "sha256:3ddb6d07d34aa49348fb6d1d89f108ed86efee7a6227fb1beb05ea46b2e5a79b",
+        "sha256": "sha256:62c2ceb0c9b5d458ee74c41bab75e80ff5163541191b15fd8f739da5348a5ea7",
         "testbench_sha256": "sha256:187cd15a4da791b34c4baca1019df7df69bfd246c6651e69a058a0d90b4f203f"
       },
       "exit_code": 1,
@@ -148,11 +148,11 @@
   "production_ready": false,
   "profile": "schematic",
   "project": "invalid-connectivity",
-  "run_id": "20260829T143018.477005Z-918",
+  "run_id": "20260829T202215.774778Z-758",
   "schema_version": "1",
   "source_dirty": true,
   "status": "BLOCKED",
-  "timestamp": "2026-08-29T14:30:19.061239+00:00",
+  "timestamp": "2026-08-29T20:22:19.333275+00:00",
   "versions": {
     "pcb": "pcbc 0.4.40",
     "pcbc": "0.4.40"

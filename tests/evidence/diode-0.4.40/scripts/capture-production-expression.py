@@ -90,6 +90,12 @@ def capture_production_expression(
         ("SPECIFICATION", "PcbAgentSpecification", "_check_specification", render_specification_testbench),
     ):
         started = datetime.now(timezone.utc).isoformat()
+        gate_cleanliness = measure_source_cleanliness(repo_root, evidence_root)
+        if not gate_cleanliness["source_clean"]:
+            raise SystemExit(
+                f"production {check_id.lower()}: source not clean before run: "
+                f"{gate_cleanliness['filtered_source_status']}"
+            )
         generated = render(project, pcbc_version)
         generated_bytes = generated.encode("utf-8")
         outcome = diode.execute_generated_test(project, generated, raw_dir, check_id)
@@ -103,6 +109,11 @@ def capture_production_expression(
         _write_bytes(target / f"{generated_stem}.generated.zen", generated_bytes)
         result_bytes = (raw_dir / f"{check_id.lower()}-result.json").read_bytes()
         _write_bytes(target / f"production-{check_id.lower()}-result.json", result_bytes)
+
+        stdout_path = target / "run" / f"{check_id.lower()}-stdout.txt"
+        stderr_path = target / "run" / f"{check_id.lower()}-stderr.txt"
+        _write_bytes(stdout_path, outcome.process.stdout.encode("utf-8"))
+        _write_bytes(stderr_path, outcome.process.stderr.encode("utf-8"))
 
         summary[check_id.lower()] = {
             "generated_sha256": outcome.generated_sha256,
@@ -126,8 +137,11 @@ def capture_production_expression(
                 "path": f"{EVIDENCE_SUBDIR}/production-{check_id.lower()}-result.json",
                 "sha256": outcome.result_sha256,
             },
+            "stdout": str(stdout_path.relative_to(evidence_root)),
+            "stderr": str(stderr_path.relative_to(evidence_root)),
             "stdout_sha256": _sha256(outcome.process.stdout.encode("utf-8")),
             "stderr_sha256": _sha256(outcome.process.stderr.encode("utf-8")),
+            "cleanliness": gate_cleanliness,
         })
 
     fixture_copies = {
