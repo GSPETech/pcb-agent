@@ -56,8 +56,8 @@ fabrication approval.
 | Capture source revision (barrier S2) | `1373b0d863f7339d19081dd97238376cb504cf09` |
 | E1 evidence commit | `0a7b0e28d50467cab575e13f2d698e95451fa3e1` |
 | A1 attestations commit | `5001b1ea48d4ba21bdee79f10b1992340928202c` |
-| D1 docs commit | this commit |
-| Local/remote/PR head | equal at each pushed step (verified via `git rev-parse` + `gh pr view 5 --json headRefOid`) |
+| D1 docs commit | `fdb065381f35e67d93471dce76c491b14a62b8b8` |
+| Local/remote/PR head | final local HEAD, remote branch HEAD, and PR head were equal at D1 (verified via `git rev-parse` + `gh pr view 5 --json headRefOid`) |
 | Primary manifest entry count | 148 (143 primary evidence + 5 ordinary verification transcripts) |
 | Primary manifest SHA-256 | `5a22245ff49e72cb7a8ca72a67793f7cb367b463707ddab7e576883e2fa6728e` |
 | External attestation files | 3 (`manifest-attestation.json`, `verification/windows-manifest.txt`, `verification/wsl-manifest.txt`) |
@@ -65,8 +65,10 @@ fabrication approval.
 | PR #5 CI | green (Ubuntu/Windows, Python 3.11/3.13, typecheck) |
 
 The branch is pushed and in sync. All 148 primary manifest hashes verify on
-both platforms; the primary manifest is reproduced byte-for-byte by an
-independent rebuild on the second platform.
+both platforms (retained manifest-check transcripts). A read-only
+recomputation reproduces the 148-entry manifest byte-for-byte on the second
+platform; that recomputation is a verification step, not a separately
+retained transcript.
 
 ## Docs status reconciliation
 
@@ -291,7 +293,7 @@ separately from evidence/docs commits. Correct all docs and PR body. Run:
 ## Commits (newest first, final cycle highlighted)
 
 ```
-(D1)     docs: finalize verified spike remediation state                       (this commit)
+fdb065381f35e67d93471dce76c491b14a62b8b8 docs: finalize verified spike remediation state (D1)
 5001b1e test: retain final post-evidence verification attestations            (A1)
 0a7b0e2 test: recapture final spike evidence from revision 1373b0d           (E1)
 1373b0d fix: align pcb-test run provenance git status model                  (S2 barrier)

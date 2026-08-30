@@ -91,7 +91,7 @@ Final recapture cycle (provenance completion, this report set to `COMPLETE`):
   (8 runs, 143-entry primary manifest).
 - `5001b1e` (A1): Windows/WSL verification transcripts, 148-entry primary
   manifest, external `manifest-attestation.json`.
-- D1 (this commit): docs finalized.
+- D1 (`fdb065381f35e67d93471dce76c491b14a62b8b8`): docs finalized.
 
 ## Evidence inventory
 
@@ -129,19 +129,21 @@ documented but not registered, and crystal contracts fail closed with
 
 ## Verification
 
-Exact counts are backed by retained transcripts under
-`tests/evidence/diode-0.4.40/verification/`. The pytest transcripts record the
+The exact counts below are backed by retained transcripts under
+`tests/evidence/diode-0.4.40/verification/` for the E1-time runs, and by the
+CI test matrix for the D1 green status. The pytest transcripts record the
 exact run against the immutable evidence commit E1
 (`0a7b0e2`); at that revision the only failures are the attestation bootstrap
 subtests asserting the `verification/*` files that A1 adds. They are
-superseded by the green A1-tree local runs and the green CI:
+superseded by the green CI test matrix. Exact local A1/D1-tree pytest counts
+are not stated (no local transcripts were retained for those trees):
 
 - Windows pytest at E1 (retained `verification/windows-pytest.txt`, exit 1):
-  269 passed, 3 failed, 18 skipped; at the A1 tree (local) 271 passed, 16
-  skipped, exit 0
+  269 passed, 3 failed, 18 skipped
 - WSL pytest at E1 (retained `verification/wsl-pytest.txt`, exit 1): 285
-  passed, 3 failed, 2 skipped; at the A1 tree (local, Ubuntu-24.04 ext4) 287
-  passed, exit 0
+  passed, 3 failed, 2 skipped
+- A1/D1 trees: green status proven by the CI test matrix below (no retained
+  local transcripts, so no exact local counts are claimed)
 - pyright (Pyright 1.1.411): 0 errors, 0 warnings, 0 informations on Windows
   (`verification/pyright.txt` = `verification/windows-pyright.txt`) and WSL
   (`verification/wsl-pyright.txt`)
@@ -149,7 +151,8 @@ superseded by the green A1-tree local runs and the green CI:
   (`verification/windows-manifest.txt`, `verification/wsl-manifest.txt`);
   primary manifest SHA-256
   `5a22245ff49e72cb7a8ca72a67793f7cb367b463707ddab7e576883e2fa6728e`,
-  reproduced byte-for-byte by an independent rebuild on the second platform
+  reproduced byte-for-byte by a read-only recomputation on the second
+  platform (a verification step, not a separately retained transcript)
 - Real pcbc 0.4.40:
   - `fixtures/green-real` → **PASS** (CONTRACT, DIODE_BUILD, ZENER_TEST,
     CONNECTIVITY, SPECIFICATION); report `versions` populated
@@ -157,7 +160,8 @@ superseded by the green A1-tree local runs and the green CI:
   - `invalid-connectivity` → ZENER_TEST FAIL, generated gates BLOCKED (prerequisite), overall BLOCKED
   - `invalid-value` → ZENER_TEST FAIL, generated gates BLOCKED (prerequisite), overall BLOCKED
 - PR CI: all green (Ubuntu + Windows, Python 3.11 + 3.13, typecheck)
-- `git diff --check`: clean; `git status`: clean at this commit
+- `git diff --check`: clean; `git status`: clean at D1
+  (`fdb065381f35e67d93471dce76c491b14a62b8b8`)
 - `production_ready` and `fabrication_approved` remain `false` in every report
 
 ## Residual limitations
@@ -178,4 +182,6 @@ superseded by the green A1-tree local runs and the green CI:
   are proven via the `production-expression` run instead.
 - The retained E1-time pytest transcripts honestly record exit 1: at that
   revision the attestation bootstrap subtests assert the `verification/*`
-  files that A1 adds. The A1-tree local runs and all CI jobs are green.
+  files that A1 adds. Exact local A1/D1-tree pytest counts are not stated
+  (no local transcripts were retained for those trees); the D1 CI test
+  matrix is all green.

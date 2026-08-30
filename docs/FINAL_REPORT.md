@@ -27,13 +27,13 @@ attestation, reach green CI, and document the verified end state.
 | **Capture barrier S2** | `1373b0d863f7339d19081dd97238376cb504cf09` | `fix: align pcb-test run provenance git status model` — per‑run provenance records the orchestrator‑verified clean status. **No source edit after this commit.** |
 | **E1 (evidence)** | `0a7b0e28d50467cab575e13f2d698e95451fa3e1` | `test: recapture final spike evidence from revision 1373b0d` — 8 runs, 143‑entry primary manifest, no verification/attestation files |
 | **A1 (attestations)** | `5001b1ea48d4ba21bdee79f10b1992340928202c` | `test: retain final post-evidence verification attestations` — 7 verification transcripts, 148‑entry primary manifest, external `manifest-attestation.json` |
-| **D1 (docs)** | this commit | `docs: finalize verified spike remediation state` |
+| **D1 (docs)** | `fdb065381f35e67d93471dce76c491b14a62b8b8` | `docs: finalize verified spike remediation state` |
 
 The capture was executed from WSL2 Ubuntu‑24.04 (ext4) with the real
 `pcbc 0.4.40` at `/home/rendra/.local/bin/pcb`, from a fully clean tree at
-revision `1373b0d`. Local HEAD, `origin/feat/diode-adapter-registry`, and the
-PR #5 head ref are equal at each pushed step (verified via `git rev-parse`
-and `gh pr view 5 --json headRefOid`).
+revision `1373b0d`. The final local HEAD, remote branch HEAD, and PR head
+were equal at D1 (verified via `git rev-parse` and `gh pr view 5 --json
+headRefOid`).
 
 ---
 
@@ -47,7 +47,10 @@ and `gh pr view 5 --json headRefOid`).
   verification transcripts (`windows-pytest.txt`, `wsl-pytest.txt`,
   `pyright.txt`, `windows-pyright.txt`, `wsl-pyright.txt`).
 - **External attestation (outside the primary manifest, 3 files):**
-  - `manifest-attestation.json` —
+  - `manifest-attestation.json` — attests the primary manifest SHA‑256, the
+    Windows manifest transcript SHA‑256, and the WSL manifest transcript
+    SHA‑256. Its own SHA‑256 (reported externally here) is not contained in
+    the file; it does not attest itself:
     `6eed2e3c893090cfc2c9952b4c7710e7b33fcc6c6412472ab2f707411dc98ac8`
   - `verification/windows-manifest.txt` —
     `021164ce9beeccde3d3005eb34a8b54129da96ac900428c29e7cc4b5388e082f`
@@ -71,8 +74,11 @@ and `gh pr view 5 --json headRefOid`).
 
 ## 4. Verification results
 
-All counts below are backed by retained transcripts (headers record command
-argv, cwd, timestamp, revision, exit code, platform) or by the CI run.
+The exact counts below are backed by retained transcripts (headers record
+command argv, cwd, timestamp, revision, exit code, platform) for the E1-time
+runs. Where no retained transcript exists (local A1/D1-tree runs), no exact
+local count is stated; the green status there is backed by the CI test
+matrix.
 
 ### pytest (full suite, `python -m pytest tests/ -v`)
 
@@ -80,9 +86,8 @@ argv, cwd, timestamp, revision, exit code, platform) or by the CI run.
 |---|---|
 | Windows, against E1 (retained `verification/windows-pytest.txt`, exit 1) | 269 passed, 3 failed, 18 skipped — the 3 failures are exactly the attestation bootstrap subtests asserting the `verification/*` files that A1 adds |
 | WSL2 ext4, against E1 (retained `verification/wsl-pytest.txt`, exit 1) | 285 passed, 3 failed, 2 skipped — same bootstrap subtests |
-| Windows, A1 tree (local) | 271 passed, 16 skipped, exit 0 |
-| WSL2 ext4, A1 tree (local) | 287 passed, exit 0 |
-| **CI at A1** (Ubuntu 3.11/3.13, Windows 3.11/3.13) | **all green** |
+| Windows/WSL, A1 and D1 trees (local) | no retained local transcripts — exact local counts deliberately not stated |
+| **CI at A1 and D1** (Ubuntu 3.11/3.13, Windows 3.11/3.13) | **all green** |
 
 ### Pyright (`python -m pyright`, Pyright 1.1.411)
 
@@ -99,10 +104,12 @@ argv, cwd, timestamp, revision, exit code, platform) or by the CI run.
 | Windows (retained `verification/windows-manifest.txt`) | 148/148 OK, exit 0 |
 | WSL2 ext4 (retained `verification/wsl-manifest.txt`) | 148/148 OK, exit 0 |
 
-An independent rebuild on a second platform
+A read‑only recomputation on a second platform
 (`find . -type f ! -name manifest.sha256 ! -name manifest-attestation.json
 ! -name windows-manifest.txt ! -name wsl-manifest.txt -print0 | sort -z |
-xargs -0 sha256sum`) reproduces the primary manifest byte‑for‑byte.
+xargs -0 sha256sum`) reproduces the 148‑entry manifest byte‑for‑byte. This
+recomputation is a verification step; no separate retained transcript for it
+exists.
 
 ### Repo hygiene
 
@@ -125,8 +132,15 @@ xargs -0 sha256sum`) reproduces the primary manifest byte‑for‑byte.
 - `production_ready` and `fabrication_approved` remain `false` in every
   report; `human_review_required` is `true`.
 - The E1‑time pytest transcripts record the expected attestation bootstrap
-  failures (exit 1); they are superseded by the green A1‑tree and CI runs and
-  are retained as the exact record of the E1 state.
+  failures (exit 1); they are superseded by the green CI test matrix and are
+  retained as the exact record of the E1 state. Exact local A1/D1‑tree pytest
+  counts are not stated because no local transcripts were retained for those
+  trees.
+- Green‑real exercises six buildable kinds: resistor, led, capacitor,
+  inductor, ferrite_bead, tvs. Thermistor, zener, and rectifier
+  package/value behavior is proven through `production-expression` evidence
+  because their stdlib generics fail the green‑real `pcb build` BOM
+  part‑info checks.
 
 ---
 
