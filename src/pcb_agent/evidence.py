@@ -26,6 +26,16 @@ class EvidenceError(ValueError):
 _MANIFEST_ENTRY = re.compile(r"^[0-9a-f]{64}\s+(\S+)$")
 _PCBC_VERSION_LINE = re.compile(r"\Apcbc (\d+\.\d+\.\d+)\n\Z")
 
+# Single source of truth for the canonical digest syntax. Uppercase hex and
+# any other prefix/length are rejected so a malformed digest can never slip
+# past a byte-hash comparison.
+_EVIDENCE_DIGEST_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
+
+
+def is_sha256_digest(value: object) -> bool:
+    """True only for the exact canonical ``sha256:<64 lowercase hex>`` syntax."""
+    return isinstance(value, str) and _EVIDENCE_DIGEST_PATTERN.match(value) is not None
+
 
 def load_evidence_manifest(manifest_path: Path) -> dict[str, str]:
     """Parse a `sha256sum`-style manifest into {relative_path: sha256_hex}.
@@ -83,7 +93,7 @@ def validate_evidence_artifact(
     The manifest entry must exist and equal the same digest; then the on-disk
     bytes must hash to it.
     """
-    if not isinstance(expected_sha256, str) or not expected_sha256.startswith("sha256:"):
+    if not is_sha256_digest(expected_sha256):
         raise EvidenceError(f"{label}: malformed evidence digest {expected_sha256!r}")
     manifest_digest = manifest.get(relative)
     if manifest_digest is None:
@@ -125,8 +135,8 @@ def validate_adapter_provenance(
         raise EvidenceError(
             f"adapter {kind}: evidence_result_path/evidence_source_path required"
         )
-    if not isinstance(source_sha256, str) or not source_sha256.startswith("sha256:"):
-        raise EvidenceError(f"adapter {kind}: evidence_source_sha256 required")
+    if not isinstance(source_sha256, str) or not is_sha256_digest(source_sha256):
+        raise EvidenceError(f"adapter {kind}: evidence_source_sha256 malformed")
 
     expected = getattr(adapter, "evidence_sha256", None)
     if not isinstance(expected, str):
@@ -197,9 +207,9 @@ def validate_registry_provenance(
     manifest = load_evidence_manifest(manifest_path)
     captured_version = validate_version_record(evidence_root, manifest)
 
+    # Every registry value is validated; a malformed entry fails closed via
+    # EvidenceError below. Entries are never skipped.
     for adapter in registry.values():
-        if not isinstance(adapter, object):
-            continue
         kind = getattr(adapter, "kind", None)
         verified = getattr(adapter, "verified_pcbc_versions", frozenset())
         if isinstance(verified, frozenset) and verified and captured_version not in verified:

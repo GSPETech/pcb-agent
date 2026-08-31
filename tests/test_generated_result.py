@@ -6,7 +6,12 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from pcb_agent.diode import GeneratedTestResult, generated_check
+from pcb_agent.diode import (
+    GeneratedTestResult,
+    _canonical_record_key,
+    _require_passing_acceptance,
+    generated_check,
+)
 from pcb_agent.models import CheckStatus
 from pcb_agent.process import ProcessResult
 
@@ -418,6 +423,92 @@ class GeneratedPassClassificationTests(unittest.TestCase):
             )
         self.assertEqual(check.status, CheckStatus.BLOCKED)
         self.assertIn("malformed evidence digest", check.message)
+
+
+class LockedZenerAcceptanceMatchingTests(unittest.TestCase):
+    """Strict locked-Zener acceptance matching used by diode.execute.
+
+    The matcher must consider only the canonical top-level `results[]` records,
+    identify records solely by `{test_bench_name}.{check_name}` (no `name`/`test`
+    alias fields), require exactly one match per expected test, and require the
+    real tool's canonical lowercase `"pass"` status.
+    """
+
+    def _payload(self, *records: dict) -> dict:
+        return {"results": list(records)}
+
+    def test_canonical_record_key_helper(self) -> None:
+        self.assertEqual(
+            _canonical_record_key(
+                {"test_bench_name": "BlinkyTest", "check_name": "component_value"}
+            ),
+            "BlinkyTest.component_value",
+        )
+        # Alias fields alone do not form a canonical key.
+        self.assertIsNone(_canonical_record_key({"name": "x.y"}))
+        self.assertIsNone(_canonical_record_key({"test": "x.y"}))
+        # A canonical key needs both fields.
+        self.assertIsNone(_canonical_record_key({"test_bench_name": "x"}))
+        self.assertIsNone(_canonical_record_key({"check_name": "y"}))
+
+    def test_canonical_top_level_pass_satisfies(self) -> None:
+        payload = self._payload(
+            {"test_bench_name": "BlinkyTest", "check_name": "component_value",
+             "status": "pass"},
+        )
+        _require_passing_acceptance(payload, ["BlinkyTest.component_value"])  # no raise
+
+    def test_nested_record_identity_does_not_satisfy(self) -> None:
+        # Only the top-level record is canonical; a nested diagnostic that
+        # happens to carry the identity must not satisfy the gate.
+        payload = self._payload(
+            {"status": "pass",
+             "diagnostic": {"test_bench_name": "BlinkyTest",
+                            "check_name": "component_value", "status": "pass"}},
+        )
+        with self.assertRaises(ValueError):
+            _require_passing_acceptance(payload, ["BlinkyTest.component_value"])
+
+    def test_alias_identity_fields_do_not_satisfy(self) -> None:
+        # `name`/`test` alias fields are not honored; only canonical fields count.
+        payload = self._payload(
+            {"name": "BlinkyTest.component_value", "status": "pass"},
+            {"test": "BlinkyTest.component_value", "status": "pass"},
+        )
+        with self.assertRaises(ValueError):
+            _require_passing_acceptance(payload, ["BlinkyTest.component_value"])
+
+    def test_duplicate_canonical_records_block(self) -> None:
+        rec = {"test_bench_name": "BlinkyTest", "check_name": "component_value",
+               "status": "pass"}
+        payload = self._payload(dict(rec), dict(rec))
+        with self.assertRaises(ValueError):
+            _require_passing_acceptance(payload, ["BlinkyTest.component_value"])
+
+    def test_uppercase_status_is_rejected(self) -> None:
+        # The real tool emits lowercase "pass"; "PASS" is not accepted.
+        payload = self._payload(
+            {"test_bench_name": "BlinkyTest", "check_name": "component_value",
+             "status": "PASS"},
+        )
+        with self.assertRaises(ValueError):
+            _require_passing_acceptance(payload, ["BlinkyTest.component_value"])
+
+    def test_fail_status_is_rejected(self) -> None:
+        payload = self._payload(
+            {"test_bench_name": "BlinkyTest", "check_name": "component_value",
+             "status": "fail"},
+        )
+        with self.assertRaises(ValueError):
+            _require_passing_acceptance(payload, ["BlinkyTest.component_value"])
+
+    def test_missing_record_is_rejected(self) -> None:
+        payload = self._payload(
+            {"test_bench_name": "BlinkyTest", "check_name": "connectivity",
+             "status": "pass"},
+        )
+        with self.assertRaises(ValueError):
+            _require_passing_acceptance(payload, ["BlinkyTest.component_value"])
 
 
 if __name__ == "__main__":

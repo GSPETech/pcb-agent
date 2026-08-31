@@ -43,7 +43,7 @@ class RealExecutionIntegrationTests(unittest.TestCase):
         run = new_run(project, self.root / "reports")
 
         with patch("pcb_agent.diode.probe", return_value=_probe_ok()):
-            checks = cli._verify(project, run, "schematic")
+            checks = cli._verify(project, run, "schematic", cli._probe_tool_version(project))
 
         statuses = {check.id: check.status for check in checks}
         self.assertEqual(statuses.get("DIODE_BUILD"), CheckStatus.PASS)
@@ -65,7 +65,7 @@ class RealExecutionIntegrationTests(unittest.TestCase):
         run = new_run(project, self.root / "reports")
 
         with patch("pcb_agent.diode.probe", return_value=_probe_ok()):
-            checks = cli._verify(project, run, "schematic")
+            checks = cli._verify(project, run, "schematic", cli._probe_tool_version(project))
 
         statuses = {check.id: check.status for check in checks}
         self.assertEqual(statuses.get("DIODE_BUILD"), CheckStatus.FAIL)
@@ -84,7 +84,7 @@ class RealExecutionIntegrationTests(unittest.TestCase):
         run = new_run(project, self.root / "reports")
 
         with patch("pcb_agent.diode.probe", return_value=_probe_ok()):
-            checks = cli._verify(project, run, "schematic")
+            checks = cli._verify(project, run, "schematic", cli._probe_tool_version(project))
 
         report = VerificationReport(project.name, tuple(checks))
         self.assertEqual(report.status, CheckStatus.BLOCKED)
@@ -98,7 +98,7 @@ class RealExecutionIntegrationTests(unittest.TestCase):
         run = new_run(project, self.root / "reports")
 
         with patch("pcb_agent.diode.probe", return_value=_probe_ok()):
-            checks = cli._verify(project, run, "schematic")
+            checks = cli._verify(project, run, "schematic", cli._probe_tool_version(project))
 
         messages = {check.id: check.message for check in checks}
         for gate in ("ZENER_TEST", "CONNECTIVITY", "SPECIFICATION"):

@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
+import tempfile
 import unittest
+from pathlib import Path
 from typing import Any
 
 from pcb_agent.generated_testbench import (
@@ -15,6 +18,7 @@ from pcb_agent.generated_testbench import (
     render_connectivity_testbench,
     render_specification_testbench,
     set_adapter_registry,
+    temporary_test_evidence_root,
 )
 from pcb_agent.state import ProjectState
 
@@ -34,6 +38,72 @@ def _resistor_adapter() -> ComponentAdapter:
         package_accessor="properties['package']",
         pullup_pin_pair=("P1", "P2"),
     )
+
+
+def _write_resistor_bundle(root: Path, version: str) -> None:
+    """Write a minimal evidence bundle that a synthetic resistor adapter can
+    validate against. This keeps renderer unit tests honest: the active
+    registry is validated against a real (temporary) bundle, never bypassed."""
+    result = root / "result.json"
+    source = root / "source.zen"
+    result.write_bytes(b'{"results": [{"status": "pass"}]}')
+    source.write_bytes(b'check(True, "ok")\n')
+    version_path = root / "pcb-version.txt"
+    version_path.write_text(f"pcbc {version}\n", encoding="utf-8", newline="\n")
+    manifest = root / "manifest.sha256"
+    manifest.write_text(
+        f"{hashlib.sha256(result.read_bytes()).hexdigest()}  ./result.json\n"
+        f"{hashlib.sha256(source.read_bytes()).hexdigest()}  ./source.zen\n"
+        f"{hashlib.sha256(version_path.read_bytes()).hexdigest()}  ./pcb-version.txt\n",
+        encoding="utf-8",
+    )
+
+
+def _resistor_on_bundle(bundle_root: Path, version: str, **overrides: Any) -> ComponentAdapter:
+    """A resistor adapter whose evidence fields validate against `bundle_root`.
+
+    Rendering-relevant fields (accessors, pins, pullup pair) may be overridden
+    per test; the evidence fields always point at the real temporary bundle.
+    """
+    kwargs: dict[str, Any] = {
+        "kind": "resistor",
+        "instance_suffix": "R",
+        "pins": {"P1": "1", "P2": "2"},
+        "verified_pcbc_versions": frozenset({version}),
+        "evidence_sha256": "sha256:"
+        + hashlib.sha256((bundle_root / "result.json").read_bytes()).hexdigest(),
+        "evidence_result_path": "result.json",
+        "evidence_source_path": "source.zen",
+        "evidence_source_sha256": "sha256:"
+        + hashlib.sha256((bundle_root / "source.zen").read_bytes()).hexdigest(),
+        "value_accessor": "resistance",
+        "package_accessor": "properties['package']",
+        "pullup_pin_pair": ("P1", "P2"),
+    }
+    kwargs.update(overrides)
+    return ComponentAdapter(**kwargs)
+
+
+class BundleMixin:
+    """Sets up a temporary evidence bundle so renderer tests validate the
+    active registry against a real (temporary) bundle rather than bypassing it."""
+
+    def _bundle_setup(self, version: str = VERIFIED_VERSION) -> Path:
+        self._bundle_tmp = tempfile.TemporaryDirectory()
+        self._bundle_root = Path(self._bundle_tmp.name)
+        _write_resistor_bundle(self._bundle_root, version)
+        self._root_cm = temporary_test_evidence_root(self._bundle_root)
+        self._root_cm.__enter__()
+        return self._bundle_root
+
+    def _bundle_teardown(self) -> None:
+        self._root_cm.__exit__(None, None, None)
+        self._bundle_tmp.cleanup()
+
+    def _set_resistor(self, **overrides: Any) -> None:
+        set_adapter_registry(
+            {"resistor": _resistor_on_bundle(self._bundle_root, VERIFIED_VERSION, **overrides)}
+        )
 
 
 class DummyProjectState:
@@ -99,12 +169,14 @@ class RegistryLifecycleTests(unittest.TestCase):
         self.assertIn("unsupported", str(ctx.exception))
 
 
-class ConnectivityGeneratorTests(unittest.TestCase):
+class ConnectivityGeneratorTests(BundleMixin, unittest.TestCase):
     def setUp(self) -> None:
-        set_adapter_registry({"resistor": _resistor_adapter()})
+        self._bundle_setup()
+        self._set_resistor()
 
     def tearDown(self) -> None:
         set_adapter_registry({})
+        self._bundle_teardown()
 
     def test_renders_valid_blinky_connectivity(self) -> None:
         contract: dict[str, Any] = {
@@ -239,7 +311,7 @@ class ConnectivityGeneratorTests(unittest.TestCase):
         self.assertIn("unverified kind led", str(ctx.exception))
 
 
-class RequiredPullupTopologyTests(unittest.TestCase):
+class RequiredPullupTopologyTests(BundleMixin, unittest.TestCase):
     """The pull-up gate must verify topology, not name existence."""
 
     def _contract(self) -> dict:
@@ -259,10 +331,12 @@ class RequiredPullupTopologyTests(unittest.TestCase):
         }
 
     def setUp(self) -> None:
-        set_adapter_registry({"resistor": _resistor_adapter()})
+        self._bundle_setup()
+        self._set_resistor()
 
     def tearDown(self) -> None:
         set_adapter_registry({})
+        self._bundle_teardown()
 
     def test_renders_signal_and_rail_pin_assertions(self) -> None:
         project = DummyProjectState("src/board.zen", self._contract())
@@ -275,36 +349,14 @@ class RequiredPullupTopologyTests(unittest.TestCase):
         self.assertIn(f'("{ref}", "1") in nets.get("V3V3", [])', source)
 
     def test_blocks_when_adapter_lacks_pullup_pin_pair(self) -> None:
-        set_adapter_registry(
-            {
-                "resistor": ComponentAdapter(
-                    kind="resistor",
-                    instance_suffix="R",
-                    pins={"P1": "1", "P2": "2"},
-                    verified_pcbc_versions=frozenset({VERIFIED_VERSION}),
-                    evidence_sha256=TEST_EVIDENCE,
-                    pullup_pin_pair=None,
-                )
-            }
-        )
+        self._set_resistor(pullup_pin_pair=None)
         project = DummyProjectState("src/board.zen", self._contract())
         with self.assertRaises(GeneratorError) as ctx:
             render_connectivity_testbench(project, VERIFIED_VERSION)
         self.assertIn("pullup_pin_pair", str(ctx.exception))
 
     def test_blocks_when_pullup_pin_pair_names_unknown_pin(self) -> None:
-        set_adapter_registry(
-            {
-                "resistor": ComponentAdapter(
-                    kind="resistor",
-                    instance_suffix="R",
-                    pins={"P1": "1", "P2": "2"},
-                    verified_pcbc_versions=frozenset({VERIFIED_VERSION}),
-                    evidence_sha256=TEST_EVIDENCE,
-                    pullup_pin_pair=("P1", "P9"),
-                )
-            }
-        )
+        self._set_resistor(pullup_pin_pair=("P1", "P9"))
         project = DummyProjectState("src/board.zen", self._contract())
         with self.assertRaises(GeneratorError) as ctx:
             render_connectivity_testbench(project, VERIFIED_VERSION)
@@ -312,18 +364,7 @@ class RequiredPullupTopologyTests(unittest.TestCase):
 
     def test_topology_ignores_pins_iteration_order(self) -> None:
         """The rendered pair must come from pullup_pin_pair, not dict order."""
-        set_adapter_registry(
-            {
-                "resistor": ComponentAdapter(
-                    kind="resistor",
-                    instance_suffix="R",
-                    pins={"P2": "2", "P1": "1", "P3": "3"},
-                    verified_pcbc_versions=frozenset({VERIFIED_VERSION}),
-                    evidence_sha256=TEST_EVIDENCE,
-                    pullup_pin_pair=("P1", "P2"),
-                )
-            }
-        )
+        self._set_resistor(pins={"P2": "2", "P1": "1", "P3": "3"}, pullup_pin_pair=("P1", "P2"))
         project = DummyProjectState("src/board.zen", self._contract())
         source = render_connectivity_testbench(project, VERIFIED_VERSION)
         ref = "PcbAgentConnectivity__contract.R1.R"
@@ -348,12 +389,14 @@ class RequiredPullupTopologyTests(unittest.TestCase):
         self.assertIn("rail", str(ctx.exception))
 
 
-class SpecificationGeneratorTests(unittest.TestCase):
+class SpecificationGeneratorTests(BundleMixin, unittest.TestCase):
     def setUp(self) -> None:
-        set_adapter_registry({"resistor": _resistor_adapter()})
+        self._bundle_setup()
+        self._set_resistor()
 
     def tearDown(self) -> None:
         set_adapter_registry({})
+        self._bundle_teardown()
 
     def test_renders_valid_blinky_specification(self) -> None:
         connectivity = {
@@ -451,7 +494,10 @@ class SpecificationGeneratorTests(unittest.TestCase):
         with self.assertRaises(GeneratorError) as ctx:
             render_specification_testbench(project, VERIFIED_VERSION)
         self.assertIn("mpn", str(ctx.exception))
-        self.assertIn("unsupported", str(ctx.exception))
+        self.assertIn(
+            "no captured adapter provides a verified mpn accessor",
+            str(ctx.exception),
+        )
 
     def test_mpn_from_connectivity_is_always_blocked(self) -> None:
         connectivity = {
@@ -478,6 +524,10 @@ class SpecificationGeneratorTests(unittest.TestCase):
         with self.assertRaises(GeneratorError) as ctx:
             render_specification_testbench(project, VERIFIED_VERSION)
         self.assertIn("mpn", str(ctx.exception))
+        self.assertIn(
+            "no captured adapter provides a verified mpn accessor",
+            str(ctx.exception),
+        )
 
     def test_connectivity_requirement_rejects_value_constraint(self) -> None:
         connectivity = {"components": {"R1": {"kind": "resistor"}}}

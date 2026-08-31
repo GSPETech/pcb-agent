@@ -25,6 +25,11 @@ from pcb_agent.generated_testbench import (
 )
 
 
+# Repo root resolved from this file so fixture paths never depend on the
+# process working directory (pytest may be launched from anywhere).
+ROOT = Path(__file__).resolve().parent.parent
+
+
 # Files that assert the manifest's own digest are kept OUT of the primary
 # manifest (see test_transcript_attestation.py): the primary manifest must not
 # hash the artifacts that verify it. `manifest.sha256` is excluded because it
@@ -157,7 +162,7 @@ class EvidenceBundleCompletenessTests(unittest.TestCase):
     def test_both_renderers_byte_match_retained_generated_sources(self) -> None:
         from pcb_agent.state import load_project
 
-        project = load_project(Path("fixtures/production-expression"))
+        project = load_project(ROOT / "fixtures" / "production-expression")
         connectivity = render_connectivity_testbench(project, "0.4.40")
         specification = render_specification_testbench(project, "0.4.40")
         retained_connectivity = (

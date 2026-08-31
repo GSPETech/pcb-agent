@@ -50,10 +50,16 @@ class FakeBackendTests(unittest.TestCase):
         values.update(overrides)
         return argparse.Namespace(**values)
 
+    def _inert_probe(self) -> "cli.ToolVersionProbe":
+        # No toolchain exists in these tests; the probe is inert because the
+        # calls under test either patch `_verify` or never reach a generated
+        # check.
+        return cli.ToolVersionProbe(None, None, FileNotFoundError("no toolchain in test"))
+
     def run_backend(self, backend: FakeBackend, checks: list[Check], **overrides: object) -> list[Check]:
         from pcb_agent.policy_config import Policy
         with patch("pcb_agent.cli.CommandBackend", return_value=backend), patch("pcb_agent.cli._verify", return_value=checks):
-            return cli._run_backend(self.args(**overrides), self.project, self.run, Policy.load())
+            return cli._run_backend(self.args(**overrides), self.project, self.run, Policy.load(), self._inert_probe())
 
     def test_success_and_backend_crash(self) -> None:
         success = self.run_backend(FakeBackend(process()), [Check("VERIFY", CheckStatus.PASS)])
@@ -73,7 +79,7 @@ class FakeBackendTests(unittest.TestCase):
     def test_nested_run_is_blocked(self) -> None:
         from pcb_agent.policy_config import Policy
         with patch.dict(os.environ, {"PCB_AGENT_ACTIVE": "1"}):
-            checks = cli._run_backend(self.args(), self.project, self.run, Policy.load())
+            checks = cli._run_backend(self.args(), self.project, self.run, Policy.load(), self._inert_probe())
         self.assertEqual(checks[0].status, CheckStatus.BLOCKED)
         self.assertIn("nested", checks[0].message)
 
@@ -108,7 +114,7 @@ class FakeBackendTests(unittest.TestCase):
                 patch("pcb_agent.cli._specification_check", return_value=passed), \
                 patch("pcb_agent.cli.kicad.drc", return_value=process(5)), \
                 patch("pcb_agent.cli.kicad.result_check", return_value=Check("KICAD_DRC", CheckStatus.FAIL)):
-            checks = cli._verify(self.project, self.run, "layout")
+            checks = cli._verify(self.project, self.run, "layout", self._inert_probe())
         self.assertEqual(next(check for check in checks if check.id == "LAYOUT_SYNC").status, CheckStatus.FAIL)
         self.assertEqual(next(check for check in checks if check.id == "KICAD_DRC").status, CheckStatus.FAIL)
 

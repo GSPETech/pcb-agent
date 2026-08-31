@@ -104,21 +104,21 @@ if '-f' in sys.argv and 'json' in sys.argv:
         # The locked acceptance for the reference fixture names two checks.
         records = [("BlinkyTest", "component_value"), ("BlinkyTest", "connectivity")]
 
-    status = "PASS"
+    # The real `pcb test -f json` tool emits the canonical lowercase status.
+    status = "pass"
     if 'invalid-' in source and ('connectivity' in source or 'value' in source):
-        status = "FAIL"
+        status = "fail"
 
     results = [
         {
             "test_bench_name": bench,
             "check_name": check,
             "status": status,
-            "name": bench + "." + check,
         }
         for bench, check in records
     ]
-    passed = len(results) if status == "PASS" else 0
-    failed = len(results) if status == "FAIL" else 0
+    passed = len(results) if status == "pass" else 0
+    failed = len(results) if status == "fail" else 0
     payload = {
         "results": results,
         "summary": {
