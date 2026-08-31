@@ -55,12 +55,38 @@ class CheckScopeTests(unittest.TestCase):
         report = self._report(output)
         self.assertEqual([item["id"] for item in report["checks"]], ["CONNECTIVITY"])
 
-    def test_report_profile_stays_valid_for_every_scope(self) -> None:
+    def test_report_profile_is_schematic_for_every_scope(self) -> None:
+        # `check` is a schematic-level command: every scope must report the
+        # "schematic" profile, never "spec"/"connectivity" or the project's
+        # configured layout profile.
         for scope in ("schematic", "spec", "connectivity"):
             with self.subTest(scope=scope):
                 _, output = self._run("check", scope, str(self.root), "--format", "json")
                 report = self._report(output)
-                self.assertIn(report["profile"], {"schematic", "layout"})
+                self.assertEqual(report["profile"], "schematic")
+
+    def test_layout_required_project_rejects_check(self) -> None:
+        (self.root / "project.toml").write_text(
+            '''[project]
+name = "test-project"
+profile = "layout"
+source = "src/board.zen"
+test = "tests/board_test.zen"
+
+[toolchain]
+pcb_version = "0.4"
+
+[layout]
+required = true
+''',
+            encoding="utf-8",
+        )
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            code = main(["check", "schematic", str(self.root), "--format", "json"])
+        self.assertEqual(code, 3)
+        self.assertIn("layout.required", stderr.getvalue())
 
     def test_safety_fields_remain_false_for_every_scope(self) -> None:
         for scope in ("schematic", "spec", "connectivity"):

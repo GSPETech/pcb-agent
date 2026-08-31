@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping
 
-from .evidence import EvidenceError
+from .evidence import EvidenceError, is_sha256_digest
 from .state import ProjectState
 
 
@@ -26,7 +26,6 @@ GENERATED_TEST_DIRECTORY = PurePosixPath("tests")
 _IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_]{0,63}$")
 _NET_NAME_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,63}$")
 _PIN_NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,31}$")
-_EVIDENCE_DIGEST_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
 _CONNECTIVITY_FIELDS: dict[str, frozenset[str]] = {
     "components": frozenset({"kind", "value", "package", "mpn"}),
     "nets": frozenset({"members", "required_pullup"}),
@@ -58,7 +57,7 @@ def build_adapter_registry(entries: Iterable[ComponentAdapter]) -> dict[str, Com
             raise ValueError("adapter kind must be a valid identifier")
         if not isinstance(adapter.instance_suffix, str) or not adapter.instance_suffix:
             raise ValueError("adapter instance_suffix must be non-empty string")
-        if not _EVIDENCE_DIGEST_PATTERN.match(adapter.evidence_sha256 or ""):
+        if not is_sha256_digest(adapter.evidence_sha256):
             raise ValueError("adapter evidence_sha256 must be sha256:<64 hex>")
         if not adapter.verified_pcbc_versions:
             raise ValueError("adapter must declare at least one verified pcbc version")
@@ -251,10 +250,20 @@ def validate_captured_registry(root_override: Path | None = None) -> None:
 
 
 _PROVENANCE_CACHE: tuple[int, tuple[bool, str]] | None = None
+# Test-only redirect for provenance validation. Production code never sets this;
+# it only ever points at the repository-owned bundle via `evidence_root()`.
+_TEST_PROVENANCE_ROOT: Path | None = None
 
 
 def _run_provenance_validation() -> None:
-    validate_captured_registry()
+    from .evidence import validate_registry_provenance
+
+    root = _TEST_PROVENANCE_ROOT if _TEST_PROVENANCE_ROOT is not None else evidence_root()
+    validate_registry_provenance(
+        dict(_ADAPTERS),
+        root,
+        root / "manifest.sha256",
+    )
 
 
 def _bump_generation() -> None:
@@ -312,6 +321,29 @@ def temporary_test_registry(registry: Mapping[str, ComponentAdapter]):
         yield
     finally:
         set_adapter_registry(previous)
+
+
+@contextlib.contextmanager
+def temporary_test_evidence_root(root: Path):
+    """Test-only: redirect active-registry provenance validation to a bundle.
+
+    This is a scoped test mechanism for renderer unit tests that use synthetic
+    adapters without the captured bundle. It does not bypass validation: the
+    active registry is still validated, against `root`. Production code never
+    enters this context. Entering and exiting invalidate the cached verdict so
+    validation re-runs against the active registry and the (restored) root.
+    """
+    global _TEST_PROVENANCE_ROOT, _PROVENANCE_CACHE
+    previous_root = _TEST_PROVENANCE_ROOT
+    _TEST_PROVENANCE_ROOT = root
+    _PROVENANCE_CACHE = None
+    _bump_generation()
+    try:
+        yield
+    finally:
+        _TEST_PROVENANCE_ROOT = previous_root
+        _PROVENANCE_CACHE = None
+        _bump_generation()
 
 
 def known_kinds() -> frozenset[str]:
@@ -559,6 +591,10 @@ def render_connectivity_testbench(
                 f"{_zener_string(f'net {net_name} has unlisted members')})"
             )
 
+        # The pullup block ends in "\n", so the "\n".join below emits a blank
+        # line after it. That blank line is intentional: the generated source
+        # is byte-bound to the retained evidence under
+        # tests/evidence/diode-0.4.40/ (Finding 10 -- do not reformat).
         lines.append(_check_required_pullup(net_name, definition, components, pcbc_version, bench_name, case_name))
 
     if rules.get("forbid_unlisted_members"):
@@ -681,6 +717,16 @@ def render_specification_testbench(
 
         adapter = adapter_for(kind, pcbc_version)
         component_ref = f"{subject}.{adapter.instance_suffix}"
+        # Reject mpn constraints before emitting any assertion: no captured
+        # adapter provides a verified mpn accessor, so an mpn requirement can
+        # never produce trustworthy evidence. Failing here (rather than after
+        # value/package assertions are emitted) keeps the generator from
+        # producing partial output for an unsupported constraint.
+        if "mpn" in constraints:
+            raise GeneratorError(
+                f"component {component_ref} declares mpn, but no captured "
+                f"adapter provides a verified mpn accessor"
+            )
         if subject not in components_with_assertions:
             lines.append(
                 f"    check({_zener_string(component_ref)} in components, "
@@ -713,9 +759,11 @@ def render_specification_testbench(
                 )
                 asserted_constraints += 1
             elif key == "mpn":
+                # Unreachable: mpn is rejected above before any assertion is
+                # emitted. Kept as a defense-in-depth fallback.
                 raise GeneratorError(
-                    f"mpn assertion is unsupported for {kind}; "
-                    f"no verified accessor has been captured"
+                    f"component {component_ref} declares mpn, but no captured "
+                    f"adapter provides a verified mpn accessor"
                 )
             else:
                 raise GeneratorError(

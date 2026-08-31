@@ -8,6 +8,7 @@ provenance (manifest entry + file bytes + version record).
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 import os
@@ -33,6 +34,7 @@ from pcb_agent.generated_testbench import (
     render_connectivity_testbench,
     render_specification_testbench,
     reset_registry_provenance,
+    set_adapter_registry,
     validate_captured_registry,
 )
 
@@ -42,8 +44,18 @@ EXPECTED_KINDS = frozenset({
     "thermistor", "zener", "rectifier", "tvs",
 })
 
+# Repo root resolved from this file so fixture paths never depend on the
+# process working directory (pytest may be launched from anywhere).
+ROOT = Path(__file__).resolve().parent.parent
+FIXTURES = ROOT / "fixtures"
+
 
 class CapturedRegistryTests(unittest.TestCase):
+    def setUp(self) -> None:
+        # These tests read the module-global active registry; restore the
+        # captured snapshot so they never depend on a prior test's teardown.
+        reset_registry_provenance()
+
     def test_registered_kinds_exactly_match_documentation(self) -> None:
         self.assertEqual(known_kinds(), EXPECTED_KINDS)
 
@@ -230,6 +242,117 @@ class AdapterProvenanceTests(unittest.TestCase):
         self.assertIn("duplicate", str(ctx.exception))
 
 
+class DigestSyntaxTests(unittest.TestCase):
+    """The canonical sha256 digest syntax is defined once and shared.
+
+    The captured-adapter validator (manifest entry + manifest digest agreement
+    + rooted path + regular file + byte hash) and the per-run generated
+    validator (rooted path + regular file + digest syntax + byte hash) remain
+    separate functions with distinct trust contracts; only the syntax check is
+    shared via ``evidence.is_sha256_digest``.
+    """
+
+    def test_malformed_captured_adapter_digest_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root, manifest, _, _ = _write_bundle(Path(temporary))
+            entries = load_evidence_manifest(manifest)
+            adapter = dataclasses.replace(
+                _generics_adapter(), evidence_sha256="sha256:" + "a" * 63
+            )
+            with self.assertRaises(EvidenceError) as ctx:
+                validate_adapter_provenance(adapter, root, entries)
+            self.assertIn("malformed", str(ctx.exception))
+
+    def test_captured_adapter_byte_hash_mismatch_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root, manifest, result, _ = _write_bundle(Path(temporary))
+            result.write_bytes(b"tampered result bytes")
+            entries = load_evidence_manifest(manifest)
+            with self.assertRaises(EvidenceError) as ctx:
+                validate_adapter_provenance(_generics_adapter(), root, entries)
+            self.assertIn("hash mismatch", str(ctx.exception))
+
+    def test_malformed_per_run_generated_digest_fails_closed(self) -> None:
+        from pcb_agent import diode
+        from pcb_agent.diode import GeneratedCompatibilityError
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "result.json").write_bytes(b'{"ok": true}')
+            with self.assertRaises(GeneratedCompatibilityError) as ctx:
+                diode._verify_retained_artifact(
+                    root, "result.json", "sha256:" + "a" * 63
+                )
+            self.assertIn("malformed", str(ctx.exception))
+
+    def test_per_run_generated_byte_hash_mismatch_fails_closed(self) -> None:
+        from pcb_agent import diode
+        from pcb_agent.diode import GeneratedCompatibilityError
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "result.json").write_bytes(b'{"ok": true}')
+            with self.assertRaises(GeneratedCompatibilityError) as ctx:
+                diode._verify_retained_artifact(
+                    root, "result.json", "sha256:" + "b" * 64
+                )
+            self.assertIn("hash mismatch", str(ctx.exception))
+
+    def test_uppercase_hex_digest_is_rejected(self) -> None:
+        from pcb_agent.evidence import is_sha256_digest
+        from pcb_agent.generated_testbench import build_adapter_registry
+
+        canonical = "sha256:" + hashlib.sha256(b"x").hexdigest()
+        self.assertTrue(is_sha256_digest(canonical))
+        self.assertFalse(is_sha256_digest("sha256:" + "A" * 64))
+        self.assertFalse(is_sha256_digest(canonical.upper()))
+        self.assertFalse(is_sha256_digest("sha256:" + "a" * 63))
+        self.assertFalse(is_sha256_digest("sha256:" + "a" * 65))
+        self.assertFalse(is_sha256_digest(None))
+        adapter = dataclasses.replace(
+            _generics_adapter(), evidence_sha256="sha256:" + "A" * 64
+        )
+        with self.assertRaises(ValueError) as ctx:
+            build_adapter_registry([adapter])
+        self.assertIn("evidence_sha256", str(ctx.exception))
+
+
+class RegistryValueValidationTests(unittest.TestCase):
+    """Every registry value is validated; malformed entries fail closed.
+
+    The former ``if not isinstance(adapter, object): continue`` branch was
+    dead code (``isinstance(x, object)`` is always true) and would have
+    silently skipped malformed entries. A non-adapter value must raise
+    ``EvidenceError`` instead.
+    """
+
+    def _registry_root(self) -> tuple[Path, Path]:
+        temporary = tempfile.TemporaryDirectory()
+        root, manifest, _, _ = _write_bundle(Path(temporary.name))
+        self.addCleanup(temporary.cleanup)
+        return root, manifest
+
+    def test_none_registry_value_fails_closed(self) -> None:
+        root, manifest = self._registry_root()
+        with self.assertRaises(EvidenceError) as ctx:
+            validate_registry_provenance({"resistor": None}, root, manifest)
+        self.assertIn("kind", str(ctx.exception).lower())
+
+    def test_string_registry_value_fails_closed(self) -> None:
+        root, manifest = self._registry_root()
+        with self.assertRaises(EvidenceError) as ctx:
+            validate_registry_provenance(
+                {"resistor": "not-an-adapter"}, root, manifest
+            )
+        self.assertIn("kind", str(ctx.exception).lower())
+
+    def test_kindless_object_registry_value_fails_closed(self) -> None:
+        root, manifest = self._registry_root()
+        with self.assertRaises(EvidenceError) as ctx:
+            validate_registry_provenance({"resistor": object()}, root, manifest)
+        self.assertIn("kind", str(ctx.exception).lower())
+
+
 class VersionRecordTests(unittest.TestCase):
     def test_valid_exact_version_passes_and_parses(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -348,6 +471,136 @@ class CapturedRegistryProvenanceTests(unittest.TestCase):
                 validate_adapter_provenance(adapter, evidence_root(), entries)
 
 
+class ActiveRegistryProvenanceTests(unittest.TestCase):
+    """The *active* (module-global) adapter registry is provenance-validated.
+
+    `render_connectivity_testbench`/`render_specification_testbench` call
+    `ensure_registry_provenance`, which validates the active `_ADAPTERS`
+    snapshot against the repository-owned bundle. These tests prove that it is
+    the active registry (not a throwaway captured copy) that is validated, that
+    any tamper blocks rendering, that registry replacement invalidates cached
+    verdicts, and that a failure fails closed and stays failed.
+    """
+
+    def setUp(self) -> None:
+        reset_registry_provenance()
+
+    def tearDown(self) -> None:
+        reset_registry_provenance()
+
+    def _render(self) -> str:
+        from pcb_agent.state import load_project
+
+        project = load_project(FIXTURES / "production-expression")
+        return render_connectivity_testbench(project, "0.4.40")
+
+    def _tampered_resistor(self, **overrides: object) -> ComponentAdapter:
+        return dataclasses.replace(captured_adapter_registry()["resistor"], **overrides)
+
+    def test_captured_active_registry_validates(self) -> None:
+        ensure_registry_provenance()
+        self.assertEqual(known_kinds(), EXPECTED_KINDS)
+        self.assertIn("PcbAgentConnectivity", self._render())
+
+    def test_modified_evidence_sha256_blocks_renderer(self) -> None:
+        set_adapter_registry(
+            {**captured_adapter_registry(),
+             "resistor": self._tampered_resistor(evidence_sha256="sha256:" + "0" * 64)}
+        )
+        with self.assertRaises(GeneratorError) as ctx:
+            self._render()
+        self.assertIn("provenance invalid", str(ctx.exception))
+
+    def test_modified_evidence_source_sha256_blocks_renderer(self) -> None:
+        set_adapter_registry(
+            {**captured_adapter_registry(),
+             "resistor": self._tampered_resistor(evidence_source_sha256="sha256:" + "1" * 64)}
+        )
+        with self.assertRaises(GeneratorError) as ctx:
+            self._render()
+        self.assertIn("provenance invalid", str(ctx.exception))
+
+    def test_unsupported_version_blocks_renderer(self) -> None:
+        set_adapter_registry(
+            {**captured_adapter_registry(),
+             "resistor": self._tampered_resistor(verified_pcbc_versions=frozenset({"9.9.9"}))}
+        )
+        with self.assertRaises(GeneratorError) as ctx:
+            self._render()
+        self.assertIn("provenance invalid", str(ctx.exception))
+
+    def test_registry_replacement_invalidates_cached_success(self) -> None:
+        self._render()  # primes a successful cached verdict for the captured registry
+        bad = self._tampered_resistor(evidence_sha256="sha256:" + "0" * 64)
+        set_adapter_registry({**captured_adapter_registry(), "resistor": bad})
+        with self.assertRaises(GeneratorError):
+            self._render()
+
+    def test_restoring_captured_registry_allows_rendering(self) -> None:
+        bad = self._tampered_resistor(evidence_sha256="sha256:" + "0" * 64)
+        set_adapter_registry({**captured_adapter_registry(), "resistor": bad})
+        with self.assertRaises(GeneratorError):
+            self._render()
+        self.assertEqual(known_kinds(), frozenset())
+        reset_registry_provenance()
+        self.assertEqual(known_kinds(), EXPECTED_KINDS)
+        self.assertIn("PcbAgentConnectivity", self._render())
+
+    def test_failed_provenance_stays_fail_closed(self) -> None:
+        bad = self._tampered_resistor(evidence_sha256="sha256:" + "0" * 64)
+        set_adapter_registry({**captured_adapter_registry(), "resistor": bad})
+        with self.assertRaises(GeneratorError):
+            self._render()
+        with self.assertRaises(GeneratorError):
+            ensure_registry_provenance()
+        with self.assertRaises(GeneratorError):
+            self._render()
+        self.assertEqual(known_kinds(), frozenset())
+
+    def test_active_registry_snapshot_is_supplied_to_validator(self) -> None:
+        from unittest.mock import patch
+
+        marker = ComponentAdapter(
+            kind="marker",
+            instance_suffix="M",
+            pins={"P1": "1"},
+            verified_pcbc_versions=frozenset({"0.4.40"}),
+            evidence_sha256="sha256:" + "a" * 64,
+        )
+        received: dict[str, object] = {}
+
+        def fake_validate(registry, evidence_root, manifest_path):
+            received.update(dict(registry))
+
+        with patch(
+            "pcb_agent.evidence.validate_registry_provenance",
+            side_effect=fake_validate,
+        ):
+            set_adapter_registry({"marker": marker})
+            ensure_registry_provenance()
+        self.assertEqual(set(received), {"marker"})
+        self.assertIs(received["marker"], marker)
+
+    def test_end_to_end_renderer_regression(self) -> None:
+        from pcb_agent.state import load_project
+
+        project = load_project(FIXTURES / "production-expression")
+        source = render_connectivity_testbench(project, "0.4.40")
+        retained = (
+            evidence_root()
+            / "production-expression"
+            / "production-connectivity-testbench.generated.zen"
+        ).read_bytes()
+        self.assertEqual(source.encode("utf-8"), retained)
+        spec = render_specification_testbench(project, "0.4.40")
+        retained_spec = (
+            evidence_root()
+            / "production-expression"
+            / "production-specification-testbench.generated.zen"
+        ).read_bytes()
+        self.assertEqual(spec.encode("utf-8"), retained_spec)
+
+
 class ProductionProvenanceTests(unittest.TestCase):
     def setUp(self) -> None:
         reset_registry_provenance()
@@ -358,7 +611,7 @@ class ProductionProvenanceTests(unittest.TestCase):
     def test_lazy_validation_success(self) -> None:
         from pcb_agent.state import load_project
 
-        project = load_project(Path("fixtures/production-expression"))
+        project = load_project(FIXTURES / "production-expression")
         source = render_connectivity_testbench(project, "0.4.40")
         self.assertIn("PcbAgentConnectivity", source)
         ensure_registry_provenance()
@@ -395,7 +648,7 @@ class ProductionProvenanceTests(unittest.TestCase):
         from pcb_agent.evidence import EvidenceError as EvidenceErrorCls
         from pcb_agent.state import load_project
 
-        project = load_project(Path("fixtures/production-expression"))
+        project = load_project(FIXTURES / "production-expression")
         with patch(
             "pcb_agent.generated_testbench._run_provenance_validation",
             side_effect=EvidenceErrorCls("evidence root missing"),
@@ -412,7 +665,7 @@ class ProductionProvenanceTests(unittest.TestCase):
         from pcb_agent.evidence import EvidenceError as EvidenceErrorCls
         from pcb_agent.state import load_project
 
-        project = load_project(Path("fixtures/valid-blinky"))
+        project = load_project(FIXTURES / "valid-blinky")
         with patch(
             "pcb_agent.generated_testbench._run_provenance_validation",
             side_effect=EvidenceErrorCls("evidence root missing"),
@@ -434,7 +687,7 @@ class ProductionExpressionEvidenceTests(unittest.TestCase):
         """
         from pcb_agent.state import load_project
 
-        project = load_project(Path("fixtures/production-expression"))
+        project = load_project(FIXTURES / "production-expression")
         source = render_connectivity_testbench(project, "0.4.40")
         retained = (
             evidence_root() / "production-expression" / "production-connectivity-testbench.generated.zen"
@@ -484,7 +737,7 @@ class ProductionExpressionEvidenceTests(unittest.TestCase):
 
         from pcb_agent.state import load_project
 
-        project = load_project(Path("fixtures/production-expression"))
+        project = load_project(FIXTURES / "production-expression")
         source = render_specification_testbench(project, "0.4.40")
         retained = (
             evidence_root() / "production-expression" / "production-specification-testbench.generated.zen"

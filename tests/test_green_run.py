@@ -27,23 +27,56 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import hashlib
+
 from helpers import make_fake_pcb
 from pcb_agent import cli
-from pcb_agent.generated_testbench import ComponentAdapter, set_adapter_registry
+from pcb_agent.generated_testbench import (
+    ComponentAdapter,
+    set_adapter_registry,
+    temporary_test_evidence_root,
+)
 
 
-STUB_EVIDENCE = "sha256:" + "0" * 64
 STUB_VERSION = "0.4.34"
 
 
-def _stub_registry() -> dict[str, ComponentAdapter]:
+def _write_stub_bundle(root: Path, version: str) -> None:
+    """A minimal evidence bundle the stub adapter validates against.
+
+    CI has no real Diode toolchain, so the generated gates run against a fake
+    `pcb`. The stub adapter's evidence still has to be validated against a real
+    (temporary) bundle rather than bypassed, so the active registry is checked
+    against this bundle.
+    """
+    result = root / "result.json"
+    source = root / "source.zen"
+    result.write_bytes(b'{"results": [{"status": "pass"}]}')
+    source.write_bytes(b'check(True, "ok")\n')
+    version_path = root / "pcb-version.txt"
+    version_path.write_text(f"pcbc {version}\n", encoding="utf-8", newline="\n")
+    manifest = root / "manifest.sha256"
+    manifest.write_text(
+        f"{hashlib.sha256(result.read_bytes()).hexdigest()}  ./result.json\n"
+        f"{hashlib.sha256(source.read_bytes()).hexdigest()}  ./source.zen\n"
+        f"{hashlib.sha256(version_path.read_bytes()).hexdigest()}  ./pcb-version.txt\n",
+        encoding="utf-8",
+    )
+
+
+def _stub_registry(bundle_root: Path) -> dict[str, ComponentAdapter]:
     return {
         "resistor": ComponentAdapter(
             kind="resistor",
             instance_suffix="R",
             pins={"P1": "1", "P2": "2"},
             verified_pcbc_versions=frozenset({STUB_VERSION}),
-            evidence_sha256=STUB_EVIDENCE,
+            evidence_sha256="sha256:"
+            + hashlib.sha256((bundle_root / "result.json").read_bytes()).hexdigest(),
+            evidence_result_path="result.json",
+            evidence_source_path="source.zen",
+            evidence_source_sha256="sha256:"
+            + hashlib.sha256((bundle_root / "source.zen").read_bytes()).hexdigest(),
             value_accessor="resistance",
             package_accessor="properties['package']",
             pullup_pin_pair=("P1", "P2"),
@@ -168,10 +201,17 @@ class GreenRunTests(unittest.TestCase):
         make_fake_pcb(self.tools)
         self.fixture = self.base / "green-board"
         _write_green_project(self.fixture)
-        set_adapter_registry(_stub_registry())
+        self._bundle_tmp = tempfile.TemporaryDirectory()
+        self._bundle_root = Path(self._bundle_tmp.name)
+        _write_stub_bundle(self._bundle_root, STUB_VERSION)
+        self._root_cm = temporary_test_evidence_root(self._bundle_root)
+        self._root_cm.__enter__()
+        set_adapter_registry(_stub_registry(self._bundle_root))
 
     def tearDown(self) -> None:
         set_adapter_registry({})
+        self._root_cm.__exit__(None, None, None)
+        self._bundle_tmp.cleanup()
         self.temporary.cleanup()
 
     def _verify(self) -> tuple[int, dict]:

@@ -17,7 +17,10 @@
           "kind": {"type": "string", "minLength": 1},
           "value": {"type": "string"},
           "package": {"type": "string"},
-          "mpn": {"type": "string"}
+          "mpn": {
+            "type": "string",
+            "description": "Manufacturer part number, kept for documentation completeness. No captured adapter provides a verified mpn accessor, so any specification requirement that asserts mpn is rejected by the generator (fail closed)."
+          }
         }
       }
     },

@@ -10,7 +10,7 @@ import re
 import sys
 import platform
 import shutil
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Callable, Sequence
 
@@ -79,33 +79,93 @@ def _check(check_id: str, status: CheckStatus, message: str, *, required: bool =
     return Check(id=check_id, status=status, severity=Severity.ERROR, message=message, required=required)
 
 
-def _tool_versions(project: ProjectState) -> dict[str, str]:
+@dataclass(frozen=True)
+class ToolVersionProbe:
+    """Result of the single `pcb --version` probe for one CLI invocation.
+
+    The generated compatibility checks and the report's diagnostic
+    `versions` read from the same probe, so `pcb --version` is spawned
+    exactly once per invocation and the two can never disagree about the
+    toolchain. When `error` is set, `pcbc` is `None`; on success, `raw` is
+    the stripped output and `pcbc` is the parsed version. There is no
+    module-global cache: per-project correctness and test isolation depend
+    on every invocation probing itself.
+    """
+
+    raw: str | None
+    pcbc: str | None
+    error: BaseException | None
+
+
+def _probe_tool_version(project: ProjectState) -> ToolVersionProbe:
+    """Run `pcb --version` exactly once and derive both values from it.
+
+    Failures are recorded, not raised, so the caller can either gate a
+    generated check (BLOCKED) or treat the version as diagnostic only
+    (empty report mapping).
+    """
+    try:
+        result = diode.run_process(project.root, ["pcb", "--version"], timeout=30)
+    except (FileNotFoundError, OSError, ValueError) as error:
+        return ToolVersionProbe(None, None, error)
+    if result.timed_out:
+        return ToolVersionProbe(
+            result.stdout.strip() or None,
+            None,
+            diode.GeneratedCompatibilityError("pcb --version timed out"),
+        )
+    if result.returncode != 0:
+        return ToolVersionProbe(
+            result.stdout.strip() or None,
+            None,
+            diode.GeneratedCompatibilityError(f"pcb --version exited {result.returncode}"),
+        )
+    raw = result.stdout.strip() or None
+    try:
+        pcbc = diode.parse_pcbc_version(result.stdout)
+    except diode.GeneratedCompatibilityError as error:
+        return ToolVersionProbe(raw, None, error)
+    return ToolVersionProbe(raw, pcbc, None)
+
+
+def _version_blocked(check_id: str, error: BaseException) -> Check:
+    """Map a failed version probe to a BLOCKED generated check.
+
+    Preserves the user-facing distinction between a toolchain that answered
+    but could not be parsed (`toolchain version unknown`) and a probe that
+    could not run at all (`toolchain version probe blocked`).
+    """
+    if isinstance(error, diode.GeneratedCompatibilityError):
+        return _check(check_id, CheckStatus.BLOCKED, f"toolchain version unknown: {error}")
+    return _check(check_id, CheckStatus.BLOCKED, f"toolchain version probe blocked: {error}")
+
+
+def _tool_versions(probe: ToolVersionProbe) -> dict[str, str]:
     """Best-effort exact toolchain versions for the verification report.
 
     Version capture is diagnostic and never gates verification: a probe
     failure yields an empty mapping rather than a BLOCKED run. The pcbc
     version is the exact installed build, not the contract's `pcb_version`.
+    Both values come from the single `pcb --version` probe, so the report
+    never disagrees with the generated checks about the toolchain.
     """
+    if probe.error is not None:
+        return {}
     versions: dict[str, str] = {}
-    try:
-        versions["pcbc"] = diode.probe_pcbc_version(project)
-    except (FileNotFoundError, OSError, ValueError, diode.GeneratedCompatibilityError):
-        pass
-    try:
-        result = diode.run_process(project.root, ["pcb", "--version"], timeout=30)
-        if result.returncode == 0 and not result.timed_out:
-            versions["pcb"] = result.stdout.strip()
-    except (FileNotFoundError, OSError, ValueError):
-        pass
+    if probe.pcbc is not None:
+        versions["pcbc"] = probe.pcbc
+    if probe.raw is not None:
+        versions["pcb"] = probe.raw
     return versions
 
 
 def _persist(project: ProjectState, run: RunState, checks: Sequence[Check], output_format: str,
+             version_probe: ToolVersionProbe,
              profile: str = "schematic", exit_override: int | None = None) -> int:
     artifacts = tuple(check.evidence for check in checks if check.evidence)
     report = VerificationReport(project.name, tuple(checks), profile=profile, run_id=run.run_id,
                                 source_dirty=source_is_dirty(project.root), hashes=project.hashes,
-                                versions=_tool_versions(project), artifacts=artifacts)
+                                versions=_tool_versions(version_probe), artifacts=artifacts)
     path = write_run_report(run, report, project)
     payload = json.loads(path.read_text(encoding="utf-8"))
     if output_format == "json":
@@ -193,12 +253,18 @@ def _diode_command(project: ProjectState, key: str, check_id: str,
         return _check(check_id, CheckStatus.BLOCKED, str(error))
 
 
-def _schematic_checks(project: ProjectState, run: RunState | None = None) -> list[Check]:
+def _schematic_checks(project: ProjectState, run: RunState | None,
+                      version_probe: ToolVersionProbe) -> list[Check]:
     test = _diode_command(project, "test-command", "ZENER_TEST", run.raw_directory if run else None)
-    return [test, _connectivity_check(project, test, run), _specification_check(project, test, run)]
+    return [
+        test,
+        _connectivity_check(project, test, run, version_probe),
+        _specification_check(project, test, run, version_probe),
+    ]
 
 
-def _connectivity_check(project: ProjectState, test: Check, run: RunState | None) -> Check:
+def _connectivity_check(project: ProjectState, test: Check, run: RunState | None,
+                        version_probe: ToolVersionProbe) -> Check:
     if test.status != CheckStatus.PASS:
         return _check(
             "CONNECTIVITY",
@@ -211,15 +277,15 @@ def _connectivity_check(project: ProjectState, test: Check, run: RunState | None
                       "build-negative fixture declares no expected connectivity",
                       required=False)
 
+    if version_probe.error is not None:
+        return _version_blocked("CONNECTIVITY", version_probe.error)
+
     from .generated_testbench import render_connectivity_testbench, GeneratorError
-    try:
-        pcbc_version = diode.probe_pcbc_version(project)
-    except diode.GeneratedCompatibilityError as error:
-        return _check("CONNECTIVITY", CheckStatus.BLOCKED,
-                      f"toolchain version unknown: {error}")
-    except (FileNotFoundError, OSError, ValueError) as error:
-        return _check("CONNECTIVITY", CheckStatus.BLOCKED,
-                      f"toolchain version probe blocked: {error}")
+    pcbc_version = version_probe.pcbc
+    if pcbc_version is None:
+        # Unreachable: _probe_tool_version sets pcbc whenever error is None.
+        # Defense in depth for the renderer, which requires an exact version.
+        return _check("CONNECTIVITY", CheckStatus.BLOCKED, "toolchain version unknown")
 
     try:
         source = render_connectivity_testbench(project, pcbc_version)
@@ -244,7 +310,8 @@ def _connectivity_check(project: ProjectState, test: Check, run: RunState | None
     )
 
 
-def _specification_check(project: ProjectState, test: Check, run: RunState | None) -> Check:
+def _specification_check(project: ProjectState, test: Check, run: RunState | None,
+                         version_probe: ToolVersionProbe) -> Check:
     if test.status != CheckStatus.PASS:
         return _check(
             "SPECIFICATION",
@@ -252,15 +319,15 @@ def _specification_check(project: ProjectState, test: Check, run: RunState | Non
             "locked Zener TestBench did not pass; specification was not verified",
         )
 
+    if version_probe.error is not None:
+        return _version_blocked("SPECIFICATION", version_probe.error)
+
     from .generated_testbench import render_specification_testbench, GeneratorError
-    try:
-        pcbc_version = diode.probe_pcbc_version(project)
-    except diode.GeneratedCompatibilityError as error:
-        return _check("SPECIFICATION", CheckStatus.BLOCKED,
-                      f"toolchain version unknown: {error}")
-    except (FileNotFoundError, OSError, ValueError) as error:
-        return _check("SPECIFICATION", CheckStatus.BLOCKED,
-                      f"toolchain version probe blocked: {error}")
+    pcbc_version = version_probe.pcbc
+    if pcbc_version is None:
+        # Unreachable: _probe_tool_version sets pcbc whenever error is None.
+        # Defense in depth for the renderer, which requires an exact version.
+        return _check("SPECIFICATION", CheckStatus.BLOCKED, "toolchain version unknown")
 
     try:
         source = render_specification_testbench(project, pcbc_version)
@@ -285,13 +352,14 @@ def _specification_check(project: ProjectState, test: Check, run: RunState | Non
     )
 
 
-def _verify(project: ProjectState, run: RunState, profile: str) -> list[Check]:
+def _verify(project: ProjectState, run: RunState, profile: str,
+            version_probe: ToolVersionProbe) -> list[Check]:
     checks = [
         _check("CONTRACT", CheckStatus.PASS, "project contracts loaded and hashed"),
         _diode_command(project, "build-command", "DIODE_BUILD", run.raw_directory),
     ]
     if checks[-1].status == CheckStatus.PASS:
-        checks.extend(_schematic_checks(project, run))
+        checks.extend(_schematic_checks(project, run, version_probe))
     else:
         # A failed or blocked build means no schematic evidence was gathered at
         # all. Inheriting FAIL would report "checked and wrong" for gates that
@@ -382,7 +450,7 @@ def _fingerprint(checks: Sequence[Check], changed: Sequence[str]) -> str:
 
 
 def _run_backend_unlocked(args: argparse.Namespace, project: ProjectState, run: RunState,
-                           policy: Policy) -> list[Check]:
+                           policy: Policy, version_probe: ToolVersionProbe) -> list[Check]:
     if os.environ.get("PCB_AGENT_ACTIVE"):
         return [_check("BACKEND", CheckStatus.BLOCKED, "nested pcb-agent run is forbidden")]
     if not 1 <= args.max_iterations <= policy.max_iterations:
@@ -433,7 +501,7 @@ def _run_backend_unlocked(args: argparse.Namespace, project: ProjectState, run: 
             snapshot.seal_backend_changes().restore_backend_changes()
             exit_code = getattr(proc, "returncode", 4)
             return [_check("BACKEND", CheckStatus.BLOCKED, f"backend exited {exit_code}")]
-        checks = _verify(project, run, args.profile)
+        checks = _verify(project, run, args.profile, version_probe)
         if VerificationReport(project.name, tuple(checks)).status == CheckStatus.PASS:
             return [_check("BACKEND", CheckStatus.PASS, f"backend iteration {iteration} completed"), *checks]
         fingerprint = _fingerprint(checks, changed)
@@ -444,10 +512,10 @@ def _run_backend_unlocked(args: argparse.Namespace, project: ProjectState, run: 
 
 
 def _run_backend(args: argparse.Namespace, project: ProjectState, run: RunState,
-                 policy: Policy) -> list[Check]:
+                 policy: Policy, version_probe: ToolVersionProbe) -> list[Check]:
     lock = WorkspaceLock.acquire(project.root)
     try:
-        return _run_backend_unlocked(args, project, run, policy)
+        return _run_backend_unlocked(args, project, run, policy, version_probe)
     finally:
         lock.release()
 
@@ -552,6 +620,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.profile = args.profile or project.profile
             if project.config["layout"]["required"] and args.profile != "layout":
                 raise ConfigurationError("layout.required project cannot use schematic profile")
+        if args.command == "check" and project.config["layout"]["required"]:
+            # `check` is a schematic-level command. A layout.required project
+            # must be verified under the layout profile, so running the
+            # schematic check on it is a profile conflict: reject explicitly
+            # instead of silently reporting under the project's layout profile.
+            raise ConfigurationError("layout.required project cannot use the schematic check command")
         if args.command == "report":
             try:
                 path = ((project.root / "reports" / args.run / "verify-report.json").resolve(strict=True)
@@ -564,12 +638,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(path.read_text(encoding="utf-8") if args.format == "json" else path)
             return 0
         run = new_run(project)
+        # One `pcb --version` probe per invocation: the generated
+        # compatibility checks and the report's diagnostic versions must
+        # derive from the same output. The probe result is diagnostic for
+        # commands that never run generated checks (doctor, build, ...).
+        version_probe = _probe_tool_version(project)
         if args.command == "doctor":
             checks = _doctor(project, args.profile)
         elif args.command == "build":
             checks = [_diode_command(project, "build-command", "DIODE_BUILD", run.raw_directory)]
         elif args.command == "check":
-            checks = _schematic_checks(project, run)
+            checks = _schematic_checks(project, run, version_probe)
             if args.scope == "spec":
                 checks = [next(item for item in checks if item.id == "SPECIFICATION")]
             elif args.scope == "connectivity":
@@ -592,12 +671,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             except (ConfigurationError, FileNotFoundError, OSError, ValueError) as error:
                 checks = [_check("KICAD_DRC", CheckStatus.BLOCKED, str(error))]
         elif args.command == "verify":
-            checks = _verify(project, run, args.profile)
+            checks = _verify(project, run, args.profile, version_probe)
         else:
-            checks = _run_backend(args, project, run, policy)
+            checks = _run_backend(args, project, run, policy, version_probe)
         backend_terminal = (args.command == "run" and checks and checks[0].id == "BACKEND"
                             and checks[0].status == CheckStatus.BLOCKED)
-        return _persist(project, run, checks, args.format, getattr(args, "profile", project.profile),
+        # `check` is a schematic-level command: its report profile is always
+        # "schematic", regardless of the project's configured profile. The scope
+        # argument only selects which check(s) are returned, never the profile.
+        report_profile = "schematic" if args.command == "check" else getattr(args, "profile", project.profile)
+        return _persist(project, run, checks, args.format, version_probe, report_profile,
                         4 if backend_terminal else None)
     except (ConfigurationError, PolicyConfigError, PolicyViolation, BackendError,
             FileNotFoundError, OSError, ValueError) as error:

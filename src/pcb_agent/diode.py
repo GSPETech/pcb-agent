@@ -9,8 +9,9 @@ import re
 import shutil
 import tempfile
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
+from .evidence import is_sha256_digest
 from .models import Check, CheckStatus, Severity
 from .process import ProcessResult, run_process
 from .state import ConfigurationError, ProjectState
@@ -93,13 +94,28 @@ def doctor_probes(project: ProjectState) -> tuple[ProcessResult, ...]:
 _PCBC_VERSION_PATTERN = re.compile(r"\bpcbc\s+(?P<version>\d+\.\d+\.\d+)\b")
 
 
+def parse_pcbc_version(stdout: str) -> str:
+    """Strictly parse the pcbc version from `pcb --version` output.
+
+    The output shape has not been verified against a real toolchain, so the
+    parser is deliberately strict. Anything it cannot parse is treated as an
+    unusable toolchain rather than guessed at. See
+    docs/spike-diode-net-naming.md.
+    """
+    match = _PCBC_VERSION_PATTERN.search(stdout)
+    if match is None:
+        raise GeneratedCompatibilityError(
+            "cannot parse pcbc version from pcb --version output"
+        )
+    return match.group("version")
+
+
 def probe_pcbc_version(project: ProjectState) -> str:
     """Return the exact installed pcbc build version.
 
-    The output shape of `pcb --version` has not been verified against a real
-    toolchain, so the parser is deliberately strict. Anything it cannot parse
-    is treated as an unusable toolchain rather than guessed at. See
-    docs/spike-diode-net-naming.md.
+    Runs `pcb --version` once and parses it with the same strict rules as the
+    CLI's one-shot tool probe (``cli._probe_tool_version``), so a direct
+    probe and a full invocation can never disagree about the toolchain.
     """
     result = run_process(project.root, ["pcb", "--version"], timeout=30)
     if result.timed_out:
@@ -108,17 +124,11 @@ def probe_pcbc_version(project: ProjectState) -> str:
         raise GeneratedCompatibilityError(
             f"pcb --version exited {result.returncode}"
         )
-    match = _PCBC_VERSION_PATTERN.search(result.stdout)
-    if match is None:
-        raise GeneratedCompatibilityError(
-            "cannot parse pcbc version from pcb --version output"
-        )
-    return match.group("version")
+    return parse_pcbc_version(result.stdout)
 
 
 _PASS_STATUSES = frozenset({"PASS", "PASSED", "OK"})
 _FAIL_STATUSES = frozenset({"FAIL", "FAILED", "ERROR"})
-_EVIDENCE_DIGEST_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 def _top_level_record_counts(payload: Mapping[str, Any]) -> tuple[int, int] | None:
     passed = 0
@@ -190,25 +200,53 @@ def _validate_test_payload(payload: object) -> Mapping[str, Any]:
     return payload
 
 
-def _record_identity(record: Mapping[str, Any]) -> tuple[str | None, str | None]:
+def _canonical_record_key(record: Mapping[str, Any]) -> str | None:
+    """Return the canonical `{test_bench_name}.{check_name}` identity of a
+    top-level `pcb test` result record, or `None` if the record lacks the
+    canonical fields.
+
+    This is the single source of truth for record identity, shared by the
+    locked-Zener acceptance matching in `execute` and the generated-check
+    record lookup in `_find_record`. No alias fields (`name`, `test`) are
+    honored; only the two canonical fields the real tool emits are used.
+    """
     bench = record.get("test_bench_name")
     check = record.get("check_name")
     if isinstance(bench, str) and isinstance(check, str):
-        return bench, check
-    return None, None
+        return f"{bench}.{check}"
+    return None
 
 
 def _find_record(payload: Mapping[str, Any], bench_name: str, check_name: str) -> Mapping[str, Any] | None:
+    target = f"{bench_name}.{check_name}"
     matches: list[Mapping[str, Any]] = []
     for record in payload["results"]:
         if not isinstance(record, dict):
             return None
-        rb, rc = _record_identity(record)
-        if rb == bench_name and rc == check_name:
+        if _canonical_record_key(record) == target:
             matches.append(record)
     if len(matches) != 1:
         return None
     return matches[0]
+
+
+def _require_passing_acceptance(payload: Mapping[str, Any], expected: Sequence[str]) -> None:
+    """Strict locked-Zener acceptance matching against a `pcb test` payload.
+
+    Only the canonical top-level `results[]` records are considered. Each
+    expected test identity (`{test_bench_name}.{check_name}`) must match
+    exactly one record, and that record must carry the real tool's canonical
+    lowercase `"pass"` status. No alias fields (`name`, `test`), nested
+    records, or case-folded status are honored. Raises `ValueError` on any
+    violation so the locked Zener gate reports BLOCKED.
+    """
+    for name in expected:
+        matches = [
+            record for record in payload["results"]
+            if isinstance(record, dict) and _canonical_record_key(record) == name
+        ]
+        if len(matches) != 1 or matches[0].get("status") != "pass":
+            raise ValueError(f"pcb test JSON lacks passing acceptance result: {name}")
 
 
 def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None) -> ProcessResult:
@@ -250,23 +288,7 @@ def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None
                     if item["kind"] == "zener_test" and item["expected"] == "PASS"]
         if any(item["expected"] == "FAIL" for item in project.acceptance["checks"]):
             raise ValueError("negative fixture unexpectedly passed its locked acceptance")
-        def records(value: object):
-            if isinstance(value, dict):
-                yield value
-                for child in value.values():
-                    yield from records(child)
-            elif isinstance(value, list):
-                for child in value:
-                    yield from records(child)
-        all_records = tuple(records(payload["results"]))
-        for name in expected:
-            matches = [record for record in all_records if name in {
-                record.get("name"), record.get("test"),
-                f"{record.get('test_bench_name')}.{record.get('check_name')}",
-            }]
-            if not matches or not all(str(record.get("status", "")).upper() in {"PASS", "PASSED", "OK"}
-                                      for record in matches):
-                raise ValueError(f"pcb test JSON lacks passing acceptance result: {name}")
+        _require_passing_acceptance(payload, expected)
         summary = payload["summary"]
         if (any(not isinstance(summary.get(key), int) for key in ("total", "passed", "failed"))
                 or summary["total"] != len(payload["results"])
@@ -433,7 +455,7 @@ def _verify_retained_artifact(
 ) -> bytes:
     from .paths import resolve_workspace_path, require_regular_file
 
-    if not _EVIDENCE_DIGEST_PATTERN.match(expected_sha256 or ""):
+    if not is_sha256_digest(expected_sha256):
         raise GeneratedCompatibilityError(
             f"malformed evidence digest for {relative_path}"
         )

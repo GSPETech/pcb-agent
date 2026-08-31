@@ -122,5 +122,32 @@ class MeasureSourceCleanlinessTests(unittest.TestCase):
         self.assertIn("revision drift", str(ctx.exception))
 
 
+class EvidenceExclusionTests(unittest.TestCase):
+    def test_evidence_root_outside_repo_raises_source_cleanliness_error(self) -> None:
+        repo = _make_repo()
+        outside = Path(tempfile.mkdtemp())
+        with self.assertRaises(SourceCleanlinessError) as ctx:
+            measure_source_cleanliness(repo, outside)
+        self.assertIn("strictly inside", str(ctx.exception))
+
+    def test_missing_evidence_root_raises_source_cleanliness_error(self) -> None:
+        repo = _make_repo()
+        with self.assertRaises(SourceCleanlinessError) as ctx:
+            measure_source_cleanliness(repo, repo / "no-such-evidence")
+        self.assertIn("cannot resolve", str(ctx.exception))
+
+    def test_repo_root_as_evidence_root_rejected(self) -> None:
+        repo = _make_repo()
+        with self.assertRaises(SourceCleanlinessError) as ctx:
+            measure_source_cleanliness(repo, repo)
+        self.assertIn("strictly inside", str(ctx.exception))
+
+    def test_dot_segments_canonicalize_to_same_exclusion(self) -> None:
+        repo = _make_repo()
+        record = measure_source_cleanliness(repo, repo / "evidence" / ".." / "evidence")
+        self.assertTrue(record["source_clean"])
+        self.assertEqual(record["exclusion"], "evidence/**")
+
+
 if __name__ == "__main__":
     unittest.main()

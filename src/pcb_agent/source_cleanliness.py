@@ -26,6 +26,37 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def _evidence_exclusion(repo_root: Path, evidence_root: Path) -> str:
+    """Build the git exclude pathspec for ``evidence_root`` inside ``repo_root``.
+
+    Both roots are canonicalized before comparison so relative paths, ``..``
+    segments, or symlinked components cannot smuggle an outside root past the
+    containment check. Failing to resolve either root, or an evidence root
+    that is not strictly inside the repo root, raises
+    ``SourceCleanlinessError`` (fail closed) instead of a bare ``ValueError``.
+    """
+    try:
+        resolved_repo = Path(repo_root).resolve(strict=True)
+        resolved_evidence = Path(evidence_root).resolve(strict=True)
+    except (OSError, RuntimeError) as exc:
+        raise SourceCleanlinessError(
+            f"cannot resolve source-cleanliness roots: {exc}"
+        ) from exc
+    try:
+        relative = resolved_evidence.relative_to(resolved_repo)
+    except ValueError as exc:
+        raise SourceCleanlinessError(
+            f"evidence root {evidence_root} is not strictly inside "
+            f"repo root {repo_root}"
+        ) from exc
+    if relative == Path("."):
+        raise SourceCleanlinessError(
+            f"evidence root {evidence_root} is not strictly inside "
+            f"repo root {repo_root}"
+        )
+    return relative.as_posix() + "/**"
+
+
 def _git_bytes(repo_root: Path, *args: str) -> bytes:
     proc = subprocess.run(
         ["git", "-C", str(repo_root), *args],
@@ -47,10 +78,15 @@ def measure_source_cleanliness(
 ) -> dict:
     """Return a machine-readable cleanliness record.
 
-    Raises ``SourceCleanlinessError`` when any git command exits non-zero, or
-    when the current revision differs from `baseline_revision` (if provided).
+    Raises ``SourceCleanlinessError`` when either root cannot be resolved or
+    the evidence root is not strictly inside the repo root, when any git
+    command exits non-zero, or when the current revision differs from
+    ``baseline_revision`` (if provided).
     """
     measured_at = datetime.now(timezone.utc).isoformat()
+    pathspec = _evidence_exclusion(repo_root, evidence_root)
+    exclude = f":(exclude){pathspec}"
+
     revision = _git_bytes(repo_root, "rev-parse", "HEAD").decode("ascii").strip()
     if baseline_revision is not None and revision != baseline_revision:
         raise SourceCleanlinessError(
@@ -60,8 +96,6 @@ def measure_source_cleanliness(
     raw_status = _git_bytes(
         repo_root, "status", "--porcelain=v1", "-z", "--untracked-files=all"
     )
-    pathspec = evidence_root.relative_to(repo_root).as_posix() + "/**"
-    exclude = f":(exclude){pathspec}"
 
     filtered_status = _git_bytes(
         repo_root, "status", "--porcelain=v1", "-z", "--untracked-files=all",
