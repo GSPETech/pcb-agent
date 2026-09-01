@@ -24,7 +24,13 @@ class GeneratorError(ValueError):
 
 GENERATED_TEST_DIRECTORY = PurePosixPath("tests")
 _IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_]{0,63}$")
-_NET_NAME_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,63}$")
+# Hierarchical designs address components and nets through their module path,
+# for example "IMU.R17" and "IMU.IMU_ADDR_SEL". A flat name is the single-segment
+# case of the same pattern, so captured flat evidence is unaffected.
+_HIERARCHICAL_REF_PATTERN = re.compile(
+    r"^[A-Za-z][A-Za-z0-9_-]{0,63}(?:\.[A-Za-z][A-Za-z0-9_-]{0,63}){0,7}$"
+)
+_NET_NAME_PATTERN = _HIERARCHICAL_REF_PATTERN
 _PIN_NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,31}$")
 _CONNECTIVITY_FIELDS: dict[str, frozenset[str]] = {
     "components": frozenset({"kind", "value", "package", "mpn"}),
@@ -438,7 +444,7 @@ def _validate_connectivity_shape(connectivity: Mapping[str, Any]) -> None:
                     )
 
     for comp_ref, comp_def in components.items():
-        if not isinstance(comp_ref, str) or not _IDENTIFIER_PATTERN.match(comp_ref):
+        if not isinstance(comp_ref, str) or not _HIERARCHICAL_REF_PATTERN.match(comp_ref):
             raise GeneratorError(f"component ref invalid: {comp_ref!r}")
         if not isinstance(comp_def, dict):
             raise GeneratorError(f"component {comp_ref} must be object")
@@ -455,7 +461,9 @@ def _validate_connectivity_shape(connectivity: Mapping[str, Any]) -> None:
 
     for net_name in nets:
         for member in nets[net_name].get("members", []):
-            ref = member.split(".", 1)[0]
+            # A member is "<component-ref>.<pin>" and the ref may itself be a
+            # dotted module path, so the pin is the final segment.
+            ref = member.rsplit(".", 1)[0]
             if ref not in components:
                 raise GeneratorError(
                     f"net {net_name} member {member} references unknown component"
@@ -571,7 +579,7 @@ def render_connectivity_testbench(
         lines.append(f"    observed_{index} = nets.get({_zener_string(net_name)}, [])")
 
         for member in members:
-            ref, pin = member.split(".", 1)
+            ref, pin = member.rsplit(".", 1)
             adapter = adapter_for(components[ref]["kind"], pcbc_version)
             if not _PIN_NAME_PATTERN.match(pin):
                 raise GeneratorError(f"invalid pin in member {member}")
@@ -700,7 +708,7 @@ def render_specification_testbench(
                 f"requirement {rid} has constraints but lacks zener_test acceptance check"
             )
 
-        if not isinstance(subject, str) or not _IDENTIFIER_PATTERN.match(subject):
+        if not isinstance(subject, str) or not _HIERARCHICAL_REF_PATTERN.match(subject):
             raise GeneratorError(
                 f"requirement {rid} has constraints but lacks valid subject"
             )

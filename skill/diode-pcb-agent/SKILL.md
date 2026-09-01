@@ -29,6 +29,8 @@ review.
 
 ## Progressive references
 
+- Read `AGENTS.md` for toolchain pinning, supported project layouts, net/ref
+  naming rules, and the registered component kinds.
 - Read `references/zener-workflow.md` before Zener source/build changes.
 - Read `references/schematic-review.md` for topology, values, ratings, and
   datasheet review.

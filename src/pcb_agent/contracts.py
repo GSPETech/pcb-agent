@@ -171,7 +171,9 @@ def load_project_contract(project_root: Path | str) -> ProjectContract:
         if isinstance(definition, dict):
             for member in definition.get("members", []):
                 if isinstance(member, str) and "." in member:
-                    ref = member.split(".", 1)[0]
+                    # "<component-ref>.<pin>", where the ref may be a dotted
+                    # module path, so the pin is the final segment.
+                    ref = member.rsplit(".", 1)[0]
                     if ref not in connectivity.get("components", {}):
                         raise ContractError(f"connectivity net member {member} references unknown component")
             pullup = definition.get("required_pullup")

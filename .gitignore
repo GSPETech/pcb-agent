@@ -16,21 +16,17 @@ __pycache__/
 *.pem
 
 # Generated verification output
-reports/runs/
-reports/raw/
+reports/
 verify-report.json
 verify-report.md
 *.log
 *.tmp
 *.bak
 
-# Repository-owned spike evidence must stay tracked even though it carries
-# verify-report.json / verify-report.md names.
+# Repository-owned spike evidence must stay tracked even though it lives under
+# a `reports/`-shaped path and carries verify-report.json / .md names.
 !tests/evidence/
-tests/evidence/**/verify-report.json
-tests/evidence/**/verify-report.md
-!tests/evidence/**/verify-report.json
-!tests/evidence/**/verify-report.md
+!tests/evidence/**
 
 # Diode transient state
 .pcb/cache/
@@ -49,3 +45,28 @@ tests/evidence/**/verify-report.md
 Thumbs.db
 .vscode/
 .idea/
+
+# Packaging artifacts
+*.egg-info/
+build/
+dist/
+
+# Archives and vendor drops: this repository holds the harness only. Board
+# projects, deliverables and scratch exports live outside it.
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.step
+*.STEP
+*.stp
+*.xlsx
+*.xls
+
+# Third-party / imported board trees that are not part of the harness.
+/dwm1004c_aptwr_tag_delivery/
+/dwm1004c_aptwr_tag_pcb_package/
+/dwm_tag_passive/
+/diodeinc_scratch_package/
+.history/

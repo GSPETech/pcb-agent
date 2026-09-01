@@ -34,6 +34,14 @@ _GENERATED_TEST_ENVIRONMENT_FRAGMENTS = (
     "a required privilege is not held by the client",
 )
 
+# Directories that may hold Zener sources a board entry point resolves through.
+# `src/` is the fixture layout; `modules/` and `components/` are the upstream
+# board-repository layout produced by `pcb new board` and `pcb import`.
+_SOURCE_DIRECTORIES = ("src", "modules", "components")
+
+# Workspace-relative files every snapshot needs regardless of layout.
+_SOURCE_MANIFESTS = ("pcb.toml", "pcb-version")
+
 
 @dataclass(frozen=True)
 class GeneratedTestResult:
@@ -249,6 +257,47 @@ def _require_passing_acceptance(payload: Mapping[str, Any], expected: Sequence[s
             raise ValueError(f"pcb test JSON lacks passing acceptance result: {name}")
 
 
+def _source_closure(project: ProjectState) -> list[str]:
+    """Workspace-relative files the trusted snapshot must carry.
+
+    A board entry point may live under `src/` (fixture layout) or at the
+    workspace root with its subcircuits in `modules/` and `components/` (the
+    layout `pcb new board` and `pcb import` produce). Copying only `src/**`
+    leaves the snapshot unable to resolve the latter, so the locked TestBench
+    fails for a reason that has nothing to do with the design.
+
+    Symlinks are excluded: the snapshot must contain regular files owned by the
+    workspace, never link targets from outside it.
+    """
+    closure: list[str] = []
+    for directory in _SOURCE_DIRECTORIES:
+        base = project.root / directory
+        if not base.is_dir() or base.is_symlink():
+            continue
+        for path in sorted(base.rglob("*")):
+            if path.is_symlink() or not path.is_file():
+                continue
+            closure.append(path.relative_to(project.root).as_posix())
+
+    # Zener sources kept directly at the workspace root (board entry point).
+    for path in sorted(project.root.glob("*.zen")):
+        if not path.is_symlink() and path.is_file():
+            closure.append(path.relative_to(project.root).as_posix())
+
+    closure.extend(_SOURCE_MANIFESTS)
+    return list(dict.fromkeys(closure))
+
+
+def _populate_snapshot(project: ProjectState, snapshot: Path, closure: Sequence[str]) -> None:
+    for relative in closure:
+        source = project.root / relative
+        if source.is_symlink() or not source.exists():
+            continue
+        target = snapshot / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+
+
 def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None) -> ProcessResult:
     command = configured_command(project, key)
     if len(command) == 0:
@@ -261,14 +310,9 @@ def execute(project: ProjectState, key: str, *, trusted_root: Path | None = None
         return run_process(project.root, command, timeout=300)
     with tempfile.TemporaryDirectory(prefix="pcb-agent-trusted-test-") as temporary:
         snapshot = Path(temporary)
-        closure = [path.relative_to(project.root).as_posix() for path in (project.root / "src").rglob("*") if path.is_file()]
-        closure.extend((project.test, "pcb.toml", "pcb-version"))
-        for relative in dict.fromkeys(closure):
-            source = project.root / relative
-            if source.exists():
-                target = snapshot / relative
-                target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(source, target)
+        closure = _source_closure(project)
+        closure.insert(0, project.test)
+        _populate_snapshot(project, snapshot, list(dict.fromkeys(closure)))
         snapshot_command = list(command)
         result = run_process(snapshot, snapshot_command, timeout=300)
         snapshot_test_hash = "sha256:" + hashlib.sha256((snapshot / project.test).read_bytes()).hexdigest()
@@ -329,18 +373,7 @@ def execute_generated_test(
 
     with tempfile.TemporaryDirectory(prefix=f"pcb-agent-{check_id.lower()}-") as temporary:
         snapshot = Path(temporary)
-        closure = [
-            path.relative_to(project.root).as_posix()
-            for path in (project.root / "src").rglob("*")
-            if path.is_file()
-        ]
-        closure.extend(("pcb.toml", "pcb-version"))
-        for relative in dict.fromkeys(closure):
-            source = project.root / relative
-            if source.exists():
-                target = snapshot / relative
-                target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(source, target)
+        _populate_snapshot(project, snapshot, _source_closure(project))
 
         test_rel = rel_path.replace("\\", "/")
         test_path = snapshot / test_rel
