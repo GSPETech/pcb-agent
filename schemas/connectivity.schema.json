@@ -31,7 +31,7 @@
         "additionalProperties": false,
         "required": ["members"],
         "properties": {
-          "members": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^[^.]+\\.[^.]+$"}, "uniqueItems": true},
+          "members": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^[^.]+(\\.[^.]+)+$"}, "uniqueItems": true},
           "required_pullup": {
             "type": "object",
             "additionalProperties": false,
