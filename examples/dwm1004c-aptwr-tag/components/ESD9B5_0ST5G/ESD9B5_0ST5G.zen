@@ -1,0 +1,17 @@
+"""
+ESD9B5_0ST5G
+
+Auto-generated using `pcb import`.
+"""
+
+A1 = io(Net)
+A2 = io(Net)
+
+Component(
+    name="ESD9B5_0ST5G",
+    part=Part(mpn="ESD9B5.0ST5G", manufacturer="onsemi"),
+    footprint=File("D_SOD-923.kicad_mod"),
+    symbol=Symbol(library="ESD9B5_0ST5G.kicad_sym"),
+    pin_defs={"A1": "1", "A2": "2"},
+    pins={"A1": A1, "A2": A2},
+)

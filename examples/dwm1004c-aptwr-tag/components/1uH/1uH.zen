@@ -1,0 +1,17 @@
+"""
+1uH
+
+Auto-generated using `pcb import`.
+"""
+
+P1 = io(Net)
+P2 = io(Net)
+
+Component(
+    name="1uH",
+    footprint=File("@stdlib/kicad-footprints/Inductor_SMD.pretty/L_0805_2012Metric.kicad_mod"),
+    part=Part(mpn="TFM201208ALD", manufacturer="TDK"),
+    symbol=Symbol(library="1uH.kicad_sym"),
+    pin_defs={"1": "1", "2": "2"},
+    pins={"1": P1, "2": P2},
+)

@@ -1,0 +1,134 @@
+ERC report (2026-09-01T11:28:05, Encoding UTF8)
+Report includes: Errors, Warnings
+
+***** Sheet /
+[footprint_link_issues]: The current configuration does not include the footprint library 'BNO055'
+    ; warning
+    @(196.85 mm, 139.70 mm): Symbol U4 [BNO055]
+[lib_symbol_issues]: The symbol library 'BNO055' was not found at 'C:/Users/iotgs/Documents/IndoorTWR/schematic/libraries/BNO055/BNO055.kicad_sym'
+    ; warning
+    @(196.85 mm, 139.70 mm): Symbol U4 [BNO055]
+[footprint_link_issues]: The current configuration does not include the footprint library 'Decawave_UWB_RF'
+    ; warning
+    @(77.47 mm, 91.44 mm): Symbol U5 [DWM1004C]
+[lib_symbol_issues]: The symbol library 'Decawave_UWB_RF' was not found at 'C:/Users/iotgs/Documents/IndoorTWR/schematic/libraries/DECAWAVE/Decawave_UWB_RF.kicad_sym'
+    ; warning
+    @(77.47 mm, 91.44 mm): Symbol U5 [DWM1004C]
+[footprint_link_issues]: The current configuration does not include the footprint library 'TYPE-C-31-M-12'
+    ; warning
+    @(121.92 mm, 248.92 mm): Symbol J3 [TYPE-C-31-M-12]
+[lib_symbol_issues]: The symbol library 'TYPE-C-31-M-12' was not found at 'C:/Users/iotgs/Documents/IndoorTWR/schematic/libraries/TYPE-C-31-M-12/TYPE-C-31-M-12.kicad_sym'
+    ; warning
+    @(121.92 mm, 248.92 mm): Symbol J3 [TYPE-C-31-M-12]
+[footprint_link_issues]: The current configuration does not include the footprint library 'JS102011SAQN'
+    ; warning
+    @(144.78 mm, 133.35 mm): Symbol S1 [JS102011SAQN]
+[lib_symbol_issues]: The symbol library 'JS102011SAQN' was not found at 'C:/Users/iotgs/Documents/IndoorTWR/schematic/libraries/JS102011SAQN/JS102011SAQN.kicad_sym'
+    ; warning
+    @(144.78 mm, 133.35 mm): Symbol S1 [JS102011SAQN]
+[footprint_link_issues]: The current configuration does not include the footprint library 'TPS631000DRLR'
+    ; warning
+    @(223.52 mm, 139.70 mm): Symbol U1 [TPS631000DRLR]
+[lib_symbol_issues]: The symbol library 'TPS631000DRLR' was not found at 'C:/Users/iotgs/Documents/IndoorTWR/schematic/libraries/TPS631000DRLR/TPS631000DRLR.kicad_sym'
+    ; warning
+    @(223.52 mm, 139.70 mm): Symbol U1 [TPS631000DRLR]
+[footprint_link_issues]: The current configuration does not include the footprint library 'BQ25185DLHR'
+    ; warning
+    @(229.87 mm, 251.46 mm): Symbol U6 [BQ25185DLHR]
+[lib_symbol_issues]: The symbol library 'BQ25185DLHR' was not found at 'C:/Users/iotgs/Documents/IndoorTWR/schematic/libraries/BQ25185DLHR/BQ25185DLHR.kicad_sym'
+    ; warning
+    @(229.87 mm, 251.46 mm): Symbol U6 [BQ25185DLHR]
+[lib_symbol_mismatch]: Symbol 'BLM18PG121SN1D_C14709' doesn't match copy in library 'symbols'
+    ; warning
+    @(275.59 mm, 129.54 mm): Symbol FB1 [BLM18PG121SN1D_C14709]
+
+***** Sheet /POWER/
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(124.46 mm, 129.54 mm): Symbol #PWR011 Pin 1 [Power input, Line]
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(163.83 mm, 238.76 mm): Symbol #PWR020 Pin 1 [Power input, Line]
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(248.92 mm, 154.94 mm): Symbol #PWR01 Pin 1 [Power input, Line]
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(257.81 mm, 171.45 mm): Symbol #PWR035 Pin 1 [Power input, Line]
+[same_local_global_label]: Local and global labels have same name
+    ; warning
+    @(257.81 mm, 171.45 mm): Symbol #PWR035 Pin 1 [Power input, Line]
+    @(247.65 mm, 129.54 mm): Label '+3.3V'
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(270.51 mm, 129.54 mm): Symbol FB1 Pin 1 [1, Unspecified, Line]
+    @(270.51 mm, 138.43 mm): Symbol C2 Pin 1 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Power input are connected
+    ; warning
+    @(280.67 mm, 129.54 mm): Symbol FB1 Pin 2 [2, Unspecified, Line]
+    @(284.48 mm, 127.00 mm): Symbol #PWR070 Pin 1 [Power input, Line]
+[same_local_global_label]: Local and global labels have same name
+    ; warning
+    @(350.52 mm, 274.32 mm): Symbol #PWR023 Pin 1 [Power input, Line]
+    @(440.69 mm, 292.10 mm): Label 'GND'
+[pin_to_pin]: Pins of type Unspecified and Bidirectional are connected
+    ; warning
+    @(400.05 mm, 256.54 mm): Symbol U2 Pin 1 [SDA, Unspecified, Line]
+    @(93.98 mm, 87.63 mm): Symbol U5 Pin SDA [SDA, Bidirectional, Line]
+[pin_to_pin]: Pins of type Unspecified and Bidirectional are connected
+    ; warning
+    @(400.05 mm, 259.08 mm): Symbol U2 Pin 2 [SCL, Unspecified, Line]
+    @(93.98 mm, 85.09 mm): Symbol U5 Pin SCL [SCL, Bidirectional, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(400.05 mm, 261.62 mm): Symbol U2 Pin 3 [VSS, Unspecified, Line]
+    @(382.27 mm, 260.35 mm): Symbol C5 Pin 1 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(400.05 mm, 266.70 mm): Symbol U2 Pin 5 [VDD, Unspecified, Line]
+    @(382.27 mm, 267.97 mm): Symbol C5 Pin 2 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Unspecified are connected
+    ; warning
+    @(400.05 mm, 269.24 mm): Symbol U2 Pin 6 [BAT, Unspecified, Line]
+    @(422.91 mm, 266.70 mm): Symbol U2 Pin 8 [SRP, Unspecified, Line]
+[pin_to_pin]: Pins of type Unspecified and Power input are connected
+    ; warning
+    @(422.91 mm, 254.00 mm): Symbol U2 Pin 13 [EP, Unspecified, Line]
+    @(422.91 mm, 254.00 mm): Symbol #PWR026 Pin 1 [Power input, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(422.91 mm, 256.54 mm): Symbol U2 Pin 12 [GPOUT, Unspecified, Line]
+    @(433.07 mm, 256.54 mm): Symbol C3 Pin 1 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(422.91 mm, 261.62 mm): Symbol U2 Pin 10 [BIN, Unspecified, Line]
+    @(350.52 mm, 259.08 mm): Symbol R4 Pin 1 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(422.91 mm, 266.70 mm): Symbol U2 Pin 8 [SRP, Unspecified, Line]
+    @(374.65 mm, 267.97 mm): Symbol C4 Pin 1 [Passive, Line]
+[pin_to_pin]: Pins of type Unspecified and Passive are connected
+    ; warning
+    @(422.91 mm, 269.24 mm): Symbol U2 Pin 7 [SRN, Unspecified, Line]
+    @(339.09 mm, 266.70 mm): Symbol R5 Pin 2 [Passive, Line]
+
+***** Sheet /IMU/
+
+***** Sheet /MAIN MODULE TAG/
+[pin_not_connected]: Pin not connected
+    ; error
+    @(64.77 mm, 124.46 mm): Symbol U5 Pin RESV@15 [RESV15, Power input, Line]
+[power_pin_not_driven]: Input Power pin not driven by any Output Power pins
+    ; error
+    @(64.77 mm, 124.46 mm): Symbol U5 Pin RESV@15 [RESV15, Power input, Line]
+[pin_not_driven]: Input pin not driven by any Output pins
+    ; error
+    @(93.98 mm, 90.17 mm): Symbol U5 Pin INT2 [INT2, Input, Line]
+
+ ** ERC messages: 34  Errors 7  Warnings 27
+
+ ** Ignored checks:
+    - Global label only appears once in the schematic
+    - Four connection points are joined together
+    - SPICE model issue
+    - Assigned footprint doesn't match footprint filters

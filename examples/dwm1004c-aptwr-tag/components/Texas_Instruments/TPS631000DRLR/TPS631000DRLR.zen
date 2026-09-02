@@ -1,0 +1,23 @@
+"""
+TPS631000DRLR
+
+Auto-generated using `pcb import`.
+"""
+
+EN = io(Net)
+FB = io(Net)
+GND = io(Net)
+LX1 = io(Net)
+LX2 = io(Net)
+MODE = io(Net)
+VIN = io(Net)
+VOUT = io(Net)
+
+Component(
+    name="TPS631000DRLR",
+    part=Part(mpn="TPS631000DRLR", manufacturer="TI"),
+    footprint=File("SOT50P160X60-8N.kicad_mod"),
+    symbol=Symbol(library="TPS631000DRLR.kicad_sym"),
+    pin_defs={"VOUT": "1", "LX2": "2", "LX1": "3", "VIN": "4", "EN": "5", "MODE": "6", "GND": "7", "FB": "8"},
+    pins={"VOUT": VOUT, "LX2": LX2, "LX1": LX1, "VIN": VIN, "EN": EN, "MODE": MODE, "GND": GND, "FB": FB},
+)

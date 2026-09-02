@@ -1,0 +1,615 @@
+./kicad/include/properties/property.h(607): assert "m_choices.GetCount() > 0" failed in PROPERTY_ENUM(): No enum choices defined
+./kicad/include/properties/property.h(607): assert "m_choices.GetCount() > 0" failed in PROPERTY_ENUM(): No enum choices defined
+./kicad/include/properties/property.h(607): assert "m_choices.GetCount() > 0" failed in PROPERTY_ENUM(): No enum choices defined
+INFO: Creating new board file at /home/rendra/dwmz/layout/dwm1004c_aptwr_tag/layout.kicad_pcb
+INFO: Parsing JSON netlist from /tmp/.tmpqTF4Ci/netlist.json
+DEBUG: Found module IMU with layout_path: None
+DEBUG: Found module IMU.C10 with layout_path: None
+DEBUG: Found module IMU.C11 with layout_path: None
+DEBUG: Found module IMU.C12 with layout_path: None
+DEBUG: Found module IMU.C13 with layout_path: None
+DEBUG: Found module IMU.C19 with layout_path: None
+DEBUG: Found module IMU.C25 with layout_path: None
+DEBUG: Found module IMU.R14 with layout_path: None
+DEBUG: Found module IMU.R15 with layout_path: None
+DEBUG: Found module IMU.R17 with layout_path: None
+DEBUG: Found module IMU.R18 with layout_path: None
+DEBUG: Found module IMU.U4 with layout_path: None
+DEBUG: Found module IMU.Y1 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.C14 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.C15 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.C16 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.C17 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.C18 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.C26 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.D5 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.J1 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.J4 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.R10 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.R12 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.R13 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.R20 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.R21 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.R23 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.RX1 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.SW1 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.TX1 with layout_path: None
+DEBUG: Found module MAIN_MODULE_TAG.U5 with layout_path: None
+DEBUG: Found module POWER with layout_path: None
+DEBUG: Found module POWER.C1 with layout_path: None
+DEBUG: Found module POWER.C2 with layout_path: None
+DEBUG: Found module POWER.C20 with layout_path: None
+DEBUG: Found module POWER.C21 with layout_path: None
+DEBUG: Found module POWER.C22 with layout_path: None
+DEBUG: Found module POWER.C23 with layout_path: None
+DEBUG: Found module POWER.C24 with layout_path: None
+DEBUG: Found module POWER.C3 with layout_path: None
+DEBUG: Found module POWER.C4 with layout_path: None
+DEBUG: Found module POWER.C5 with layout_path: None
+DEBUG: Found module POWER.C6 with layout_path: None
+DEBUG: Found module POWER.C8 with layout_path: None
+DEBUG: Found module POWER.C9 with layout_path: None
+DEBUG: Found module POWER.D1 with layout_path: None
+DEBUG: Found module POWER.D2 with layout_path: None
+DEBUG: Found module POWER.D3 with layout_path: None
+DEBUG: Found module POWER.FB1 with layout_path: None
+DEBUG: Found module POWER.J2 with layout_path: None
+DEBUG: Found module POWER.J3 with layout_path: None
+DEBUG: Found module POWER.L1 with layout_path: None
+DEBUG: Found module POWER.R1 with layout_path: None
+DEBUG: Found module POWER.R11 with layout_path: None
+DEBUG: Found module POWER.R16 with layout_path: None
+DEBUG: Found module POWER.R19 with layout_path: None
+DEBUG: Found module POWER.R2 with layout_path: None
+DEBUG: Found module POWER.R22 with layout_path: None
+DEBUG: Found module POWER.R25 with layout_path: None
+DEBUG: Found module POWER.R26 with layout_path: None
+DEBUG: Found module POWER.R27 with layout_path: None
+DEBUG: Found module POWER.R3 with layout_path: None
+DEBUG: Found module POWER.R4 with layout_path: None
+DEBUG: Found module POWER.R5 with layout_path: None
+DEBUG: Found module POWER.R6 with layout_path: None
+DEBUG: Found module POWER.R7 with layout_path: None
+DEBUG: Found module POWER.R8 with layout_path: None
+DEBUG: Found module POWER.R9 with layout_path: None
+DEBUG: Found module POWER.S1 with layout_path: None
+DEBUG: Found module POWER.TH1 with layout_path: None
+DEBUG: Found module POWER.U1 with layout_path: None
+DEBUG: Found module POWER.U2 with layout_path: None
+DEBUG: Found module POWER.U6 with layout_path: None
+INFO: --------------------------------------------------------------------------------
+INFO: Running step: ImportNetlist
+INFO: --------------------------------------------------------------------------------
+INFO: Starting ImportNetlist...
+INFO: Running lens-based netlist sync
+INFO: Starting lens-based layout sync
+INFO: Source: 72 footprints, 3 groups, 71 nets
+INFO: Changes: +72 -0 footprints
+INFO: NEW FPV path=IMU.C10.C ref=C10 value=1uF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=1uF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=IMU.C11.C ref=C11 value=22pF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=22pF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=IMU.C12.C ref=C12 value=22pF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=22pF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=IMU.C13.C ref=C13 value=100nF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=100nF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=IMU.C19.C ref=C19 value=100nF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=100nF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=IMU.C25.C ref=C25 value=100nF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=100nF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=IMU.R14.R ref=R14 value=10k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=10k", "Type=resistor"]
+INFO: NEW FPV path=IMU.R15.R ref=R15 value=10k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=10k", "Type=resistor"]
+INFO: NEW FPV path=IMU.R17.R ref=R17 value=10k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=10k", "Type=resistor"]
+INFO: NEW FPV path=IMU.R18.R ref=R18 value=10k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=10k", "Type=resistor"]
+INFO: NEW FPV path=IMU.U4.BNO055 ref=U4 value=BNO055 fpid=workspace_components_BOSCH_BNO055:LGA28R50P4X10_380X520X100 fields=["Manufacturer=Bosch", "Mpn=BNO055", "Prefix=U"]
+INFO: NEW FPV path=IMU.Y1.32kHz ref=Y1 value=NX2012SA fpid=stdlib_kicad-footprints_Crystal:Crystal_SMD_2012-2Pin_2.0x1.2mm fields=["Manufacturer=NDK", "Mpn=NX2012SA", "Prefix=Y"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.C14.C ref=C14 value=100nF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=100nF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.C15.C ref=C15 value=100nF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=100nF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.C16.C ref=C16 value=100nF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=100nF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.C17.C ref=C17 value=22uF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0805_2012Metric fields=["Capacitance=22uF", "Package=0805", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.C18.C ref=C18 value=100nF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=100nF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.C26.C ref=C26 value=100nF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0402_1005Metric fields=["Capacitance=100nF", "Package=0402", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.D5.DWM_LED ref=D5 value=KT fpid=stdlib_kicad-footprints_LED_SMD:LED_0805_2012Metric fields=["Manufacturer=Hubei KENTO Elec", "Mpn=KT", "Prefix=D"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.J1.Conn_01x02 ref=J1 value=PZ254V fpid=stdlib_kicad-footprints_Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical fields=["Manufacturer=BOOMELE", "Mpn=PZ254V", "Prefix=J"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.J4.Conn_01x06 ref=J4 value=PZ254R fpid=stdlib_kicad-footprints_Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Horizontal fields=["Manufacturer=BOOMELE", "Mpn=PZ254R", "Prefix=J"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.R10.R ref=R10 value=10k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=10k", "Type=resistor"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.R12.R ref=R12 value=4.7k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=4.7k", "Type=resistor"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.R13.R ref=R13 value=4.7k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=4.7k", "Type=resistor"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.R20.R ref=R20 value=10k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=10k", "Type=resistor"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.R21.470 ref=R21 value=FRC0402F4700TS fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Manufacturer=FOJAN", "Mpn=FRC0402F4700TS", "Prefix=R"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.R23.R ref=R23 value=100k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=100k", "Type=resistor"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.RX1.TestPoint ref=TP1 value=? fpid=stdlib_kicad-footprints_TestPoint:TestPoint_Pad_D1.0mm bom=false fields=["Prefix=TP"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.SW1.DWM_CONFIG ref=SW1 value="PTS 647 SN38 SMTR2 LFS" fpid=workspace_components_DWM_CONFIG:SW_SPST_PTS647_Sx38 fields=["Manufacturer=C&K", "Mpn=PTS 647 SN38 SMTR2 LFS", "Prefix=SW"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.TX1.TestPoint ref=TP2 value=? fpid=stdlib_kicad-footprints_TestPoint:TestPoint_Pad_D1.0mm bom=false fields=["Prefix=TP"]
+INFO: NEW FPV path=MAIN_MODULE_TAG.U5.DWM1004C ref=U51 value=DWM1004C fpid=workspace_components_DWM1004C:DWM1004C fields=["Manufacturer=Decawave/Qorvo", "Mpn=DWM1004C", "Prefix=U5"]
+INFO: NEW FPV path=POWER.C1.C ref=C1 value=1uF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=1uF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=POWER.C2.C ref=C2 value=100nF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=100nF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=POWER.C20.C ref=C20 value=22uF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0805_2012Metric fields=["Capacitance=22uF", "Package=0805", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=POWER.C21.C ref=C21 value=22uF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0805_2012Metric fields=["Capacitance=22uF", "Package=0805", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=POWER.C22.C ref=C22 value=22uF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0805_2012Metric fields=["Capacitance=22uF", "Package=0805", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=POWER.C23.C ref=C23 value=22uF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0805_2012Metric fields=["Capacitance=22uF", "Package=0805", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=POWER.C24.C ref=C24 value=1uF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=1uF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=POWER.C3.C ref=C3 value=100nF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=100nF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=POWER.C4.C ref=C4 value=1uF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=1uF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=POWER.C5.C ref=C5 value=470nF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=470nF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=POWER.C6.C ref=C6 value=100nF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=100nF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=POWER.C8.C ref=C8 value=100nF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=100nF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=POWER.C9.C ref=C9 value=10uF fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric fields=["Capacitance=10uF", "Package=0603", "Prefix=C", "Type=capacitor"]
+INFO: NEW FPV path=POWER.D1.ESD9B5_0ST5G ref=D1 value=ESD9B5.0ST5G fpid=workspace_components_ESD9B5_0ST5G:D_SOD-923 fields=["Manufacturer=onsemi", "Mpn=ESD9B5.0ST5G", "Prefix=D"]
+INFO: NEW FPV path=POWER.D2.STAT2 ref=D2 value=KT fpid=stdlib_kicad-footprints_LED_SMD:LED_0805_2012Metric fields=["Manufacturer=Hubei KENTO Elec", "Mpn=KT", "Prefix=D"]
+INFO: NEW FPV path=POWER.D3.STAT1 ref=D3 value=KT fpid=stdlib_kicad-footprints_LED_SMD:LED_0805_2012Metric fields=["Manufacturer=Hubei KENTO Elec", "Mpn=KT", "Prefix=D"]
+INFO: NEW FPV path=POWER.FB1.120 ref=L2 value=BLM18PG121SN1D fpid=workspace_components_120:L0603 fields=["Manufacturer=muRata", "Mpn=BLM18PG121SN1D", "Prefix=L"]
+INFO: NEW FPV path=POWER.J2.BAT ref=J2 value=PZ254V fpid=stdlib_kicad-footprints_Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical fields=["Manufacturer=BOOMELE", "Mpn=PZ254V", "Prefix=J"]
+INFO: NEW FPV path=POWER.J3.TYPE-C-31-M-12 ref=J3 value=TYPE fpid=workspace_components_HRO_Electronics_Co_Ltd_TYPE-C-31-M-12:HRO_TYPE-C-31-M-12 fields=["Manufacturer=HRO", "Mpn=TYPE", "Prefix=J"]
+INFO: NEW FPV path=POWER.L1.1uH ref=L1 value=TFM201208ALD fpid=stdlib_kicad-footprints_Inductor_SMD:L_0805_2012Metric fields=["Manufacturer=TDK", "Mpn=TFM201208ALD", "Prefix=L"]
+INFO: NEW FPV path=POWER.R1.600 ref=R1 value=ERA fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Manufacturer=PANASONIC", "Mpn=ERA", "Prefix=R"]
+INFO: NEW FPV path=POWER.R11.R ref=R11 value=10k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=10k", "Type=resistor"]
+INFO: NEW FPV path=POWER.R16.R ref=R16 value=5.1k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=5.1k", "Type=resistor"]
+INFO: NEW FPV path=POWER.R19.R ref=R19 value=5.1k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=5.1k", "Type=resistor"]
+INFO: NEW FPV path=POWER.R2.R ref=R2 value=18k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=18k", "Type=resistor"]
+INFO: NEW FPV path=POWER.R22.DNP ref=R22 value=? fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric dnp=true bom=false fields=["Prefix=R"]
+INFO: NEW FPV path=POWER.R25.R ref=R25 value=10k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=10k", "Type=resistor"]
+INFO: NEW FPV path=POWER.R26.R ref=R26 value=10k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=10k", "Type=resistor"]
+INFO: NEW FPV path=POWER.R27.R ref=R27 value=100k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=100k", "Type=resistor"]
+INFO: NEW FPV path=POWER.R3.R ref=R3 value=10k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=10k", "Type=resistor"]
+INFO: NEW FPV path=POWER.R4.R ref=R4 value=10k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=10k", "Type=resistor"]
+INFO: NEW FPV path=POWER.R5.0_01 ref=R5 value=RL0603FR fpid=stdlib_kicad-footprints_Resistor_SMD:R_0603_1608Metric fields=["Manufacturer=Yageo", "Mpn=RL0603FR", "Prefix=R"]
+INFO: NEW FPV path=POWER.R6.R ref=R6 value=1k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=1k", "Type=resistor"]
+INFO: NEW FPV path=POWER.R7.R ref=R7 value=511k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=511k", "Type=resistor"]
+INFO: NEW FPV path=POWER.R8.R ref=R8 value=1k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=1k", "Type=resistor"]
+INFO: NEW FPV path=POWER.R9.R ref=R9 value=91k fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric fields=["Package=0402", "Prefix=R", "Resistance=91k", "Type=resistor"]
+INFO: NEW FPV path=POWER.S1.JS102011SAQN ref=S1 value=JS102011SAQN fpid=workspace_components_C_K_JS102011SAQN:SW_JS102011SAQN fields=["Manufacturer=Amphenol", "Mpn=JS102011SAQN", "Prefix=S"]
+INFO: NEW FPV path=POWER.TH1.10k ref=TH1 value=MF52A103F3435 fpid=workspace_components_10k:RES-TH_BD2.8_NTC-10K fields=["Manufacturer=NTC", "Mpn=MF52A103F3435", "Prefix=TH"]
+INFO: NEW FPV path=POWER.U1.TPS631000DRLR ref=U1 value=TPS631000DRLR fpid=workspace_components_Texas_Instruments_TPS631000DRLR:SOT50P160X60-8N fields=["Manufacturer=TI", "Mpn=TPS631000DRLR", "Prefix=U"]
+INFO: NEW FPV path=POWER.U2.BQ27441DRZR-G1A ref=U2 value=BQ27441DRZR fpid=workspace_components_BQ27441DRZR-G1A:SON-12_L4.0-W2.5-P0.40-BL-EP fields=["Manufacturer=TI", "Mpn=BQ27441DRZR", "Prefix=U"]
+INFO: NEW FPV path=POWER.U6.BQ25185DLHR ref=U61 value=BQ25185DLHR fpid=workspace_components_Texas_Instruments_BQ25185DLHR:IC_BQ25185DLHR fields=["Manufacturer=TI", "Mpn=BQ25185DLHR", "Prefix=U6"]
+INFO: NEW GRV path=IMU members=[IMU.C10.C, IMU.C11.C, IMU.C12.C, IMU.C13.C, IMU.C19.C, IMU.C25.C, IMU.R14.R, IMU.R15.R, IMU.R17.R, IMU.R18.R, IMU.U4.BNO055, IMU.Y1.32kHz]
+INFO: NEW GRV path=MAIN_MODULE_TAG members=[MAIN_MODULE_TAG.C14.C, MAIN_MODULE_TAG.C15.C, MAIN_MODULE_TAG.C16.C, MAIN_MODULE_TAG.C17.C, MAIN_MODULE_TAG.C18.C, MAIN_MODULE_TAG.C26.C, MAIN_MODULE_TAG.D5.DWM_LED, MAIN_MODULE_TAG.J1.Conn_01x02, MAIN_MODULE_TAG.J4.Conn_01x06, MAIN_MODULE_TAG.R10.R, MAIN_MODULE_TAG.R12.R, MAIN_MODULE_TAG.R13.R, MAIN_MODULE_TAG.R20.R, MAIN_MODULE_TAG.R21.470, MAIN_MODULE_TAG.R23.R, MAIN_MODULE_TAG.RX1.TestPoint, MAIN_MODULE_TAG.SW1.DWM_CONFIG, MAIN_MODULE_TAG.TX1.TestPoint, MAIN_MODULE_TAG.U5.DWM1004C]
+INFO: NEW GRV path=POWER members=[POWER.C1.C, POWER.C2.C, POWER.C20.C, POWER.C21.C, POWER.C22.C, POWER.C23.C, POWER.C24.C, POWER.C3.C, POWER.C4.C, POWER.C5.C, POWER.C6.C, POWER.C8.C, POWER.C9.C, POWER.D1.ESD9B5_0ST5G, POWER.D2.STAT2, POWER.D3.STAT1, POWER.FB1.120, POWER.J2.BAT, POWER.J3.TYPE-C-31-M-12, POWER.L1.1uH, POWER.R1.600, POWER.R11.R, POWER.R16.R, POWER.R19.R, POWER.R2.R, POWER.R22.DNP, POWER.R25.R, POWER.R26.R, POWER.R27.R, POWER.R3.R, POWER.R4.R, POWER.R5.0_01, POWER.R6.R, POWER.R7.R, POWER.R8.R, POWER.R9.R, POWER.S1.JS102011SAQN, POWER.TH1.10k, POWER.U1.TPS631000DRLR, POWER.U2.BQ27441DRZR-G1A, POWER.U6.BQ25185DLHR]
+INFO: NEW FPC path=IMU.C10.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=IMU.C11.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=IMU.C12.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=IMU.C13.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=IMU.C19.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=IMU.C25.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=IMU.R14.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=IMU.R15.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=IMU.R17.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=IMU.R18.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=IMU.U4.BNO055 x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=IMU.Y1.32kHz x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.C14.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.C15.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.C16.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.C17.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.C18.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.C26.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.D5.DWM_LED x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.J1.Conn_01x02 x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.J4.Conn_01x06 x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.R10.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.R12.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.R13.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.R20.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.R21.470 x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.R23.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.RX1.TestPoint x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.SW1.DWM_CONFIG x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.TX1.TestPoint x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=MAIN_MODULE_TAG.U5.DWM1004C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.C1.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.C2.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.C20.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.C21.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.C22.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.C23.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.C24.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.C3.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.C4.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.C5.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.C6.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.C8.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.C9.C x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.D1.ESD9B5_0ST5G x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.D2.STAT2 x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.D3.STAT1 x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.FB1.120 x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.J2.BAT x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.J3.TYPE-C-31-M-12 x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.L1.1uH x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.R1.600 x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.R11.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.R16.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.R19.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.R2.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.R22.DNP x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.R25.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.R26.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.R27.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.R3.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.R4.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.R5.0_01 x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.R6.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.R7.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.R8.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.R9.R x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.S1.JS102011SAQN x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.TH1.10k x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.U1.TPS631000DRLR x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.U2.BQ27441DRZR-G1A x=0 y=0 orient=0.0 layer=F.Cu
+INFO: NEW FPC path=POWER.U6.BQ25185DLHR x=0 y=0 orient=0.0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=IMU.C10.C ref=C10 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=1uF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=IMU.C11.C ref=C11 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=22pF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=IMU.C12.C ref=C12 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=22pF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=IMU.C13.C ref=C13 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=IMU.C19.C ref=C19 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=IMU.C25.C ref=C25 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=IMU.R14.R ref=R14 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=IMU.R15.R ref=R15 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=IMU.R17.R ref=R17 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=IMU.R18.R ref=R18 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=IMU.U4.BNO055 ref=U4 fpid=workspace_components_BOSCH_BNO055:LGA28R50P4X10_380X520X100 value=BNO055 x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=IMU.Y1.32kHz ref=Y1 fpid=stdlib_kicad-footprints_Crystal:Crystal_SMD_2012-2Pin_2.0x1.2mm value=NX2012SA x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.C14.C ref=C14 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.C15.C ref=C15 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.C16.C ref=C16 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.C17.C ref=C17 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0805_2012Metric value=22uF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.C18.C ref=C18 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.C26.C ref=C26 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0402_1005Metric value=100nF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.D5.DWM_LED ref=D5 fpid=stdlib_kicad-footprints_LED_SMD:LED_0805_2012Metric value=KT x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.J1.Conn_01x02 ref=J1 fpid=stdlib_kicad-footprints_Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical value=PZ254V x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.J4.Conn_01x06 ref=J4 fpid=stdlib_kicad-footprints_Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Horizontal value=PZ254R x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.R10.R ref=R10 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.R12.R ref=R12 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=4.7k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.R13.R ref=R13 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=4.7k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.R20.R ref=R20 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.R21.470 ref=R21 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=FRC0402F4700TS x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.R23.R ref=R23 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=100k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.RX1.TestPoint ref=TP1 fpid=stdlib_kicad-footprints_TestPoint:TestPoint_Pad_D1.0mm value=? x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.SW1.DWM_CONFIG ref=SW1 fpid=workspace_components_DWM_CONFIG:SW_SPST_PTS647_Sx38 value="PTS 647 SN38 SMTR2 LFS" x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.TX1.TestPoint ref=TP2 fpid=stdlib_kicad-footprints_TestPoint:TestPoint_Pad_D1.0mm value=? x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=MAIN_MODULE_TAG.U5.DWM1004C ref=U51 fpid=workspace_components_DWM1004C:DWM1004C value=DWM1004C x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.C1.C ref=C1 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=1uF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.C2.C ref=C2 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.C20.C ref=C20 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0805_2012Metric value=22uF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.C21.C ref=C21 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0805_2012Metric value=22uF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.C22.C ref=C22 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0805_2012Metric value=22uF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.C23.C ref=C23 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0805_2012Metric value=22uF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.C24.C ref=C24 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=1uF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.C3.C ref=C3 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.C4.C ref=C4 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=1uF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.C5.C ref=C5 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=470nF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.C6.C ref=C6 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.C8.C ref=C8 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.C9.C ref=C9 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=10uF x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.D1.ESD9B5_0ST5G ref=D1 fpid=workspace_components_ESD9B5_0ST5G:D_SOD-923 value=ESD9B5.0ST5G x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.D2.STAT2 ref=D2 fpid=stdlib_kicad-footprints_LED_SMD:LED_0805_2012Metric value=KT x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.D3.STAT1 ref=D3 fpid=stdlib_kicad-footprints_LED_SMD:LED_0805_2012Metric value=KT x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.FB1.120 ref=L2 fpid=workspace_components_120:L0603 value=BLM18PG121SN1D x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.J2.BAT ref=J2 fpid=stdlib_kicad-footprints_Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical value=PZ254V x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.J3.TYPE-C-31-M-12 ref=J3 fpid=workspace_components_HRO_Electronics_Co_Ltd_TYPE-C-31-M-12:HRO_TYPE-C-31-M-12 value=TYPE x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.L1.1uH ref=L1 fpid=stdlib_kicad-footprints_Inductor_SMD:L_0805_2012Metric value=TFM201208ALD x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.R1.600 ref=R1 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=ERA x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.R11.R ref=R11 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.R16.R ref=R16 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=5.1k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.R19.R ref=R19 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=5.1k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.R2.R ref=R2 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=18k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.R22.DNP ref=R22 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=? x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.R25.R ref=R25 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.R26.R ref=R26 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.R27.R ref=R27 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=100k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.R3.R ref=R3 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.R4.R ref=R4 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.R5.0_01 ref=R5 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0603_1608Metric value=RL0603FR x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.R6.R ref=R6 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=1k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.R7.R ref=R7 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=511k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.R8.R ref=R8 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=1k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.R9.R ref=R9 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=91k x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.S1.JS102011SAQN ref=S1 fpid=workspace_components_C_K_JS102011SAQN:SW_JS102011SAQN value=JS102011SAQN x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.TH1.10k ref=TH1 fpid=workspace_components_10k:RES-TH_BD2.8_NTC-10K value=MF52A103F3435 x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.U1.TPS631000DRLR ref=U1 fpid=workspace_components_Texas_Instruments_TPS631000DRLR:SOT50P160X60-8N value=TPS631000DRLR x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.U2.BQ27441DRZR-G1A ref=U2 fpid=workspace_components_BQ27441DRZR-G1A:SON-12_L4.0-W2.5-P0.40-BL-EP value=BQ27441DRZR x=0 y=0 layer=F.Cu
+INFO: CHANGESET FP_ADD path=POWER.U6.BQ25185DLHR ref=U61 fpid=workspace_components_Texas_Instruments_BQ25185DLHR:IC_BQ25185DLHR value=BQ25185DLHR x=0 y=0 layer=F.Cu
+INFO: CHANGESET GR_ADD path=IMU members=12
+INFO: CHANGESET GR_ADD path=MAIN_MODULE_TAG members=19
+INFO: CHANGESET GR_ADD path=POWER members=41
+INFO: Added footprint: IMU.C10.C
+INFO: Added footprint: IMU.C11.C
+INFO: Added footprint: IMU.C12.C
+INFO: Added footprint: IMU.C13.C
+INFO: Added footprint: IMU.C19.C
+INFO: Added footprint: IMU.C25.C
+INFO: Added footprint: IMU.R14.R
+INFO: Added footprint: IMU.R15.R
+INFO: Added footprint: IMU.R17.R
+INFO: Added footprint: IMU.R18.R
+INFO: Added footprint: IMU.U4.BNO055
+INFO: Added footprint: IMU.Y1.32kHz
+INFO: Added footprint: MAIN_MODULE_TAG.C14.C
+INFO: Added footprint: MAIN_MODULE_TAG.C15.C
+INFO: Added footprint: MAIN_MODULE_TAG.C16.C
+INFO: Added footprint: MAIN_MODULE_TAG.C17.C
+INFO: Added footprint: MAIN_MODULE_TAG.C18.C
+INFO: Added footprint: MAIN_MODULE_TAG.C26.C
+INFO: Added footprint: MAIN_MODULE_TAG.D5.DWM_LED
+INFO: Added footprint: MAIN_MODULE_TAG.J1.Conn_01x02
+INFO: Added footprint: MAIN_MODULE_TAG.J4.Conn_01x06
+INFO: Added footprint: MAIN_MODULE_TAG.R10.R
+INFO: Added footprint: MAIN_MODULE_TAG.R12.R
+INFO: Added footprint: MAIN_MODULE_TAG.R13.R
+INFO: Added footprint: MAIN_MODULE_TAG.R20.R
+INFO: Added footprint: MAIN_MODULE_TAG.R21.470
+INFO: Added footprint: MAIN_MODULE_TAG.R23.R
+INFO: Added footprint: MAIN_MODULE_TAG.RX1.TestPoint
+INFO: Added footprint: MAIN_MODULE_TAG.SW1.DWM_CONFIG
+INFO: Added footprint: MAIN_MODULE_TAG.TX1.TestPoint
+INFO: Added footprint: MAIN_MODULE_TAG.U5.DWM1004C
+INFO: Added footprint: POWER.C1.C
+INFO: Added footprint: POWER.C2.C
+INFO: Added footprint: POWER.C20.C
+INFO: Added footprint: POWER.C21.C
+INFO: Added footprint: POWER.C22.C
+INFO: Added footprint: POWER.C23.C
+INFO: Added footprint: POWER.C24.C
+INFO: Added footprint: POWER.C3.C
+INFO: Added footprint: POWER.C4.C
+INFO: Added footprint: POWER.C5.C
+INFO: Added footprint: POWER.C6.C
+INFO: Added footprint: POWER.C8.C
+INFO: Added footprint: POWER.C9.C
+INFO: Added footprint: POWER.D1.ESD9B5_0ST5G
+INFO: Added footprint: POWER.D2.STAT2
+INFO: Added footprint: POWER.D3.STAT1
+INFO: Added footprint: POWER.FB1.120
+INFO: Added footprint: POWER.J2.BAT
+INFO: Added footprint: POWER.J3.TYPE-C-31-M-12
+INFO: Added footprint: POWER.L1.1uH
+INFO: Added footprint: POWER.R1.600
+INFO: Added footprint: POWER.R11.R
+INFO: Added footprint: POWER.R16.R
+INFO: Added footprint: POWER.R19.R
+INFO: Added footprint: POWER.R2.R
+INFO: Added footprint: POWER.R22.DNP
+INFO: Added footprint: POWER.R25.R
+INFO: Added footprint: POWER.R26.R
+INFO: Added footprint: POWER.R27.R
+INFO: Added footprint: POWER.R3.R
+INFO: Added footprint: POWER.R4.R
+INFO: Added footprint: POWER.R5.0_01
+INFO: Added footprint: POWER.R6.R
+INFO: Added footprint: POWER.R7.R
+INFO: Added footprint: POWER.R8.R
+INFO: Added footprint: POWER.R9.R
+INFO: Added footprint: POWER.S1.JS102011SAQN
+INFO: Added footprint: POWER.TH1.10k
+INFO: Added footprint: POWER.U1.TPS631000DRLR
+INFO: Added footprint: POWER.U2.BQ27441DRZR-G1A
+INFO: Added footprint: POWER.U6.BQ25185DLHR
+INFO: Added group: IMU
+INFO: Added group: MAIN_MODULE_TAG
+INFO: Added group: POWER
+INFO: HierPlace: placed 72 items
+INFO: OPLOG FP_ADD path=IMU.C10.C ref=C10 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=1uF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=IMU.C11.C ref=C11 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=22pF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=IMU.C12.C ref=C12 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=22pF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=IMU.C13.C ref=C13 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=IMU.C19.C ref=C19 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=IMU.C25.C ref=C25 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=IMU.R14.R ref=R14 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=IMU.R15.R ref=R15 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=IMU.R17.R ref=R17 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=IMU.R18.R ref=R18 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=IMU.U4.BNO055 ref=U4 fpid=workspace_components_BOSCH_BNO055:LGA28R50P4X10_380X520X100 value=BNO055 x=0 y=0 layer=F.Cu pads=28
+INFO: OPLOG FP_ADD path=IMU.Y1.32kHz ref=Y1 fpid=stdlib_kicad-footprints_Crystal:Crystal_SMD_2012-2Pin_2.0x1.2mm value=NX2012SA x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.C14.C ref=C14 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.C15.C ref=C15 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.C16.C ref=C16 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.C17.C ref=C17 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0805_2012Metric value=22uF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.C18.C ref=C18 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.C26.C ref=C26 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0402_1005Metric value=100nF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.D5.DWM_LED ref=D5 fpid=stdlib_kicad-footprints_LED_SMD:LED_0805_2012Metric value=KT x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.J1.Conn_01x02 ref=J1 fpid=stdlib_kicad-footprints_Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical value=PZ254V x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.J4.Conn_01x06 ref=J4 fpid=stdlib_kicad-footprints_Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Horizontal value=PZ254R x=0 y=0 layer=F.Cu pads=6
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.R10.R ref=R10 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.R12.R ref=R12 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=4.7k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.R13.R ref=R13 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=4.7k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.R20.R ref=R20 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.R21.470 ref=R21 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=FRC0402F4700TS x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.R23.R ref=R23 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=100k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.RX1.TestPoint ref=TP1 fpid=stdlib_kicad-footprints_TestPoint:TestPoint_Pad_D1.0mm value=? x=0 y=0 layer=F.Cu pads=1
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.SW1.DWM_CONFIG ref=SW1 fpid=workspace_components_DWM_CONFIG:SW_SPST_PTS647_Sx38 value="PTS 647 SN38 SMTR2 LFS" x=0 y=0 layer=F.Cu pads=4
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.TX1.TestPoint ref=TP2 fpid=stdlib_kicad-footprints_TestPoint:TestPoint_Pad_D1.0mm value=? x=0 y=0 layer=F.Cu pads=1
+INFO: OPLOG FP_ADD path=MAIN_MODULE_TAG.U5.DWM1004C ref=U51 fpid=workspace_components_DWM1004C:DWM1004C value=DWM1004C x=0 y=0 layer=F.Cu pads=38
+INFO: OPLOG FP_ADD path=POWER.C1.C ref=C1 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=1uF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.C2.C ref=C2 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.C20.C ref=C20 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0805_2012Metric value=22uF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.C21.C ref=C21 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0805_2012Metric value=22uF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.C22.C ref=C22 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0805_2012Metric value=22uF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.C23.C ref=C23 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0805_2012Metric value=22uF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.C24.C ref=C24 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=1uF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.C3.C ref=C3 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.C4.C ref=C4 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=1uF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.C5.C ref=C5 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=470nF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.C6.C ref=C6 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.C8.C ref=C8 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=100nF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.C9.C ref=C9 fpid=stdlib_kicad-footprints_Capacitor_SMD:C_0603_1608Metric value=10uF x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.D1.ESD9B5_0ST5G ref=D1 fpid=workspace_components_ESD9B5_0ST5G:D_SOD-923 value=ESD9B5.0ST5G x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.D2.STAT2 ref=D2 fpid=stdlib_kicad-footprints_LED_SMD:LED_0805_2012Metric value=KT x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.D3.STAT1 ref=D3 fpid=stdlib_kicad-footprints_LED_SMD:LED_0805_2012Metric value=KT x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.FB1.120 ref=L2 fpid=workspace_components_120:L0603 value=BLM18PG121SN1D x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.J2.BAT ref=J2 fpid=stdlib_kicad-footprints_Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical value=PZ254V x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.J3.TYPE-C-31-M-12 ref=J3 fpid=workspace_components_HRO_Electronics_Co_Ltd_TYPE-C-31-M-12:HRO_TYPE-C-31-M-12 value=TYPE x=0 y=0 layer=F.Cu pads=18
+INFO: OPLOG FP_ADD path=POWER.L1.1uH ref=L1 fpid=stdlib_kicad-footprints_Inductor_SMD:L_0805_2012Metric value=TFM201208ALD x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.R1.600 ref=R1 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=ERA x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.R11.R ref=R11 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.R16.R ref=R16 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=5.1k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.R19.R ref=R19 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=5.1k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.R2.R ref=R2 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=18k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.R22.DNP ref=R22 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=? x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.R25.R ref=R25 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.R26.R ref=R26 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.R27.R ref=R27 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=100k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.R3.R ref=R3 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.R4.R ref=R4 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=10k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.R5.0_01 ref=R5 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0603_1608Metric value=RL0603FR x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.R6.R ref=R6 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=1k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.R7.R ref=R7 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=511k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.R8.R ref=R8 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=1k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.R9.R ref=R9 fpid=stdlib_kicad-footprints_Resistor_SMD:R_0402_1005Metric value=91k x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.S1.JS102011SAQN ref=S1 fpid=workspace_components_C_K_JS102011SAQN:SW_JS102011SAQN value=JS102011SAQN x=0 y=0 layer=F.Cu pads=5
+INFO: OPLOG FP_ADD path=POWER.TH1.10k ref=TH1 fpid=workspace_components_10k:RES-TH_BD2.8_NTC-10K value=MF52A103F3435 x=0 y=0 layer=F.Cu pads=2
+INFO: OPLOG FP_ADD path=POWER.U1.TPS631000DRLR ref=U1 fpid=workspace_components_Texas_Instruments_TPS631000DRLR:SOT50P160X60-8N value=TPS631000DRLR x=0 y=0 layer=F.Cu pads=8
+INFO: OPLOG FP_ADD path=POWER.U2.BQ27441DRZR-G1A ref=U2 fpid=workspace_components_BQ27441DRZR-G1A:SON-12_L4.0-W2.5-P0.40-BL-EP value=BQ27441DRZR x=0 y=0 layer=F.Cu pads=13
+INFO: OPLOG FP_ADD path=POWER.U6.BQ25185DLHR ref=U61 fpid=workspace_components_Texas_Instruments_BQ25185DLHR:IC_BQ25185DLHR value=BQ25185DLHR x=0 y=0 layer=F.Cu pads=13
+INFO: OPLOG GR_ADD path=IMU
+INFO: OPLOG GR_ADD path=MAIN_MODULE_TAG
+INFO: OPLOG GR_ADD path=POWER
+INFO: OPLOG NET_ADD name=GND
+INFO: OPLOG NET_ADD name=IMU.NET_U4_CAP
+INFO: OPLOG NET_ADD name=IMU.IMU_XTAL_P
+INFO: OPLOG NET_ADD name=IMU.IMU_XTAL_N
+INFO: OPLOG NET_ADD name=VDD_3V3
+INFO: OPLOG NET_ADD name=IMU.NET_U4_NBOOT_LOAD_PIN
+INFO: OPLOG NET_ADD name=IMU_IMU_NRST
+INFO: OPLOG NET_ADD name=IMU.IMU_ADDR_SEL
+INFO: OPLOG NET_ADD name=IMU.U4.NC_BNO055_PIN10
+INFO: OPLOG NET_ADD name=IMU.U4.NC_BNO055_PIN15
+INFO: OPLOG NET_ADD name=IMU.U4.NC_BNO055_PIN16
+INFO: OPLOG NET_ADD name=IMU_BNO_SCL
+INFO: OPLOG NET_ADD name=IMU_BNO_SDA
+INFO: OPLOG NET_ADD name=IMU_IMU_INT
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.MAIN_MODULE_TAG_CONFIG
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.NET_D5_K
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.MAIN_MODULE_TAG_DWM_RX1
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.MAIN_MODULE_TAG_DWM_TX1
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.MAIN_MODULE_TAG_MCU_BOOT
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.MAIN_MODULE_TAG_MCU_NRST
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.MAIN_MODULE_TAG_SWCLK
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.MAIN_MODULE_TAG_SWDIO
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.MAIN_MODULE_TAG_DWM_IND
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.NET_R23_Pad1
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.MAIN_MODULE_TAG_PA8
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.U5.NC_DWM1004C_ADC1
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.U5.NC_DWM1004C_ADC2
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.U5.NC_DWM1004C_ADC3
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.U5.NC_DWM1004C_GPIO0
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.U5.NC_DWM1004C_GPIO1
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.U5.NC_DWM1004C_GPIO2
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.U5.NC_DWM1004C_GPIO3
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.U5.NC_DWM1004C_GPIO4
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.U5.NC_DWM1004C_GPIO5
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.U5.NC_DWM1004C_GPIO6
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.U5.NC_DWM1004C_RESV15
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.U5.NC_DWM1004C_RESV2
+INFO: OPLOG NET_ADD name=MAIN_MODULE_TAG.U5.NC_DWM1004C_SYNC
+INFO: OPLOG NET_ADD name=POWER_GPOUT
+INFO: OPLOG NET_ADD name=POWER.VBUS
+INFO: OPLOG NET_ADD name=POWER.NET_U1_VOUT
+INFO: OPLOG NET_ADD name=POWER.VCC
+INFO: OPLOG NET_ADD name=POWER.POWER_SRN
+INFO: OPLOG NET_ADD name=POWER.POWER_BAT_P
+INFO: OPLOG NET_ADD name=POWER.NET_U2_VDD
+INFO: OPLOG NET_ADD name=POWER.POWER_EN
+INFO: OPLOG NET_ADD name=POWER.NET_D2_A
+INFO: OPLOG NET_ADD name=POWER.POWER_STAT2
+INFO: OPLOG NET_ADD name=POWER.NET_D3_A
+INFO: OPLOG NET_ADD name=POWER.POWER_STAT1
+INFO: OPLOG NET_ADD name=POWER.J3.NC_TYPE-C-31-M-12_DN1
+INFO: OPLOG NET_ADD name=POWER.J3.NC_TYPE-C-31-M-12_DN2
+INFO: OPLOG NET_ADD name=POWER.J3.NC_TYPE-C-31-M-12_DP1
+INFO: OPLOG NET_ADD name=POWER.J3.NC_TYPE-C-31-M-12_DP2
+INFO: OPLOG NET_ADD name=POWER.J3.NC_TYPE-C-31-M-12_SBU1
+INFO: OPLOG NET_ADD name=POWER.J3.NC_TYPE-C-31-M-12_SBU2
+INFO: OPLOG NET_ADD name=POWER.NET_J3_CC1
+INFO: OPLOG NET_ADD name=POWER.NET_J3_CC2
+INFO: OPLOG NET_ADD name=POWER.POWER_LX1
+INFO: OPLOG NET_ADD name=POWER.POWER_LX2
+INFO: OPLOG NET_ADD name=POWER.NET_U6_ISET
+INFO: OPLOG NET_ADD name=POWER.NET_U6_ILIM_VSET
+INFO: OPLOG NET_ADD name=POWER.NET_U6_TS_MR
+INFO: OPLOG NET_ADD name=POWER.NET_R25_Pad2
+INFO: OPLOG NET_ADD name=POWER.POWER_MODE
+INFO: OPLOG NET_ADD name=POWER.NET_U6_CE
+INFO: OPLOG NET_ADD name=POWER.POWER_BIN
+INFO: OPLOG NET_ADD name=POWER.NET_U1_FB
+INFO: OPLOG NET_ADD name=POWER.U2.NC_BQ27441DRZR-G1A_NC__11
+INFO: OPLOG NET_ADD name=POWER.U2.NC_BQ27441DRZR-G1A_NC__4
+INFO: OPLOG NET_ADD name=POWER.U2.NC_BQ27441DRZR-G1A_NC__9
+INFO: OPLOG PLACE_FP path=IMU.C10.C x=169505000 y=114394100 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=IMU.C11.C x=169505000 y=112884100 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=IMU.C12.C x=166455000 y=112144100 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=IMU.C13.C x=172382000 y=119210000 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=IMU.C19.C x=172382000 y=117700000 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=IMU.C25.C x=172382000 y=116190000 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=IMU.R14.R x=172515000 y=114914100 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=IMU.R15.R x=169505000 y=111894100 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=IMU.R17.R x=172515000 y=113404100 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=IMU.R18.R x=171415000 y=111894100 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=IMU.U4.BNO055 x=166455000 y=115904100 w=5927000 h=4815900
+INFO: OPLOG PLACE_FP path=IMU.Y1.32kHz x=166455000 y=113654100 w=3050000 h=2250000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.C14.C x=152095000 y=91330000 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.C15.C x=155685000 y=97470000 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.C16.C x=132545000 y=89620000 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.C17.C x=159445000 y=102420000 w=3450000 h=2010000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.C18.C x=135995000 y=91660000 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.C26.C x=161495000 y=101450000 w=1870000 h=970000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.D5.DWM_LED x=132545000 y=91130000 w=3450000 h=2040000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.J1.Conn_01x02 x=152095000 y=92840000 w=3590000 h=6140000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.J4.Conn_01x06 x=152095000 y=104430000 w=12360000 h=16290000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.R10.R x=155105000 y=91850000 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.R12.R x=155685000 y=96480000 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.R13.R x=158695000 y=97990000 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.R20.R x=135555000 y=90140000 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.R21.470 x=139005000 y=92180000 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.R23.R x=159445000 y=99380000 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.RX1.TestPoint x=159445000 y=100370000 w=2050000 h=2050000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.SW1.DWM_CONFIG x=152095000 y=98980000 w=7350000 h=5450000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.TX1.TestPoint x=152095000 y=89280000 w=2050000 h=2050000
+INFO: OPLOG PLACE_FP path=MAIN_MODULE_TAG.U5.DWM1004C x=132545000 y=93170000 w=19550000 h=27550000
+INFO: OPLOG PLACE_FP path=POWER.C1.C x=146935006 y=74386021 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=POWER.C2.C x=146785000 y=82010000 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=POWER.C20.C x=146645000 y=70669921 w=3450000 h=2010000
+INFO: OPLOG PLACE_FP path=POWER.C21.C x=146647451 y=79130000 w=3450000 h=2010000
+INFO: OPLOG PLACE_FP path=POWER.C22.C x=146647451 y=77120000 w=3450000 h=2010000
+INFO: OPLOG PLACE_FP path=POWER.C23.C x=146785000 y=85270000 w=3450000 h=2010000
+INFO: OPLOG PLACE_FP path=POWER.C24.C x=146935006 y=72876021 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=POWER.C3.C x=139410000 y=69441500 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=POWER.C4.C x=146645000 y=69159921 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=POWER.C5.C x=143195000 y=69129921 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=POWER.C6.C x=132545000 y=68931500 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=POWER.C8.C x=136270000 y=68831500 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=POWER.C9.C x=139410000 y=67931500 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=POWER.D1.ESD9B5_0ST5G x=150335000 y=84320000 w=1695000 h=950000
+INFO: OPLOG PLACE_FP path=POWER.D2.STAT2 x=143195000 y=70639921 w=3450000 h=2040000
+INFO: OPLOG PLACE_FP path=POWER.D3.STAT1 x=139410000 y=70951500 w=3450000 h=2040000
+INFO: OPLOG PLACE_FP path=POWER.FB1.120 x=143195000 y=67676175 w=3000660 h=1453746
+INFO: OPLOG PLACE_FP path=POWER.J2.BAT x=143195000 y=81140000 w=3590000 h=6140000
+INFO: OPLOG PLACE_FP path=POWER.J3.TYPE-C-31-M-12 x=132545000 y=78205000 w=10650000 h=9075000
+INFO: OPLOG PLACE_FP path=POWER.L1.1uH x=146785000 y=83520000 w=3550000 h=1750000
+INFO: OPLOG PLACE_FP path=POWER.R1.600 x=150095000 y=71689921 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=POWER.R11.R x=150097451 y=80150000 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=POWER.R16.R x=146647451 y=76130000 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=POWER.R19.R x=150097451 y=78140000 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=POWER.R2.R x=150235000 y=86290000 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=POWER.R22.DNP x=149945006 y=74906021 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=POWER.R25.R x=149795000 y=82530000 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=POWER.R26.R x=149945006 y=73396021 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=POWER.R27.R x=149655000 y=69679921 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=POWER.R3.R x=132545000 y=67941500 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=POWER.R4.R x=136270000 y=67841500 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=POWER.R5.0_01 x=146645000 y=67649921 w=3010000 h=1510000
+INFO: OPLOG PLACE_FP path=POWER.R6.R x=149655000 y=68169921 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=POWER.R7.R x=150095000 y=70699921 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=POWER.R8.R x=150097451 y=79160000 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=POWER.R9.R x=148557451 y=76130000 w=1910000 h=990000
+INFO: OPLOG PLACE_FP path=POWER.S1.JS102011SAQN x=132545000 y=72991500 w=9127000 h=5213500
+INFO: OPLOG PLACE_FP path=POWER.TH1.10k x=143195000 y=72679921 w=3740006 h=3216100
+INFO: OPLOG PLACE_FP path=POWER.U1.TPS631000DRLR x=136270000 y=70341500 w=3140000 h=2650000
+INFO: OPLOG PLACE_FP path=POWER.U2.BQ27441DRZR-G1A x=143195000 y=75896021 w=3452451 h=5243979
+INFO: OPLOG PLACE_FP path=POWER.U6.BQ25185DLHR x=132545000 y=70441500 w=3725000 h=2550000
+INFO: Sync completed in 0.854s
+INFO: Lens sync complete: +72 -0 footprints
+INFO: Completed ImportNetlist in 0.856 seconds
+INFO: --------------------------------------------------------------------------------
+INFO: Running step: FinalizeBoard
+INFO: --------------------------------------------------------------------------------
+INFO: Starting FinalizeBoard...
+INFO: Saved layout snapshot to /home/rendra/dwmz/layout/dwm1004c_aptwr_tag/snapshot.layout.json
+INFO: Snapshot export took 0.095 seconds
+INFO: Board saving took 0.025 seconds
+INFO: Completed FinalizeBoard in 0.137 seconds

@@ -1,0 +1,17 @@
+"""
+32kHz
+
+Auto-generated using `pcb import`.
+"""
+
+P1 = io(Net)
+P2 = io(Net)
+
+Component(
+    name="32kHz",
+    footprint=File("@stdlib/kicad-footprints/Crystal.pretty/Crystal_SMD_2012-2Pin_2.0x1.2mm.kicad_mod"),
+    part=Part(mpn="NX2012SA", manufacturer="NDK"),
+    symbol=Symbol(library="32kHz.kicad_sym"),
+    pin_defs={"1": "1", "2": "2"},
+    pins={"1": P1, "2": P2},
+)

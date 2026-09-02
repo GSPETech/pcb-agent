@@ -1,0 +1,226 @@
+"""
+dwm1004c_aptwr_tag sheet module: MAIN MODULE TAG (/c0710898-170b-4b4c-87f0-d2ead3d229d0/)
+"""
+
+load("@stdlib/interfaces.zen", "NotConnected", "Power", "Ground")
+
+NET_3_3V = io("NET_3_3V", Power)
+IMU_BNO_SCL = io("IMU_BNO_SCL", Net)
+IMU_BNO_SDA = io("IMU_BNO_SDA", Net)
+IMU_IMU_INT = io("IMU_IMU_INT", Net)
+IMU_IMU_NRST = io("IMU_IMU_NRST", Net)
+POWER_GPOUT = io("POWER_GPOUT", Net)
+GND = io("GND", Ground)
+
+MAIN_MODULE_TAG_CONFIG = Net("MAIN_MODULE_TAG_CONFIG")
+MAIN_MODULE_TAG_DWM_IND = Net("MAIN_MODULE_TAG_DWM_IND")
+MAIN_MODULE_TAG_DWM_RX1 = Net("MAIN_MODULE_TAG_DWM_RX1")
+MAIN_MODULE_TAG_DWM_TX1 = Net("MAIN_MODULE_TAG_DWM_TX1")
+MAIN_MODULE_TAG_MCU_BOOT = Net("MAIN_MODULE_TAG_MCU_BOOT")
+MAIN_MODULE_TAG_MCU_NRST = Net("MAIN_MODULE_TAG_MCU_NRST")
+MAIN_MODULE_TAG_PA8 = Net("MAIN_MODULE_TAG_PA8")
+MAIN_MODULE_TAG_SWCLK = Net("MAIN_MODULE_TAG_SWCLK")
+MAIN_MODULE_TAG_SWDIO = Net("MAIN_MODULE_TAG_SWDIO")
+NET_D5_K = Net("NET_D5_K")
+NET_R23_PAD1 = Net("NET_R23_Pad1")
+
+Capacitor = Module("@stdlib/generics/Capacitor.zen")
+Resistor = Module("@stdlib/generics/Resistor.zen")
+
+CONN_01X02 = Module("../../components/Conn_01x02/Conn_01x02.zen")
+CONN_01X06 = Module("../../components/Conn_01x06/Conn_01x06.zen")
+DWM1004C = Module("../../components/DWM1004C/DWM1004C.zen")
+DWM_CONFIG = Module("../../components/DWM_CONFIG/DWM_CONFIG.zen")
+DWM_LED = Module("../../components/DWM_LED/DWM_LED.zen")
+TESTPOINT = Module("../../components/TestPoint/TestPoint.zen")
+_470 = Module("../../components/470/470.zen")
+
+Capacitor(
+    name="C14",
+    package="0603",
+    value="0.1uF",
+    P1=NET_3_3V,
+    P2=GND,
+)
+
+Capacitor(
+    name="C15",
+    package="0603",
+    value="0.1uF",
+    P1=NET_3_3V,
+    P2=GND,
+)
+
+Capacitor(
+    name="C16",
+    package="0603",
+    value="0.1uF",
+    P1=NET_3_3V,
+    P2=GND,
+)
+
+Capacitor(
+    name="C17",
+    package="0805",
+    value="22uF",
+    P1=NET_3_3V,
+    P2=GND,
+)
+
+Capacitor(
+    name="C18",
+    package="0603",
+    value="0.1uF",
+    P1=NET_3_3V,
+    P2=GND,
+)
+
+Capacitor(
+    name="C26",
+    package="0402",
+    value="0.1uF",
+    P1=MAIN_MODULE_TAG_CONFIG,
+    P2=GND,
+)
+
+DWM_LED(name="D5", A=NET_3_3V, K=NET_D5_K)
+
+CONN_01X02(name="J1", PIN_1=MAIN_MODULE_TAG_DWM_TX1, PIN_2=MAIN_MODULE_TAG_DWM_RX1)
+
+CONN_01X06(
+    name="J4",
+    PIN_1=MAIN_MODULE_TAG_MCU_BOOT,
+    PIN_2=MAIN_MODULE_TAG_MCU_NRST,
+    PIN_3=MAIN_MODULE_TAG_SWCLK,
+    PIN_4=MAIN_MODULE_TAG_SWDIO,
+    PIN_5=GND,
+    PIN_6=NET_3_3V,
+)
+
+Resistor(
+    name="R10",
+    package="0402",
+    value="10k",
+    P1=MAIN_MODULE_TAG_MCU_BOOT,
+    P2=GND,
+)
+
+Resistor(
+    name="R12",
+    package="0402",
+    value="4.7k",
+    P1=NET_3_3V,
+    P2=IMU_BNO_SCL,
+)
+
+Resistor(
+    name="R13",
+    package="0402",
+    value="4.7k",
+    P1=NET_3_3V,
+    P2=IMU_BNO_SDA,
+)
+
+Resistor(
+    name="R20",
+    package="0402",
+    value="10k",
+    P1=NET_3_3V,
+    P2=MAIN_MODULE_TAG_CONFIG,
+)
+
+_470(name="R21", P1=MAIN_MODULE_TAG_DWM_IND, P2=NET_D5_K)
+
+Resistor(
+    name="R23",
+    package="0402",
+    value="100k",
+    P1=NET_R23_PAD1,
+    P2=GND,
+)
+
+TESTPOINT(name="RX1", P1=MAIN_MODULE_TAG_DWM_RX1)
+
+DWM_CONFIG(name="SW1", P1=GND, P2=MAIN_MODULE_TAG_CONFIG)
+
+TESTPOINT(name="TX1", P1=MAIN_MODULE_TAG_DWM_TX1)
+
+DWM1004C(
+    name="U5",
+    ADC1=NotConnected(),
+    ADC2=NotConnected(),
+    ADC3=NotConnected(),
+    GND1=GND,
+    GND14=GND,
+    GND24=GND,
+    GND25=GND,
+    GND38=GND,
+    GPIO0=NotConnected(),
+    GPIO1=NotConnected(),
+    GPIO2=NotConnected(),
+    GPIO3=NotConnected(),
+    GPIO4=NotConnected(),
+    GPIO5=NotConnected(),
+    GPIO6=NotConnected(),
+    INT2=MAIN_MODULE_TAG_PA8,
+    MCU_BOOT=MAIN_MODULE_TAG_MCU_BOOT,
+    MCU_NRST=MAIN_MODULE_TAG_MCU_NRST,
+    PA0=IMU_IMU_INT,
+    PA1=IMU_IMU_NRST,
+    PA4=NET_R23_PAD1,
+    PA8=MAIN_MODULE_TAG_PA8,
+    PB3=MAIN_MODULE_TAG_CONFIG,
+    PB4=POWER_GPOUT,
+    PB5=MAIN_MODULE_TAG_DWM_IND,
+    RESV15=NotConnected(),
+    RESV2=NotConnected(),
+    RX=MAIN_MODULE_TAG_DWM_RX1,
+    SCL=IMU_BNO_SCL,
+    SDA=IMU_BNO_SDA,
+    SWCLK=MAIN_MODULE_TAG_SWCLK,
+    SWDIO=MAIN_MODULE_TAG_SWDIO,
+    SYNC=NotConnected(),
+    TX=MAIN_MODULE_TAG_DWM_TX1,
+    VDDAON=NET_3_3V,
+    VDDIO=NET_3_3V,
+    VDD_DW=NET_3_3V,
+    VDD_MCU=NET_3_3V,
+)
+
+
+# pcb:sch C14.C x=537.4800 y=1294.4000 rot=0 mirror=y
+# pcb:sch C15.C x=346.9800 y=849.9000 rot=0 mirror=y
+# pcb:sch C16.C x=410.4800 y=849.9000 rot=0 mirror=y
+# pcb:sch C17.C x=473.9800 y=849.9000 rot=0 mirror=y
+# pcb:sch C18.C x=283.4800 y=849.9000 rot=0 mirror=y
+# pcb:sch C26.C x=1439.1800 y=1205.5000 rot=0 mirror=y
+# pcb:sch D5.DWM_LED x=1743.9800 y=1180.1000 rot=90 mirror=x
+# pcb:sch GND.0 x=545.1000 y=1078.5000 rot=90
+# pcb:sch GND.1 x=1053.1000 y=926.1000 rot=270
+# pcb:sch GND.10 x=1053.1000 y=1091.2000 rot=270
+# pcb:sch GND.2 x=2412.0000 y=1142.0000 rot=270
+# pcb:sch GND.3 x=875.3000 y=1281.7000 rot=0
+# pcb:sch GND.4 x=583.2000 y=748.3000 rot=90
+# pcb:sch GND.5 x=1561.1000 y=1332.5000 rot=0
+# pcb:sch GND.6 x=545.1000 y=1408.7000 rot=0
+# pcb:sch GND.7 x=849.9000 y=1472.2000 rot=0
+# pcb:sch GND.8 x=392.7000 y=951.5000 rot=0
+# pcb:sch GND.9 x=926.1000 y=748.3000 rot=270
+# pcb:sch J1.Conn_01x02 x=2272.3000 y=862.6000 rot=180
+# pcb:sch J4.Conn_01x06 x=2272.3000 y=1027.7000 rot=0 mirror=y
+# pcb:sch NET_3_3V.0 x=1680.4800 y=710.2000 rot=0
+# pcb:sch NET_3_3V.1 x=1782.0800 y=1103.9000 rot=0
+# pcb:sch NET_3_3V.2 x=2417.0800 y=1142.0000 rot=90
+# pcb:sch NET_3_3V.3 x=1566.1800 y=1027.7000 rot=0
+# pcb:sch NET_3_3V.4 x=537.4800 y=1243.6000 rot=270
+# pcb:sch NET_3_3V.5 x=296.1800 y=786.4000 rot=0
+# pcb:sch R10.R x=852.4400 y=1396.0000 rot=0
+# pcb:sch R12.R x=1652.5400 y=773.7000 rot=0
+# pcb:sch R13.R x=1703.3400 y=773.7000 rot=0
+# pcb:sch R20.R x=1563.6400 y=1078.5000 rot=0
+# pcb:sch R21.470 x=1779.5400 y=1281.7000 rot=0 mirror=x
+# pcb:sch R23.R x=979.4400 y=888.0000 rot=270
+# pcb:sch RX1.TestPoint x=1324.8800 y=1431.5600 rot=90
+# pcb:sch SW1.DWM_CONFIG x=1523.0000 y=1225.8200 rot=270
+# pcb:sch TX1.TestPoint x=1324.8800 y=1456.9600 rot=90
+# pcb:sch U5.DWM1004C x=595.9000 y=710.2000 rot=0

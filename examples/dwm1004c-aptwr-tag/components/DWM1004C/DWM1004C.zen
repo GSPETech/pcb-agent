@@ -1,0 +1,131 @@
+"""
+DWM1004C
+
+Auto-generated using `pcb import`.
+"""
+
+ADC1 = io(Net)
+ADC2 = io(Net)
+ADC3 = io(Net)
+GND1 = io(Net)
+GND14 = io(Net)
+GND24 = io(Net)
+GND25 = io(Net)
+GND38 = io(Net)
+GPIO0 = io(Net)
+GPIO1 = io(Net)
+GPIO2 = io(Net)
+GPIO3 = io(Net)
+GPIO4 = io(Net)
+GPIO5 = io(Net)
+GPIO6 = io(Net)
+INT2 = io(Net)
+MCU_BOOT = io(Net)
+MCU_NRST = io(Net)
+PA0 = io(Net)
+PA1 = io(Net)
+PA4 = io(Net)
+PA8 = io(Net)
+PB3 = io(Net)
+PB4 = io(Net)
+PB5 = io(Net)
+RESV15 = io(Net)
+RESV2 = io(Net)
+RX = io(Net)
+SCL = io(Net)
+SDA = io(Net)
+SWCLK = io(Net)
+SWDIO = io(Net)
+SYNC = io(Net)
+TX = io(Net)
+VDDAON = io(Net)
+VDDIO = io(Net)
+VDD_DW = io(Net)
+VDD_MCU = io(Net)
+
+Component(
+    name="DWM1004C",
+    part=Part(mpn="DWM1004C", manufacturer="Decawave/Qorvo"),
+    footprint=File("DWM1004C.kicad_mod"),
+    symbol=Symbol(library="DWM1004C.kicad_sym"),
+    pin_defs={
+        "ADC1": "ADC1",
+        "ADC2": "ADC2",
+        "ADC3": "ADC3",
+        "GND1": "GND@1",
+        "GND14": "GND@14",
+        "GND24": "GND@24",
+        "GND25": "GND@25",
+        "GND38": "GND@38",
+        "GPIO0": "GPIO0",
+        "GPIO1": "GPIO1",
+        "GPIO2": "GPIO2",
+        "GPIO3": "GPIO3",
+        "GPIO4": "GPIO4",
+        "GPIO5": "GPIO5",
+        "GPIO6": "GPIO6",
+        "INT2": "INT2",
+        "MCU_BOOT": "MCU_BOOT",
+        "MCU_NRST": "MCU_NRST",
+        "PA0": "PA0",
+        "PA1": "PA1",
+        "PA4": "PA4",
+        "PA8": "PA8",
+        "PB3": "PB3",
+        "PB4": "PB4",
+        "PB5": "PB5",
+        "RESV15": "RESV@15",
+        "RESV2": "RESV@2",
+        "RX": "RX",
+        "SCL": "SCL",
+        "SDA": "SDA",
+        "SWCLK": "SWCLK",
+        "SWDIO": "SWDIO",
+        "SYNC": "SYNC",
+        "TX": "TX",
+        "VDDAON": "VDDAON",
+        "VDDIO": "VDDIO",
+        "VDD_DW": "VDD_DW",
+        "VDD_MCU": "VDD_MCU",
+    },
+    pins={
+        "ADC1": ADC1,
+        "ADC2": ADC2,
+        "ADC3": ADC3,
+        "GND1": GND1,
+        "GND14": GND14,
+        "GND24": GND24,
+        "GND25": GND25,
+        "GND38": GND38,
+        "GPIO0": GPIO0,
+        "GPIO1": GPIO1,
+        "GPIO2": GPIO2,
+        "GPIO3": GPIO3,
+        "GPIO4": GPIO4,
+        "GPIO5": GPIO5,
+        "GPIO6": GPIO6,
+        "INT2": INT2,
+        "MCU_BOOT": MCU_BOOT,
+        "MCU_NRST": MCU_NRST,
+        "PA0": PA0,
+        "PA1": PA1,
+        "PA4": PA4,
+        "PA8": PA8,
+        "PB3": PB3,
+        "PB4": PB4,
+        "PB5": PB5,
+        "RESV15": RESV15,
+        "RESV2": RESV2,
+        "RX": RX,
+        "SCL": SCL,
+        "SDA": SDA,
+        "SWCLK": SWCLK,
+        "SWDIO": SWDIO,
+        "SYNC": SYNC,
+        "TX": TX,
+        "VDDAON": VDDAON,
+        "VDDIO": VDDIO,
+        "VDD_DW": VDD_DW,
+        "VDD_MCU": VDD_MCU,
+    },
+)

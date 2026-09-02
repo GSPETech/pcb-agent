@@ -1,0 +1,16 @@
+"""
+TestPoint
+
+Auto-generated using `pcb import`.
+"""
+
+P1 = io(Net)
+
+Component(
+    name="TestPoint",
+    footprint=File("@stdlib/kicad-footprints/TestPoint.pretty/TestPoint_Pad_D1.0mm.kicad_mod"),
+    symbol=Symbol(library="TestPoint.kicad_sym"),
+    pin_defs={"1": "1"},
+    pins={"1": P1},
+    skip_bom=True,
+)

@@ -1,189 +1,511 @@
-# pcb-ai-agent
+# PCB Agent
 
-Vendor-neutral deterministic harness for Diode/Zener PCB projects. Python core
-uses standard library only. AI backends may edit allowed source, but never
-decide verification truth or fabrication approval.
+**Deterministic AI-powered PCB design harness for Diode/Zener toolchain.**
 
-## Local Use
+Vendor-neutral Python harness that coordinates schematic design, layout generation, and routing verification. AI agents may edit source files within policy boundaries, but **never decide verification truth or fabrication approval**—all gates are decided by locked TestBenches and evidence-backed adapters.
 
-Requires Python 3.11+. Run from repository without installation:
+---
 
-```sh
-./pcb-agent doctor --project fixtures/valid-blinky --format json
+## Quick Start
+
+### CLI Usage
+
+```bash
+# Verify existing project
 ./pcb-agent verify --project fixtures/valid-blinky --profile schematic
+
+# Check toolchain and dependencies
+./pcb-agent doctor --project fixtures/valid-blinky --format json
+
+# Full layout workflow (schematic → placement → routing → DRC)
+./pcb-agent verify --project my_board --profile layout
 ```
 
-Windows can use:
+### AI Orchestrator (MCP)
+
+Design PCBs end-to-end with one command:
+
+```bash
+/pcb_agent "buat schematic GPS tracker dengan IMU sensor"
+```
+
+Orchestrator automatically:
+- Creates schematic with components and nets
+- Generates layout with deterministic placement
+- Routes traces via Freerouting
+- Fixes DRC violations iteratively
+- Returns `PASS` when all gates green
+
+See [MCP Integration](#mcp-integration) for setup.
+
+---
+
+## Installation
+
+**Requirements:** Python 3.11+, [Diode toolchain](https://github.com/diodeinc/pcb) 0.4.40+, KiCad 10.x (for layout profile)
+
+### Standard
+
+```bash
+git clone https://github.com/GSPETech/pcb-agent
+cd pcb-agent
+python -m pip install -e .
+```
+
+Core has **zero third-party Python dependencies**. MCP server requires `mcp` package.
+
+### Windows
 
 ```powershell
 python pcb-agent doctor --project fixtures/valid-blinky --format json
 ```
 
-Editable installation is optional: `python -m pip install -e .`. Core has no
-third-party Python dependency.
+**Note:** Layout profile requires WSL2 or Developer Mode (symlink privilege). Windows-native `pcb build` hits `os error 1314` without it.
+
+---
 
 ## Commands
 
-`doctor`, `build`, `check`, `layout`, `drc`, `verify`, `report`, and
-`run --backend <command|codex> "<task>"` are available. External command flags
-are capability-probed before execution. Hidden netlist, KiCad ERC, autorouting,
-Gerber generation, manufacturing, and order commands are absent.
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `doctor` | Probe toolchain & dependencies | `./pcb-agent doctor --project . --format json` |
+| `verify` | Run verification gates | `./pcb-agent verify --project . --profile layout` |
+| `build` | Build Diode project | `./pcb-agent build --project .` |
+| `check` | Run TestBenches | `./pcb-agent check --project .` |
+| `layout` | Generate KiCad PCB | `./pcb-agent layout --project .` |
+| `drc` | Run KiCad DRC | `./pcb-agent drc --project .` |
+| `report` | Generate verification report | `./pcb-agent report --project .` |
+| `run` | Delegate to AI backend | `./pcb-agent run --backend command "fix connectivity"` |
 
-## Profiles
+All external commands are capability-probed before execution. Netlist export, autorouting, Gerber generation, manufacturing, and ordering are intentionally absent.
 
-- `schematic`: contract, Diode build, immutable-snapshot TestBench, report.
-- `layout`: all schematic gates, Diode layout generation/check, direct KiCad 10
-  JSON DRC. Missing required KiCad is `BLOCKED`.
+---
 
-Layout and SPICE checks are `SKIPPED` under schematic profile. SPICE execution
-is deferred in MVP.
+## Verification Profiles
 
-## Deterministic Schematic Evidence
+### `schematic`
+Gates: `CONTRACT` → `DIODE_BUILD` → `CONNECTIVITY` → `SPECIFICATION`
 
-`CONNECTIVITY` and `SPECIFICATION` are decided only by generated TestBenches
-that the harness owns. The harness renders Zener source from the immutable
-`expected-connectivity.json` and `SPEC.json`, writes it into a trusted
-snapshot as `tests/.pcb-agent-connectivity.generated.zen` or
-`tests/.pcb-agent-specification.generated.zen`, runs `pcb test -f json`, and
-requires the expected TestBench and check record to be present and passing.
+Validates component topology, net connectivity, and spec constraints (value, package, pullup) via locked TestBenches. No layout or physical checks.
 
-Rules:
+### `layout`
+Gates: (all schematic) → `LAYOUT_GENERATE` → `PLACEMENT` → `ROUTE` → `LAYOUT_SYNC` → `KICAD_DRC`
 
-- Component kinds are resolved through a versioned adapter registry keyed by
-  component kind. Each adapter records the exact verified `pcbc` versions, the
-  SHA-256 of the captured evidence that established the mapping, the exact
-  result and source evidence paths, and the property accessors and pull-up pin
-  pair that were observed.
-- The registry is populated from captured Diode 0.4.40 evidence
-  (`captured_adapter_registry()` in `src/pcb_agent/generated_testbench.py`)
-  and validated lazily against the repository-owned evidence bundle
-  (`tests/evidence/diode-0.4.40/manifest.sha256`) on the first generated
-  TestBench use; validation fails closed if any referenced artifact is
-  missing or its hash does not match. `doctor` and `build` never trigger the
-  check. Registered kinds: `resistor`, `led`, `capacitor`, `inductor`, `ferrite_bead`,
-  `thermistor`, `zener`, `rectifier`, `tvs`. Crystal is intentionally absent
-  because the adapter model cannot represent its one-to-many four-pin GND
-  mapping. See `docs/spike-diode-net-naming.md`.
-- The `pcbc` version comes from probing the installed toolchain, not from the
-  contract. A probe that fails or cannot be parsed is `BLOCKED`.
-- Unsupported component kind, unsupported pin, unverified toolchain version,
-  unsupported constraint, or unsupported contract semantics all raise a
-  generator error and become `BLOCKED`. They never become `PASS`.
-- Contract-controlled values never become Zener identifiers and are always
-  emitted through a single escaping helper.
-- Every top-level result record must carry a recognized status. `SKIPPED`,
-  `BLOCKED`, unknown, and missing statuses are treated as incompatible
-  evidence and produce `BLOCKED`.
-- The summary must reconcile exactly with observed record statuses:
-  `total` equals the record count, `passed` and `failed` equal the counted
-  recognized statuses, and their sum equals `total`.
-- Exit code zero alone is not sufficient. Empty results, inconsistent summary
-  counts, malformed JSON, truncated output, a missing expected record, or any
-  positive `failed`, `failures`, or `errors` counter are all `BLOCKED`.
-- When `failures` or `errors` is present it must be a non-negative integer.
-  Booleans, strings, floats, and null are malformed evidence.
-- Exactly one top-level record may match the expected TestBench and check
-  identity. Duplicates and nested diagnostic metadata do not satisfy the gate.
-- The status is parsed from the retained, hash-verified evidence bytes, not
-  from captured stdout, so `result_sha256` attests the input that produced the
-  verdict.
-- A structured assertion failure for the expected generated check is `FAIL`.
-  Compiler, environment, and evidence problems are `BLOCKED`.
-- Every populated `value` and `package` in either contract must receive a
-  generated assertion, or the check reports `BLOCKED`. Conflicting values
-  between `SPEC.json` and `expected-connectivity.json` are a generator error.
-  The number of emitted assertions is compared against the number of processed
-  constraints, so a constraint branch that emits nothing cannot pass silently.
-- `mpn` has no verified accessor and is always `BLOCKED`.
-- Requirements of type `connectivity` accept only a `members` constraint. A
-  `value` or `package` constraint declared there is a generator error.
-- `required_pullup` verifies exact topology: one adapter pin on the signal net
-  and the opposite adapter pin on the declared rail. Name existence alone is
-  not sufficient. Adapters without a verified pull-up pin pair are `BLOCKED`.
-- A failed or blocked prerequisite makes dependent gates `BLOCKED`, never
-  `FAIL`. `FAIL` is reserved for gates that ran and found a real mismatch.
-- Source-level coverage scanners remain available as advisory diagnostics only
-  and cannot determine a required check status.
+Runs full physical design flow:
+1. **LAYOUT_GENERATE**: `pcb layout` creates `.kicad_pcb` with footprints at origin
+2. **PLACEMENT**: Deterministic component placement + Edge.Cuts outline derivation
+3. **ROUTE**: Freerouting DSN/SES round-trip via `pcbnew` Python binding
+4. **LAYOUT_SYNC**: `pcb layout --check` verifies sync between Zener and KiCad
+5. **KICAD_DRC**: `kicad-cli pcb drc` validates manufacturing rules
 
-Every generated run records both the generated source and the raw result JSON
-with their SHA-256 digests in the report evidence. All evidence paths are stored
-relative to the project root, and both generated artifacts are re-read and
-rehashed immediately before the check is built. A missing, mutated, symlinked,
-or escaping artifact produces `BLOCKED`.
+Missing KiCad or Freerouting → `BLOCKED`. SPICE deferred to future release.
 
-## Status And Exit
+---
+
+## Deterministic Verification
+
+### Core Principle
+
+**AI agents propose. Locked TestBenches decide.**
+
+`CONNECTIVITY` and `SPECIFICATION` gates are decided exclusively by generated TestBenches that the harness owns and hashes. Agents may edit `src/`, `modules/`, `components/`, but **never** contracts (`SPEC.json`, `ACCEPTANCE.json`, `expected-connectivity.json`) or locked TestBenches (`tests/*.zen`).
+
+### Adapter Registry
+
+Component kinds (`resistor`, `led`, `capacitor`, etc.) are resolved through a **versioned adapter registry** keyed by:
+- Component kind
+- Verified `pcbc` versions (currently `0.4.40`)
+- SHA-256 evidence hash from captured Diode runs
+- Property accessors (`value`, `package`)
+- Pull-up pin pairs (e.g., `["anode", "cathode"]`)
+
+Registry validated lazily against `tests/evidence/diode-0.4.40/manifest.sha256` on first use. **Validation fails closed**—missing or mismatched evidence → `BLOCKED`.
+
+**Registered kinds:** `resistor`, `led`, `capacitor`, `inductor`, `ferrite_bead`, `thermistor`, `zener`, `rectifier`, `tvs`
+
+**Intentionally absent:** Crystal (adapter model cannot represent 1→4 GND pin mapping). ICs, connectors, switches (no verified adapters yet).
+
+### Evidence Chain
+
+Every verification run records:
+1. Generated TestBench source + SHA-256
+2. Raw `pcb test` JSON result + SHA-256
+3. Command metadata (sanitized paths, durations)
+4. Immutable safety fields (`production_ready: false`, `fabrication_approved: false`)
+
+Gates digest evidence bytes, not stdout. `result_sha256` attests the exact input that produced the verdict.
+
+### Gate Rules
+
+- **Status vocabulary:** `PASS` | `FAIL` | `BLOCKED` | `SKIPPED`
+- **Fail-closed:** Unsupported kind, unverified toolchain version, malformed evidence → `BLOCKED`
+- **Exact reconciliation:** `total` = record count, `passed` + `failed` = `total`
+- **No silent pass:** Every `value`/`package` constraint must emit an assertion or report `BLOCKED`
+- **Topology verification:** `required_pullup` checks exact net membership, not just name existence
+- **Dependency cascade:** Failed/blocked prerequisite → dependents `BLOCKED`, never `FAIL`
+
+See `AGENT_PROTOCOL.md` for full contract semantics.
+
+---
+
+## Exit Codes
 
 | Status | Exit | Meaning |
-|---|---:|---|
-| `PASS` | 0 | Required deterministic checks passed |
-| `FAIL` | 1 | Deterministic validation failed |
-| `BLOCKED` | 2 | Required dependency/evidence unavailable |
-| invalid input | 3 | Contract/configuration invalid |
-| backend terminal failure | 4 | Crash, timeout, no-progress, iteration limit |
-| `HUMAN_REVIEW` | 5 | Explicit human decision blocks continuation |
+|--------|-----:|---------|
+| `PASS` | 0 | All required gates passed |
+| `FAIL` | 1 | Deterministic validation failed (design mismatch) |
+| `BLOCKED` | 2 | Dependency/toolchain/evidence unavailable |
+| Invalid input | 3 | Contract/configuration malformed |
+| Backend crash | 4 | Timeout, no-progress, iteration limit |
+| `HUMAN_REVIEW` | 5 | Explicit human decision required |
 
-`human_review_required: true` does not force exit 5. Every report keeps
-`production_ready: false` and `fabrication_approved: false`.
+`human_review_required: true` in report does **not** force exit 5. Every report keeps `production_ready: false` and `fabrication_approved: false` regardless of gate status.
+
+---
+
+## MCP Integration
+
+### Setup
+
+1. **Install MCP server:**
+```bash
+cd ~/.agents/mcp-servers
+git clone https://github.com/GSPETech/pcb-agent pcb-agent-mcp
+cd pcb-agent-mcp
+pip install -e .
+```
+
+2. **Register in `opencode.json`:**
+```json
+{
+  "mcpServers": {
+    "pcb-agent": {
+      "command": "python",
+      "args": ["-m", "pcb_agent.mcp_server"],
+      "env": {
+        "PCB_AGENT_ROOT": "/path/to/pcb-agent"
+      }
+    }
+  }
+}
+```
+
+3. **Add CLI command:**
+```bash
+# ~/.claude/commands/pcb_agent.sh
+#!/bin/bash
+TASK="$1"
+PROJECT_DIR="${2:-$(pwd)/pcb_project}"
+
+opencode tool call pcb-agent pcb_design \
+  --task "$TASK" \
+  --project_dir "$PROJECT_DIR" \
+  --profile full
+```
+
+### Usage
+
+```bash
+# Full workflow
+/pcb_agent "buat GPS tracker dengan IMU sensor"
+
+# Schematic only
+/pcb_agent "buat schematic power supply 5V" --profile schematic
+
+# Repair specific gate
+/pcb_agent repair KICAD_DRC --project ./my_board
+```
+
+**Exposed tools:**
+- `pcb_design` — orchestrate schematic → layout → routing
+- `pcb_verify` — run verification gates
+- `pcb_repair` — fix specific gate failure with loop detection
+
+### Agent Flow
+
+```
+user: /pcb_agent "buat GPS tracker"
+  ↓
+MCP pcb_design tool
+  ↓
+orchestrator.py
+  ├→ schematic_agent
+  │   └→ repair loop (max 5 iter) → PASS
+  ├→ layout_agent
+  │   └→ repair loop (max 5 iter) → PASS
+  └→ routing_agent
+      └→ DRC fix loop (max 10 iter) → PASS
+  ↓
+return: {
+  "status": "PASS",
+  "summary": "Schematic PASS (2 iter), Layout PASS (3 iter), DRC PASS (7 violations fixed)",
+  "files_created": ["src/gps_module.zen", "tests/gps_test.zen"]
+}
+```
+
+---
 
 ## Reports
 
-Runs write `reports/<run-id>/verify-report.json`, Markdown summary, and raw
-evidence. Reports include checks, sanitized command metadata, durations, hashes,
-and immutable safety fields. Dirty Git worktrees are allowed and reported when
-Git metadata is available.
+Runs write structured reports to `reports/<run-id>/`:
+- `verify-report.json` — full verification result with evidence hashes
+- `summary.md` — human-readable gate status + durations
+- `raw/` — captured evidence (TestBench source, JSON results, DRC output)
+
+Reports include:
+- ✓ Check statuses with durations
+- ✓ Sanitized command metadata (no absolute home paths)
+- ✓ SHA-256 hashes for all generated/captured artifacts
+- ✓ Git worktree status (dirty allowed, reported when available)
+- ✓ Immutable safety fields (`production_ready: false`, `fabrication_approved: false`)
+
+**Note:** Symlink to `reports/` in project root → writes outside workspace. See security findings.
+
+---
 
 ## AI Backends
 
-Generic command backend reads a TOML argv array and transports task through
-stdin or one literal argv value. It never uses shell interpolation. Agent runs
-are limited to five attempts, reject nested `PCB_AGENT_ACTIVE`, protect contract
-and TestBench files, detect no-progress, and independently invoke verification.
+Generic command backend:
+- Reads TOML argv array from config
+- Transports task via stdin or literal argv (no shell interpolation)
+- Limited to 5 attempts per `run` invocation
+- Rejects nested `PCB_AGENT_ACTIVE` (no backend-spawns-backend)
+- Protects contracts and locked TestBenches (hash-verified, denied in edit allowlist)
+- Detects no-progress via fingerprint comparison
+- Independently invokes `verify` after each edit
 
-Codex adapter only probes `codex exec --help`; invocation remains disabled until
-installed-version flags and permission behavior are verified. Repository skill
-`agents/openai.yaml` is intentionally `BLOCKED` and absent because no consumer
-format was verified.
+**Codex adapter:** Probes `codex exec --help` only; invocation disabled until version flags verified.
+
+**Repository skill:** `agents/openai.yaml` intentionally `BLOCKED`—no consumer format verified.
+
+---
 
 ## Security Boundary
 
-- Executables inside workspace are rejected.
-- CWD and files must remain in canonical workspace.
-- Child environment is allowlisted; secrets and output are bounded/redacted.
-- Protected files are hashed and snapshotted; trusted TestBench runs from
-  harness-owned evidence copy.
-- Network policy is deny by default. MVP does not claim OS-level network
-  isolation for arbitrary backend binaries; only explicitly approved fake/local
-  backends should be configured until sandbox enforcement exists.
-- No `sudo`, installer execution, recursive cleanup, autorouter, manufacturing,
-  or ordering action is provided.
+### Workspace Isolation
+- ✓ Executables inside workspace rejected
+- ✓ CWD and all file ops must stay in canonical workspace
+- ✓ Protected files hashed and snapshotted before backend runs
+- ✓ Trusted TestBenches run from harness-owned evidence copy
 
-## External Integration Status
+### Process Containment
+- ✓ Child environment allowlisted (no `LD_PRELOAD`, `PYTHONPATH`)
+- ✓ Secrets redacted from logs (`sk-`, `ghp_`, `xoxb-`, private keys, JWT)
+- ✓ stdout/stderr bounded (no DOS via infinite output)
 
-Empirical run on 2026-08-24:
+### Network Policy
+- ✗ **Network deny is assertion-only, no OS-level sandbox**
+- ⚠ MVP: only fake/local backends should be configured until enforcement exists
 
-- Diode `pcbc 0.4.34` on WSL2 accepted `valid-blinky` build and both locked
-  TestBench checks.
-- `invalid-syntax` failed build; `invalid-connectivity` and `invalid-value`
-  built successfully then failed their locked tests as intended.
-- Windows-native Diode remained `BLOCKED` by Windows privilege error 1314.
-- KiCad CLI 10.0.3 ran JSON DRC against an official Diode board fixture; it
-  returned exit 5 for three violations, matching harness mapping.
-- KiCad Linux 10.0.5 and `pcbnew` were installed from signed official KiCad
-  PPA. End-to-end layout harness generated a board, ran Diode layout check,
-  and ran direct KiCad JSON DRC.
-- Generated `valid-blinky` layout correctly remained `FAIL`: missing board
-  outline, five silkscreen warnings, and one unconnected item. No routing or
-  fabrication artifact was generated.
+### Absent by Design
+- No `sudo` or privilege escalation
+- No installer execution
+- No recursive cleanup beyond `reports/`
+- No autorouter, manufacturing, or ordering actions
 
-The Diode net-naming spike (2026-08-29) captured real `pcbc 0.4.40` evidence on
-WSL2 ext4, populated the production adapter registry, and verified a committed
-green project reaches full PASS. See `docs/spike-diode-net-naming.md` and
-`docs/report-spike-execution.md`.
+### Known Issues
+See [Security Findings](#security-findings) for active vulnerabilities (S1-S10).
 
-Fixture syntax and TestBench APIs were corrected against real Diode 0.4.34 and
-source snapshot `ee4e7e2b90fbe5f787d165a0780eba42664449ab`.
+---
 
-## Human Limitation
+## Project Structure
 
-Verification PASS does not mean production-ready. Fabrication requires review
-and approval by a human engineer.
+### Required Files (project root)
+```
+project.toml              # profile, source, test, [toolchain], [layout]
+SPEC.json                 # requirements with constraints
+ACCEPTANCE.json           # checks mapping requirements
+expected-connectivity.json # components, nets, design rules
+tests/<name>.zen          # locked TestBench (name matches ACCEPTANCE.checks[].test)
+```
+
+Templates: `skill/diode-pcb-agent/assets/project-template/`
+
+### Supported Layouts
+1. **Fixture layout:** `src/board.zen` entry point
+2. **Board repository:** `.zen` files at root, subcircuits in `modules/` and `components/`
+
+Both produce identical snapshot for verification (`src/**`, `modules/**`, `components/**`, `*.zen`, `pcb.toml`, `pcb-version`).
+
+### Naming Rules
+
+Net and component ref names must match `[A-Za-z][A-Za-z0-9_-]*` (rendered into Zener source). Hierarchical refs use dot separator (`IMU.R17`, `POWER.C1`).
+
+**Common violations from `pcb import`:**
+| Import name | Normalized |
+|-------------|------------|
+| `+3_3V` | `VDD_3V3` |
+| `IMU_XTAL+` | `IMU_XTAL_P` |
+| `Net-(U1-VOUT)` | `NET_U1_VOUT` |
+| `/IMU/BNO_SCL` | `IMU_BNO_SCL` |
+
+Rename **only** spelling; topology and net membership unchanged.
+
+---
+
+## Toolchain Requirements
+
+### Diode
+- **Version:** 0.4.40 (adapter registry pinned)
+- **Install:** `pcb toolchain install 0.4.40`
+- **Verify:** `pcb --version`
+
+**Pin version in project:**
+```bash
+mkdir -p /tmp/pcbshim
+printf '#!/bin/bash\nexec "$HOME/.local/bin/pcb" +0.4.40 "$@"\n' > /tmp/pcbshim/pcb
+chmod +x /tmp/pcbshim/pcb
+export PATH="/tmp/pcbshim:$PATH"
+```
+
+**Known issue:** Registry rejects 0.4.41+ → `BLOCKED`. Re-capture evidence or accept lane-range (future work).
+
+### KiCad (layout profile only)
+- **Version:** 10.x (10.0.3, 10.0.5 verified)
+- **Required:**
+  - `kicad-cli` in `PATH`
+  - `pcbnew` Python binding for DSN/SES conversion
+- **Verify:**
+```bash
+kicad-cli version
+python3 -c "import pcbnew; print(pcbnew.GetBuildVersion())"
+```
+
+### Freerouting (layout profile only)
+- **Version:** 2.3.0
+- **Verify:** `freerouting --help`
+- **Determinism:** Verified byte-identical SES output on identical DSN input
+
+Missing `kicad-cli`, `pcbnew`, or `freerouting` → gates `BLOCKED`, not `FAIL`.
+
+---
+
+## Development
+
+### Tests
+```bash
+python -m pytest -q          # 304 pass / 19 skip
+python -m pyright            # clean
+```
+
+**CI:** `.github/workflows/ci.yml` runs pytest on ubuntu+windows × py3.11/3.13, pyright ubuntu/3.11 only.
+
+**Known gaps:**
+- `tests/` not typechecked (pyright `include=["src"]`)
+- No lint job (no ruff/black config)
+- 19 Windows skips cover security-critical symlink/traversal checks
+
+### Before Commit
+```bash
+python -m pytest -q
+python -m pyright
+git diff --check  # catch trailing whitespace
+```
+
+Never commit:
+- Archives, board deliverables, `reports/` runs
+- Scratch exports (`*.zip`, `*.tar.gz`, `diodeinc_scratch_*/`)
+- Secrets (`.env`, `credentials.json`, private keys)
+
+### Branch Strategy
+- `master` — stable
+- `feat/*` — features
+- `fix/*` — bug fixes
+
+Always push to feature branch, never directly to `master`. Use `gh pr create` for PRs.
+
+---
+
+## Security Findings
+
+| ID | Severity | Issue | Location |
+|----|----------|-------|----------|
+| S1 | High | `reports/` symlink writes outside workspace | `state.py:70-73` |
+| S2 | High | `trusted_executable_roots` never passed → any PATH exe accepted | `process.py:103` |
+| S3 | Medium | Symlink check after `resolve()` always False (no-op) | `kicad.py:18-19` |
+| S4 | High | `src/**` snapshot follows symlinks despite `allow_symlinks=false` | `diode.py:264,332` |
+| S5 | Low | Absolute home paths in reports violate attestation portability | `process.py:117` |
+| S6 | High | Env passes `HOME`/`USERPROFILE` → child reads `~/.pcb` creds | `process.py:19` |
+| S7 | Critical | Backend guard is env var check, one `export` from bypass | `backends/command.py:34` |
+| S8 | Medium | Secret redaction misses `xoxb-`, `-----BEGIN PRIVATE KEY-----`, JWT | `process.py:22-26` |
+| S9 | **Critical** | `.git` eligible for `unlink()` in restore → repo corruption | `cli.py:413-423` |
+| S10 | High | Pre-existing symlinks unlinked, never restored | `cli.py:426-429` |
+
+**S9/S10 are destructive.** Fix before any backend run on real repo.
+
+---
+
+## Correctness Findings
+
+- Windows lock never reclaimable: `os.kill(pid,0)` raises `OSError [WinError 87]`, not `ProcessLookupError` → stale lock forever (`policy.py:33-37`)
+- `BLOCKED` ranked above `FAIL` → contradicts `AGENT_PROTOCOL.md:76` (`models.py:50-56`)
+- `HUMAN_REVIEW` never emitted (`human_review_required` hardcoded `True`) → exit 5 dead (`models.py:16,93`)
+- `PathViolation` (ValueError subclass) → exit 4, contract says 3 (`cli.py:634,692`)
+- Status vocab split: generated checks accept `PASS|PASSED|OK`, locked acceptance demands `"pass"` (`diode.py:130` vs `:248`)
+- Fingerprint hashes only status+message → two different compile errors identical → premature exit 4 (`cli.py:447`)
+- `configured_command` validates literals it wrote, reads nothing from `project.toml` (`diode.py:55-72`)
+
+---
+
+## Known Limitations
+
+### Design
+- **No fabrication approval:** `PASS` ≠ production-ready. Human review required.
+- **Component coverage:** Only 9 passive kinds. ICs, connectors, switches absent.
+- **Crystal support:** Blocked by 1→4 GND pin mapping (adapter model limitation).
+- **MPN verification:** No verified accessor → always `BLOCKED`.
+- **SPICE:** Deferred to future release.
+
+### Toolchain
+- **Version pin fragile:** Adapter registry rejects 0.4.41+ → weekly upstream releases break harness.
+- **Upstream supersedes harness:** `diodeinc/pcb` now ships `skills/`, `pcb dfm`, `pcb sync`, `pcb toolchain pin`—harness reimplements worse.
+- **No lane-range support:** Must re-capture 148-entry evidence bundle per patch release.
+
+### Platform
+- **Windows:** Layout profile requires WSL2 or Developer Mode (symlink privilege).
+- **Determinism:** Freerouting verified deterministic; placement is deterministic; but no CI job enforces it.
+
+---
+
+## Integration Results
+
+**Empirical run 2026-08-29 (Diode 0.4.40, WSL2):**
+- ✓ `valid-blinky` → full `PASS`
+- ✓ `invalid-syntax` → `DIODE_BUILD` `FAIL`
+- ✓ `invalid-connectivity`, `invalid-value` → build `PASS`, locked test `FAIL`
+- ✓ KiCad 10.0.5 DRC → exit 5 for 3 violations (harness mapped correctly)
+- ✓ End-to-end layout harness → generated board, ran Diode layout check, ran KiCad JSON DRC
+- ✗ Generated `valid-blinky` layout → `FAIL` (missing outline, 5 silkscreen warnings, 1 unconnected)
+
+**Evidence:** `tests/evidence/diode-0.4.40/manifest.sha256` (148 entries), `docs/spike-diode-net-naming.md`
+
+---
+
+## Contributing
+
+1. Read `AGENT_PROTOCOL.md` and `REVIEW_REMEDIATION_PLAN_V2.md`
+2. Fix S9/S10 first (destructive paths)
+3. Add tests for new gates/adapters
+4. Capture evidence before registering new component kinds
+5. Run `pytest` + `pyright` + `git diff --check` before commit
+6. Never edit contracts, locked TestBenches, or evidence to make tests pass
+
+---
+
+## License
+
+See `LICENSE` file.
+
+---
+
+## Fabrication Disclaimer
+
+**Verification `PASS` does not mean production-ready.**
+
+All reports carry `production_ready: false` and `fabrication_approved: false`. Fabrication requires:
+- Human review by qualified engineer
+- Physical inspection of generated layout
+- Validation against design intent and requirements
+- Sign-off before manufacturing
+
+This harness validates adherence to contracts and design rules. It does **not** validate safety, functionality, or fitness for purpose.

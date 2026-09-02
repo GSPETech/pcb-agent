@@ -1,0 +1,62 @@
+"""
+dwm1004c_aptwr_tag
+"""
+
+load("@stdlib/board_config.zen", "Board", "BoardConfig")
+load("@stdlib/properties.zen", "Project")
+
+load("@stdlib/interfaces.zen", "Power", "Ground")
+
+NET_3_3V = Power("VDD_3V3")
+IMU_BNO_SCL = Net("IMU_BNO_SCL")
+IMU_BNO_SDA = Net("IMU_BNO_SDA")
+IMU_IMU_INT = Net("IMU_IMU_INT")
+IMU_IMU_NRST = Net("IMU_IMU_NRST")
+POWER_GPOUT = Net("POWER_GPOUT")
+GND = Ground("GND")
+
+IMU = Module("modules/IMU/IMU.zen")
+MAIN_MODULE_TAG = Module("modules/MAIN_MODULE_TAG/MAIN_MODULE_TAG.zen")
+POWER = Module("modules/POWER/POWER.zen")
+
+IMU(
+    name="IMU",
+    GND=GND,
+    IMU_BNO_SCL=IMU_BNO_SCL,
+    IMU_BNO_SDA=IMU_BNO_SDA,
+    IMU_IMU_INT=IMU_IMU_INT,
+    IMU_IMU_NRST=IMU_IMU_NRST,
+    NET_3_3V=NET_3_3V,
+)
+
+MAIN_MODULE_TAG(
+    name="MAIN_MODULE_TAG",
+    GND=GND,
+    IMU_BNO_SCL=IMU_BNO_SCL,
+    IMU_BNO_SDA=IMU_BNO_SDA,
+    IMU_IMU_INT=IMU_IMU_INT,
+    IMU_IMU_NRST=IMU_IMU_NRST,
+    NET_3_3V=NET_3_3V,
+    POWER_GPOUT=POWER_GPOUT,
+)
+
+POWER(
+    name="POWER",
+    GND=GND,
+    IMU_BNO_SCL=IMU_BNO_SCL,
+    IMU_BNO_SDA=IMU_BNO_SDA,
+    NET_3_3V=NET_3_3V,
+    POWER_GPOUT=POWER_GPOUT,
+)
+
+Project(
+    name="dwm1004c_aptwr_tag",
+    path="layout/dwm1004c_aptwr_tag",
+)
+
+Board(
+    name="dwm1004c_aptwr_tag",
+    layout_path="layout/dwm1004c_aptwr_tag",
+    layers=4,
+    config=BoardConfig(),
+)

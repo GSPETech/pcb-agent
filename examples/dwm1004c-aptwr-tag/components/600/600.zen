@@ -1,0 +1,17 @@
+"""
+600
+
+Auto-generated using `pcb import`.
+"""
+
+P1 = io(Net)
+P2 = io(Net)
+
+Component(
+    name="600",
+    footprint=File("@stdlib/kicad-footprints/Resistor_SMD.pretty/R_0402_1005Metric.kicad_mod"),
+    part=Part(mpn="ERA", manufacturer="PANASONIC"),
+    symbol=Symbol(library="600.kicad_sym"),
+    pin_defs={"1": "1", "2": "2"},
+    pins={"1": P1, "2": P2},
+)

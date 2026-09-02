@@ -1,0 +1,17 @@
+"""
+DWM_CONFIG
+
+Auto-generated using `pcb import`.
+"""
+
+P1 = io(Net)
+P2 = io(Net)
+
+Component(
+    name="DWM_CONFIG",
+    part=Part(mpn="PTS 647 SN38 SMTR2 LFS", manufacturer="C&K"),
+    footprint=File("SW_SPST_PTS647_Sx38.kicad_mod"),
+    symbol=Symbol(library="DWM_CONFIG.kicad_sym"),
+    pin_defs={"1": "1", "2": "2"},
+    pins={"1": P1, "2": P2},
+)

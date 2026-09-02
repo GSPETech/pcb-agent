@@ -1,0 +1,425 @@
+(footprint "LGA28R50P4X10_380X520X100"
+	(version 20260206)
+	(generator "pcb-import")
+	(layer "F.Cu")
+	(property "Reference" "REF**"
+		(at 3.1875 2.75 0)
+		(layer "F.SilkS")
+		(effects
+			(font
+				(size 0.65 0.65)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "BNO055"
+		(at 13.192115 2.668465 0)
+		(layer "F.Fab")
+		(effects
+			(font
+				(size 1.001299 1.001299)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "MF" "Bosch"
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description_1" "BNO055 series Accelerometer, Gyroscope, Magnetometer, 3 Axis Sensor Evaluation Board"
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Package" "LGA-28 Bosch"
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Price" "None"
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Check_prices" "https://www.snapeda.com/parts/BNO055/Bosch/view-part/?ref=eda"
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "SnapEDA_Link" "https://www.snapeda.com/parts/BNO055/Bosch/view-part/?ref=snap"
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "MP" "BNO055"
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Availability" "In Stock"
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "MANUFACTURER" "BOSCH"
+		(at 0 0 180)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_line
+		(start 2.6 1.9)
+		(end 2.6 -1.9)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(layer "F.SilkS")
+	)
+	(fp_line
+		(start 2.6 -1.9)
+		(end -2.6 -1.9)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(layer "F.SilkS")
+	)
+	(fp_line
+		(start -2.6 1.9)
+		(end 2.6 1.9)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(layer "F.SilkS")
+	)
+	(fp_line
+		(start -2.6 -1.9)
+		(end -2.6 1.9)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(layer "F.SilkS")
+	)
+	(fp_circle
+		(center -2.2 -2.3)
+		(end -2.1 -2.3)
+		(stroke
+			(width 0.3048)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+	)
+	(fp_line
+		(start 2.9 2.2)
+		(end -2.9 2.2)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+	)
+	(fp_line
+		(start 2.9 -2.2)
+		(end 2.9 2.2)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+	)
+	(fp_line
+		(start -2.9 2.2)
+		(end -2.9 -2.2)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+	)
+	(fp_line
+		(start -2.9 -2.2)
+		(end 2.9 -2.2)
+		(stroke
+			(width 0.127)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+	)
+	(pad "" smd rect
+		(at -2.25 -1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(solder_mask_margin 0.05)
+	)
+	(pad "" smd rect
+		(at -1.75 1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(solder_mask_margin 0.05)
+	)
+	(pad "" smd rect
+		(at -1.25 1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(solder_mask_margin 0.05)
+	)
+	(pad "" smd rect
+		(at 0.25 -1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(solder_mask_margin 0.05)
+	)
+	(pad "" smd rect
+		(at 0.75 -1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(solder_mask_margin 0.05)
+	)
+	(pad "" smd rect
+		(at 0.75 1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(solder_mask_margin 0.05)
+	)
+	(pad "" smd rect
+		(at 1.25 -1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(solder_mask_margin 0.05)
+	)
+	(pad "" smd rect
+		(at 1.25 1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(solder_mask_margin 0.05)
+	)
+	(pad "" smd rect
+		(at 1.75 -1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(solder_mask_margin 0.05)
+	)
+	(pad "2" smd rect
+		(at -2.3125 -0.75 180)
+		(size 0.425 0.3)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "power_in")
+		(solder_mask_margin 0.05)
+	)
+	(pad "3" smd rect
+		(at -2.3125 -0.25 180)
+		(size 0.425 0.3)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "power_in")
+		(solder_mask_margin 0.05)
+	)
+	(pad "4" smd rect
+		(at -2.3125 0.25 180)
+		(size 0.425 0.3)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "bidirectional")
+		(solder_mask_margin 0.05)
+	)
+	(pad "5" smd rect
+		(at -2.3125 0.75 180)
+		(size 0.425 0.3)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "input")
+		(solder_mask_margin 0.05)
+	)
+	(pad "6" smd rect
+		(at -2.25 1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "input")
+		(solder_mask_margin 0.05)
+	)
+	(pad "9" smd rect
+		(at -0.75 1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "passive")
+		(solder_mask_margin 0.05)
+	)
+	(pad "10" smd rect
+		(at -0.25 1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "power_in+no_connect")
+		(solder_mask_margin 0.05)
+	)
+	(pad "11" smd rect
+		(at 0.25 1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "input")
+		(solder_mask_margin 0.05)
+	)
+	(pad "14" smd rect
+		(at 1.75 1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "output")
+		(solder_mask_margin 0.05)
+	)
+	(pad "15" smd rect
+		(at 2.25 1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "power_in+no_connect")
+		(solder_mask_margin 0.05)
+	)
+	(pad "16" smd rect
+		(at 2.3125 0.75 180)
+		(size 0.425 0.3)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "power_in+no_connect")
+		(solder_mask_margin 0.05)
+	)
+	(pad "17" smd rect
+		(at 2.3125 0.25 180)
+		(size 0.425 0.3)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "bidirectional")
+		(solder_mask_margin 0.05)
+	)
+	(pad "18" smd rect
+		(at 2.3125 -0.25 180)
+		(size 0.425 0.3)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "bidirectional")
+		(solder_mask_margin 0.05)
+	)
+	(pad "19" smd rect
+		(at 2.3125 -0.75 180)
+		(size 0.425 0.3)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "bidirectional")
+		(solder_mask_margin 0.05)
+	)
+	(pad "20" smd rect
+		(at 2.25 -1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "bidirectional")
+		(solder_mask_margin 0.05)
+	)
+	(pad "25" smd rect
+		(at -0.25 -1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "power_in")
+		(solder_mask_margin 0.05)
+	)
+	(pad "26" smd rect
+		(at -0.75 -1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "output")
+		(solder_mask_margin 0.05)
+	)
+	(pad "27" smd rect
+		(at -1.25 -1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "input")
+		(solder_mask_margin 0.05)
+	)
+	(pad "28" smd rect
+		(at -1.75 -1.5625 180)
+		(size 0.3 0.525)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(pintype "power_in")
+		(solder_mask_margin 0.05)
+	)
+	(embedded_fonts no)
+		)

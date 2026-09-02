@@ -14,10 +14,10 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Callable, Sequence
 
-from . import diode, kicad
+from . import diode, kicad, layout as layout_module, routing
 from .backends import BackendError, CodexBackend, CommandBackend
 from .models import Check, CheckStatus, Severity, VerificationReport
-from .paths import relative_evidence_path
+from .paths import PathViolation, relative_evidence_path, require_regular_file, resolve_workspace_path
 from .policy import PolicyViolation, ProtectedHashes, WorkspaceLock, WorkspaceSnapshot
 from .policy_config import Policy, PolicyConfigError, matches as policy_matches
 from .state import (
@@ -253,6 +253,54 @@ def _diode_command(project: ProjectState, key: str, check_id: str,
         return _check(check_id, CheckStatus.BLOCKED, str(error))
 
 
+def _layout_board(project: ProjectState) -> Path:
+    """Canonical path of the maintained board, contained in the workspace."""
+    value = project.board
+    if not isinstance(value, str) or not value.endswith(".kicad_pcb"):
+        raise ConfigurationError("project.toml requires [layout].board ending in .kicad_pcb")
+    path = resolve_workspace_path(project.root, value, must_exist=True)
+    require_regular_file(path)
+    return path
+
+
+def _place_and_outline(project: ProjectState) -> Check:
+    """Place footprints deterministically and derive the board outline.
+
+    `pcb layout` emits every footprint at the origin with no Edge.Cuts, so the
+    board it produces cannot be routed or checked meaningfully. This gate turns
+    that into a board with separated parts and a real boundary.
+    """
+    try:
+        board = _layout_board(project)
+        protected = ProtectedHashes.capture(project.root, PROTECTED)
+        outcome = layout_module.place_and_outline(board)
+        protected.verify()
+        return _check(
+            "PLACEMENT",
+            CheckStatus.PASS,
+            f"placed {outcome.placed} footprints; board {outcome.width_mm} x "
+            f"{outcome.height_mm} mm",
+        )
+    except ConfigurationError as error:
+        return _check("PLACEMENT", CheckStatus.BLOCKED, str(error))
+    except (PathViolation, layout_module.LayoutError, OSError, ValueError) as error:
+        return _check("PLACEMENT", CheckStatus.BLOCKED, str(error))
+
+
+def _route(project: ProjectState, run: RunState) -> Check:
+    """Autoroute the placed board with Freerouting."""
+    try:
+        board = _layout_board(project)
+        protected = ProtectedHashes.capture(project.root, PROTECTED)
+        outcome = routing.route(project, run, board)
+        protected.verify()
+        return routing.result_check(outcome)
+    except ConfigurationError as error:
+        return _check("ROUTE", CheckStatus.BLOCKED, str(error))
+    except (FileNotFoundError, PathViolation, routing.RoutingError, OSError, ValueError) as error:
+        return _check("ROUTE", CheckStatus.BLOCKED, str(error))
+
+
 def _schematic_checks(project: ProjectState, run: RunState | None,
                       version_probe: ToolVersionProbe) -> list[Check]:
     test = _diode_command(project, "test-command", "ZENER_TEST", run.raw_directory if run else None)
@@ -373,6 +421,20 @@ def _verify(project: ProjectState, run: RunState, profile: str,
     if profile == "layout" and all(check.status == CheckStatus.PASS for check in checks):
         generation = _diode_command(project, "layout-command", "LAYOUT_GENERATE")
         checks.append(generation)
+
+        # `pcb layout` places every footprint at the origin and emits no
+        # Edge.Cuts, which is not a routable board. Place deterministically and
+        # derive the outline before anything downstream inspects the board.
+        if generation.status == CheckStatus.PASS:
+            checks.append(_place_and_outline(project))
+        else:
+            checks.append(_check("PLACEMENT", CheckStatus.BLOCKED,
+                                 "layout generation did not pass"))
+
+        placement_ok = checks[-1].status == CheckStatus.PASS
+        checks.append(_route(project, run) if placement_ok else
+                      _check("ROUTE", CheckStatus.BLOCKED, "placement did not pass"))
+
         layout = (_diode_command(project, "layout-check-command", "LAYOUT_SYNC")
                   if generation.status == CheckStatus.PASS else
                   _check("LAYOUT_SYNC", CheckStatus.BLOCKED, "layout generation did not pass"))
@@ -391,12 +453,16 @@ def _verify(project: ProjectState, run: RunState, profile: str,
     elif profile == "schematic":
         checks.extend([
             _check("LAYOUT_GENERATE", CheckStatus.SKIPPED, "layout profile not active", required=False),
+            _check("PLACEMENT", CheckStatus.SKIPPED, "layout profile not active", required=False),
+            _check("ROUTE", CheckStatus.SKIPPED, "layout profile not active", required=False),
             _check("LAYOUT_SYNC", CheckStatus.SKIPPED, "layout profile not active", required=False),
             _check("KICAD_DRC", CheckStatus.SKIPPED, "layout profile not active", required=False),
         ])
     else:
         checks.extend([
             _check("LAYOUT_GENERATE", CheckStatus.BLOCKED, "schematic prerequisite did not pass"),
+            _check("PLACEMENT", CheckStatus.BLOCKED, "schematic prerequisite did not pass"),
+            _check("ROUTE", CheckStatus.BLOCKED, "schematic prerequisite did not pass"),
             _check("LAYOUT_SYNC", CheckStatus.BLOCKED, "schematic prerequisite did not pass"),
             _check("KICAD_DRC", CheckStatus.BLOCKED, "schematic prerequisite did not pass"),
         ])

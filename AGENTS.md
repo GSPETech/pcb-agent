@@ -105,9 +105,41 @@ def probe(module, inputs):
 ./pcb-agent verify --project <DIR> --profile layout --format json
 ```
 
-Profil `layout` menjalankan `pcb layout` dan KiCad DRC sebagai gate wajib. Ia
-**tidak** menghasilkan `.kicad_sch`; jalankan `pcb apply` bila schematic KiCad
-dibutuhkan.
+Profil `layout` menjalankan gate berurutan:
+
+| Gate | Perintah | Catatan |
+|---|---|---|
+| `LAYOUT_GENERATE` | `pcb layout` | semua footprint di origin, tanpa Edge.Cuts |
+| `PLACEMENT` | internal | placement deterministik + outline diturunkan dari hasilnya |
+| `ROUTE` | `freerouting` | DSN keluar, SES masuk, lewat `pcbnew` Python |
+| `LAYOUT_SYNC` | `pcb layout --check` | |
+| `KICAD_DRC` | `kicad-cli pcb drc` | |
+
+Profil `layout` **tidak** menghasilkan `.kicad_sch`; jalankan `pcb apply` bila
+schematic KiCad dibutuhkan.
+
+### Prasyarat gate PLACEMENT dan ROUTE
+
+`PLACEMENT` mengelompokkan komponen per modul Zener (dari property `Path`),
+memberi setiap komponen sel seukuran courtyard-nya sendiri, lalu menurunkan
+Edge.Cuts persegi dari bounding box hasil placement. Deterministik dan idempoten.
+
+`ROUTE` butuh dua binary di `PATH`:
+
+```sh
+# Freerouting 2.3.0, verifikasi checksum rilis resmi sebelum dipakai
+freerouting --help
+
+# pcbnew Python binding untuk konversi DSN/SES (kicad-cli tidak punya)
+python3 -c "import pcbnew; print(pcbnew.GetBuildVersion())"
+```
+
+Keduanya di-probe lebih dulu; bila absen gate menjadi `BLOCKED`, bukan `FAIL`.
+Determinisme Freerouting sudah diukur: dua run pada DSN identik menghasilkan
+SES identik byte-per-byte.
+
+`ROUTE` `PASS` hanya berarti trace dihasilkan dan diterapkan ke board. Apakah
+board layak diputuskan oleh `KICAD_DRC` sebagai gate tersendiri.
 
 Exit code ada di `AGENT_PROTOCOL.md`. `FAIL` berarti gate berjalan dan
 menemukan mismatch nyata; `BLOCKED` berarti gate tidak dapat dievaluasi.

@@ -1,0 +1,56 @@
+"""
+BQ27441DRZR-G1A
+
+Auto-generated using `pcb import`.
+"""
+
+BAT = io(Net)
+BIN = io(Net)
+EP = io(Net)
+GPOUT = io(Net)
+NC_11 = io(Net)
+NC_4 = io(Net)
+NC_9 = io(Net)
+SCL = io(Net)
+SDA = io(Net)
+SRN = io(Net)
+SRP = io(Net)
+VDD = io(Net)
+VSS = io(Net)
+
+Component(
+    name="BQ27441DRZR-G1A",
+    part=Part(mpn="BQ27441DRZR", manufacturer="TI"),
+    footprint=File("SON-12_L4.0-W2.5-P0.40-BL-EP.kicad_mod"),
+    symbol=Symbol(library="BQ27441DRZR-G1A.kicad_sym"),
+    pin_defs={
+        "SDA": "1",
+        "BIN": "10",
+        "NC__11": "11",
+        "GPOUT": "12",
+        "EP": "13",
+        "SCL": "2",
+        "VSS": "3",
+        "NC__4": "4",
+        "VDD": "5",
+        "BAT": "6",
+        "SRN": "7",
+        "SRP": "8",
+        "NC__9": "9",
+    },
+    pins={
+        "SDA": SDA,
+        "BIN": BIN,
+        "NC__11": NC_11,
+        "GPOUT": GPOUT,
+        "EP": EP,
+        "SCL": SCL,
+        "VSS": VSS,
+        "NC__4": NC_4,
+        "VDD": VDD,
+        "BAT": BAT,
+        "SRN": SRN,
+        "SRP": SRP,
+        "NC__9": NC_9,
+    },
+)
