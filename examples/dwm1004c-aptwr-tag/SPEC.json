@@ -1,0 +1,626 @@
+{
+  "schema_version": "1",
+  "project": {
+    "name": "dwm1004c-aptwr-tag",
+    "pcb_version": "0.4",
+    "layers": 4,
+    "description": "DWM1004C AP-TWR tag, migrated from KiCad"
+  },
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "type": "component",
+      "description": "IMU.C10 package shall be 0603",
+      "subject": "IMU.C10",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-002",
+      "type": "component",
+      "description": "IMU.C11 package shall be 0603",
+      "subject": "IMU.C11",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-003",
+      "type": "component",
+      "description": "IMU.C12 package shall be 0603",
+      "subject": "IMU.C12",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-004",
+      "type": "component",
+      "description": "IMU.C13 package shall be 0603",
+      "subject": "IMU.C13",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-005",
+      "type": "component",
+      "description": "IMU.C19 package shall be 0603",
+      "subject": "IMU.C19",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-006",
+      "type": "component",
+      "description": "IMU.C25 package shall be 0603",
+      "subject": "IMU.C25",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-007",
+      "type": "component",
+      "description": "IMU.R14 package shall be 0402",
+      "subject": "IMU.R14",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-008",
+      "type": "component",
+      "description": "IMU.R15 package shall be 0402",
+      "subject": "IMU.R15",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-009",
+      "type": "component",
+      "description": "IMU.R17 package shall be 0402",
+      "subject": "IMU.R17",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-010",
+      "type": "component",
+      "description": "IMU.R18 package shall be 0402",
+      "subject": "IMU.R18",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-011",
+      "type": "component",
+      "description": "MAIN_MODULE_TAG.C14 package shall be 0603",
+      "subject": "MAIN_MODULE_TAG.C14",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-012",
+      "type": "component",
+      "description": "MAIN_MODULE_TAG.C15 package shall be 0603",
+      "subject": "MAIN_MODULE_TAG.C15",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-013",
+      "type": "component",
+      "description": "MAIN_MODULE_TAG.C16 package shall be 0603",
+      "subject": "MAIN_MODULE_TAG.C16",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-014",
+      "type": "component",
+      "description": "MAIN_MODULE_TAG.C17 package shall be 0805",
+      "subject": "MAIN_MODULE_TAG.C17",
+      "constraints": {
+        "package": "0805"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-015",
+      "type": "component",
+      "description": "MAIN_MODULE_TAG.C18 package shall be 0603",
+      "subject": "MAIN_MODULE_TAG.C18",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-016",
+      "type": "component",
+      "description": "MAIN_MODULE_TAG.C26 package shall be 0402",
+      "subject": "MAIN_MODULE_TAG.C26",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-017",
+      "type": "component",
+      "description": "MAIN_MODULE_TAG.R10 package shall be 0402",
+      "subject": "MAIN_MODULE_TAG.R10",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-018",
+      "type": "component",
+      "description": "MAIN_MODULE_TAG.R12 package shall be 0402",
+      "subject": "MAIN_MODULE_TAG.R12",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-019",
+      "type": "component",
+      "description": "MAIN_MODULE_TAG.R13 package shall be 0402",
+      "subject": "MAIN_MODULE_TAG.R13",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-020",
+      "type": "component",
+      "description": "MAIN_MODULE_TAG.R20 package shall be 0402",
+      "subject": "MAIN_MODULE_TAG.R20",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-021",
+      "type": "component",
+      "description": "MAIN_MODULE_TAG.R23 package shall be 0402",
+      "subject": "MAIN_MODULE_TAG.R23",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-022",
+      "type": "component",
+      "description": "POWER.C1 package shall be 0603",
+      "subject": "POWER.C1",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-023",
+      "type": "component",
+      "description": "POWER.C2 package shall be 0603",
+      "subject": "POWER.C2",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-024",
+      "type": "component",
+      "description": "POWER.C20 package shall be 0805",
+      "subject": "POWER.C20",
+      "constraints": {
+        "package": "0805"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-025",
+      "type": "component",
+      "description": "POWER.C21 package shall be 0805",
+      "subject": "POWER.C21",
+      "constraints": {
+        "package": "0805"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-026",
+      "type": "component",
+      "description": "POWER.C22 package shall be 0805",
+      "subject": "POWER.C22",
+      "constraints": {
+        "package": "0805"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-027",
+      "type": "component",
+      "description": "POWER.C23 package shall be 0805",
+      "subject": "POWER.C23",
+      "constraints": {
+        "package": "0805"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-028",
+      "type": "component",
+      "description": "POWER.C24 package shall be 0603",
+      "subject": "POWER.C24",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-029",
+      "type": "component",
+      "description": "POWER.C3 package shall be 0603",
+      "subject": "POWER.C3",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-030",
+      "type": "component",
+      "description": "POWER.C4 package shall be 0603",
+      "subject": "POWER.C4",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-031",
+      "type": "component",
+      "description": "POWER.C5 package shall be 0603",
+      "subject": "POWER.C5",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-032",
+      "type": "component",
+      "description": "POWER.C6 package shall be 0603",
+      "subject": "POWER.C6",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-033",
+      "type": "component",
+      "description": "POWER.C8 package shall be 0603",
+      "subject": "POWER.C8",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-034",
+      "type": "component",
+      "description": "POWER.C9 package shall be 0603",
+      "subject": "POWER.C9",
+      "constraints": {
+        "package": "0603"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-035",
+      "type": "component",
+      "description": "POWER.R11 package shall be 0402",
+      "subject": "POWER.R11",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-036",
+      "type": "component",
+      "description": "POWER.R16 package shall be 0402",
+      "subject": "POWER.R16",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-037",
+      "type": "component",
+      "description": "POWER.R19 package shall be 0402",
+      "subject": "POWER.R19",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-038",
+      "type": "component",
+      "description": "POWER.R2 package shall be 0402",
+      "subject": "POWER.R2",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-039",
+      "type": "component",
+      "description": "POWER.R25 package shall be 0402",
+      "subject": "POWER.R25",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-040",
+      "type": "component",
+      "description": "POWER.R26 package shall be 0402",
+      "subject": "POWER.R26",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-041",
+      "type": "component",
+      "description": "POWER.R27 package shall be 0402",
+      "subject": "POWER.R27",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-042",
+      "type": "component",
+      "description": "POWER.R3 package shall be 0402",
+      "subject": "POWER.R3",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-043",
+      "type": "component",
+      "description": "POWER.R4 package shall be 0402",
+      "subject": "POWER.R4",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-044",
+      "type": "component",
+      "description": "POWER.R6 package shall be 0402",
+      "subject": "POWER.R6",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-045",
+      "type": "component",
+      "description": "POWER.R7 package shall be 0402",
+      "subject": "POWER.R7",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-046",
+      "type": "component",
+      "description": "POWER.R8 package shall be 0402",
+      "subject": "POWER.R8",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    },
+    {
+      "id": "REQ-047",
+      "type": "component",
+      "description": "POWER.R9 package shall be 0402",
+      "subject": "POWER.R9",
+      "constraints": {
+        "package": "0402"
+      },
+      "severity": "error",
+      "evidence_required": [
+        "zener_test"
+      ]
+    }
+  ],
+  "fabrication": {
+    "automatic_approval": false,
+    "human_approval_required": true
+  }
+}

@@ -1,0 +1,74 @@
+"""
+BNO055
+
+Auto-generated using `pcb import`.
+"""
+
+CAP = io(Net)
+COM0 = io(Net)
+COM1 = io(Net)
+COM2 = io(Net)
+COM3 = io(Net)
+GND = io(Net)
+GNDIO = io(Net)
+INT = io(Net)
+NBOOT_LOAD_PIN = io(Net)
+NRESET = io(Net)
+PIN10 = io(Net)
+PIN15 = io(Net)
+PIN16 = io(Net)
+PS0 = io(Net)
+PS1 = io(Net)
+VDD = io(Net)
+VDDIO = io(Net)
+XIN32 = io(Net)
+XOUT32 = io(Net)
+
+Component(
+    name="BNO055",
+    part=Part(mpn="BNO055", manufacturer="Bosch"),
+    footprint=File("LGA28R50P4X10_380X520X100.kicad_mod"),
+    symbol=Symbol(library="BNO055.kicad_sym"),
+    pin_defs={
+        "PIN10": "10",
+        "NRESET": "11",
+        "INT": "14",
+        "PIN15": "15",
+        "PIN16": "16",
+        "COM3": "17",
+        "COM2": "18",
+        "COM1": "19",
+        "GND": "2",
+        "COM0": "20",
+        "GNDIO": "25",
+        "XOUT32": "26",
+        "XIN32": "27",
+        "VDDIO": "28",
+        "VDD": "3",
+        "NBOOT_LOAD_PIN": "4",
+        "PS1": "5",
+        "PS0": "6",
+        "CAP": "9",
+    },
+    pins={
+        "PIN10": PIN10,
+        "NRESET": NRESET,
+        "INT": INT,
+        "PIN15": PIN15,
+        "PIN16": PIN16,
+        "COM3": COM3,
+        "COM2": COM2,
+        "COM1": COM1,
+        "GND": GND,
+        "COM0": COM0,
+        "GNDIO": GNDIO,
+        "XOUT32": XOUT32,
+        "XIN32": XIN32,
+        "VDDIO": VDDIO,
+        "VDD": VDD,
+        "NBOOT_LOAD_PIN": NBOOT_LOAD_PIN,
+        "PS1": PS1,
+        "PS0": PS0,
+        "CAP": CAP,
+    },
+)

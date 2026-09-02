@@ -1,0 +1,419 @@
+{
+  "schema_version": "1",
+  "components": {
+    "IMU.C10": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "IMU.C11": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "IMU.C12": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "IMU.C13": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "IMU.C19": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "IMU.C25": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "IMU.R14": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "IMU.R15": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "IMU.R17": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "IMU.R18": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "MAIN_MODULE_TAG.C14": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "MAIN_MODULE_TAG.C15": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "MAIN_MODULE_TAG.C16": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "MAIN_MODULE_TAG.C17": {
+      "kind": "capacitor",
+      "package": "0805"
+    },
+    "MAIN_MODULE_TAG.C18": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "MAIN_MODULE_TAG.C26": {
+      "kind": "capacitor",
+      "package": "0402"
+    },
+    "MAIN_MODULE_TAG.R10": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "MAIN_MODULE_TAG.R12": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "MAIN_MODULE_TAG.R13": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "MAIN_MODULE_TAG.R20": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "MAIN_MODULE_TAG.R23": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "POWER.C1": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "POWER.C2": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "POWER.C20": {
+      "kind": "capacitor",
+      "package": "0805"
+    },
+    "POWER.C21": {
+      "kind": "capacitor",
+      "package": "0805"
+    },
+    "POWER.C22": {
+      "kind": "capacitor",
+      "package": "0805"
+    },
+    "POWER.C23": {
+      "kind": "capacitor",
+      "package": "0805"
+    },
+    "POWER.C24": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "POWER.C3": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "POWER.C4": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "POWER.C5": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "POWER.C6": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "POWER.C8": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "POWER.C9": {
+      "kind": "capacitor",
+      "package": "0603"
+    },
+    "POWER.R11": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "POWER.R16": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "POWER.R19": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "POWER.R2": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "POWER.R25": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "POWER.R26": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "POWER.R27": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "POWER.R3": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "POWER.R4": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "POWER.R6": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "POWER.R7": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "POWER.R8": {
+      "kind": "resistor",
+      "package": "0402"
+    },
+    "POWER.R9": {
+      "kind": "resistor",
+      "package": "0402"
+    }
+  },
+  "nets": {
+    "GND": {
+      "members": [
+        "IMU.C10.P2",
+        "IMU.C11.P1",
+        "IMU.C12.P2",
+        "IMU.C13.P1",
+        "IMU.C19.P2",
+        "IMU.C25.P2",
+        "IMU.R18.P2",
+        "MAIN_MODULE_TAG.C14.P2",
+        "MAIN_MODULE_TAG.C15.P2",
+        "MAIN_MODULE_TAG.C16.P2",
+        "MAIN_MODULE_TAG.C17.P2",
+        "MAIN_MODULE_TAG.C18.P2",
+        "MAIN_MODULE_TAG.C26.P2",
+        "MAIN_MODULE_TAG.R10.P2",
+        "MAIN_MODULE_TAG.R23.P2",
+        "POWER.C1.P2",
+        "POWER.C2.P2",
+        "POWER.C20.P2",
+        "POWER.C21.P2",
+        "POWER.C22.P2",
+        "POWER.C23.P2",
+        "POWER.C24.P2",
+        "POWER.C3.P2",
+        "POWER.C4.P2",
+        "POWER.C5.P1",
+        "POWER.C6.P2",
+        "POWER.C8.P2",
+        "POWER.C9.P2",
+        "POWER.R16.P1",
+        "POWER.R19.P1",
+        "POWER.R2.P1",
+        "POWER.R26.P2",
+        "POWER.R27.P1",
+        "POWER.R3.P1",
+        "POWER.R4.P2",
+        "POWER.R9.P2"
+      ]
+    },
+    "IMU_ADDR_SEL": {
+      "members": [
+        "IMU.R17.P2",
+        "IMU.R18.P1"
+      ]
+    },
+    "IMU_XTAL_N": {
+      "members": [
+        "IMU.C12.P1"
+      ]
+    },
+    "IMU_XTAL_P": {
+      "members": [
+        "IMU.C11.P2"
+      ]
+    },
+    "NET_U4_CAP": {
+      "members": [
+        "IMU.C10.P1"
+      ]
+    },
+    "NET_U4_NBOOT_LOAD_PIN": {
+      "members": [
+        "IMU.R14.P2"
+      ]
+    },
+    "IMU_BNO_SCL": {
+      "members": [
+        "MAIN_MODULE_TAG.R12.P2"
+      ]
+    },
+    "IMU_BNO_SDA": {
+      "members": [
+        "MAIN_MODULE_TAG.R13.P2"
+      ]
+    },
+    "IMU_IMU_NRST": {
+      "members": [
+        "IMU.R15.P2"
+      ]
+    },
+    "MAIN_MODULE_TAG_CONFIG": {
+      "members": [
+        "MAIN_MODULE_TAG.C26.P1",
+        "MAIN_MODULE_TAG.R20.P2"
+      ]
+    },
+    "MAIN_MODULE_TAG_MCU_BOOT": {
+      "members": [
+        "MAIN_MODULE_TAG.R10.P1"
+      ]
+    },
+    "NET_R23_Pad1": {
+      "members": [
+        "MAIN_MODULE_TAG.R23.P1"
+      ]
+    },
+    "NET_D2_A": {
+      "members": [
+        "POWER.R6.P1"
+      ]
+    },
+    "NET_D3_A": {
+      "members": [
+        "POWER.R8.P1"
+      ]
+    },
+    "NET_J3_CC1": {
+      "members": [
+        "POWER.R19.P2"
+      ]
+    },
+    "NET_J3_CC2": {
+      "members": [
+        "POWER.R16.P2"
+      ]
+    },
+    "NET_R25_Pad2": {
+      "members": [
+        "POWER.R25.P2"
+      ]
+    },
+    "NET_U1_FB": {
+      "members": [
+        "POWER.R7.P2",
+        "POWER.R9.P1"
+      ]
+    },
+    "NET_U1_VOUT": {
+      "members": [
+        "POWER.C2.P1",
+        "POWER.C22.P1",
+        "POWER.C23.P1",
+        "POWER.R7.P1"
+      ]
+    },
+    "NET_U2_VDD": {
+      "members": [
+        "POWER.C5.P2"
+      ]
+    },
+    "NET_U6_CE": {
+      "members": [
+        "POWER.R3.P2"
+      ]
+    },
+    "NET_U6_ILIM_VSET": {
+      "members": [
+        "POWER.R2.P2"
+      ]
+    },
+    "POWER_BAT_P": {
+      "members": [
+        "POWER.C4.P1"
+      ]
+    },
+    "POWER_BIN": {
+      "members": [
+        "POWER.R4.P1"
+      ]
+    },
+    "POWER_EN": {
+      "members": [
+        "POWER.C6.P1",
+        "POWER.R27.P2"
+      ]
+    },
+    "POWER_MODE": {
+      "members": [
+        "POWER.R26.P1"
+      ]
+    },
+    "POWER_SRN": {
+      "members": [
+        "POWER.C24.P1"
+      ]
+    },
+    "VBUS": {
+      "members": [
+        "POWER.C1.P1",
+        "POWER.C8.P1"
+      ]
+    },
+    "VCC": {
+      "members": [
+        "POWER.C20.P1",
+        "POWER.C21.P1",
+        "POWER.C9.P1",
+        "POWER.R25.P1",
+        "POWER.R6.P2",
+        "POWER.R8.P2"
+      ]
+    },
+    "POWER_GPOUT": {
+      "members": [
+        "POWER.C3.P1",
+        "POWER.R11.P2"
+      ]
+    },
+    "VDD_3V3": {
+      "members": [
+        "IMU.C13.P2",
+        "IMU.C19.P1",
+        "IMU.C25.P1",
+        "IMU.R14.P1",
+        "IMU.R15.P1",
+        "IMU.R17.P1",
+        "MAIN_MODULE_TAG.C14.P1",
+        "MAIN_MODULE_TAG.C15.P1",
+        "MAIN_MODULE_TAG.C16.P1",
+        "MAIN_MODULE_TAG.C17.P1",
+        "MAIN_MODULE_TAG.C18.P1",
+        "MAIN_MODULE_TAG.R12.P1",
+        "MAIN_MODULE_TAG.R13.P1",
+        "MAIN_MODULE_TAG.R20.P1",
+        "POWER.R11.P1"
+      ]
+    }
+  },
+  "rules": {
+    "forbid_unlisted_members": false,
+    "required_power_nets": [
+      "GND"
+    ]
+  }
+}

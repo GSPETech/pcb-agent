@@ -1,0 +1,156 @@
+"""
+dwm1004c_aptwr_tag sheet module: IMU (/b12541c1-4f3e-4d66-9fb9-a4548eb5cddb/)
+"""
+
+load("@stdlib/interfaces.zen", "NotConnected", "Power", "Ground")
+
+NET_3_3V = io("NET_3_3V", Power)
+IMU_BNO_SCL = io("IMU_BNO_SCL", Net)
+IMU_BNO_SDA = io("IMU_BNO_SDA", Net)
+IMU_IMU_INT = io("IMU_IMU_INT", Net)
+IMU_IMU_NRST = io("IMU_IMU_NRST", Net)
+GND = io("GND", Ground)
+
+IMU_ADDR_SEL = Net("IMU_ADDR_SEL")
+IMU_XTAL = Net("IMU_XTAL_P")
+IMU_XTAL_2 = Net("IMU_XTAL_N")
+NET_U4_CAP = Net("NET_U4_CAP")
+NET_U4_NBOOT_LOAD_PIN = Net("NET_U4_NBOOT_LOAD_PIN")
+
+Capacitor = Module("@stdlib/generics/Capacitor.zen")
+Resistor = Module("@stdlib/generics/Resistor.zen")
+
+BNO055 = Module("../../components/BOSCH/BNO055/BNO055.zen")
+DNP = Module("../../components/DNP/DNP.zen")
+_32KHZ = Module("../../components/32kHz/32kHz.zen")
+
+Capacitor(
+    name="C10",
+    package="0603",
+    value="1uF",
+    P1=NET_U4_CAP,
+    P2=GND,
+)
+
+Capacitor(
+    name="C11",
+    package="0603",
+    value="22pF",
+    P1=GND,
+    P2=IMU_XTAL,
+)
+
+Capacitor(
+    name="C12",
+    package="0603",
+    value="22pF",
+    P1=IMU_XTAL_2,
+    P2=GND,
+)
+
+Capacitor(
+    name="C13",
+    package="0603",
+    value="0.1uF",
+    P1=GND,
+    P2=NET_3_3V,
+)
+
+Capacitor(
+    name="C19",
+    package="0603",
+    value="0.1uF",
+    P1=NET_3_3V,
+    P2=GND,
+)
+
+Capacitor(
+    name="C25",
+    package="0603",
+    value="0.1uF",
+    P1=NET_3_3V,
+    P2=GND,
+)
+
+Resistor(
+    name="R14",
+    package="0402",
+    value="10k",
+    P1=NET_3_3V,
+    P2=NET_U4_NBOOT_LOAD_PIN,
+)
+
+Resistor(
+    name="R15",
+    package="0402",
+    value="10k",
+    P1=NET_3_3V,
+    P2=IMU_IMU_NRST,
+)
+
+Resistor(
+    name="R17",
+    package="0402",
+    value="10k",
+    P1=NET_3_3V,
+    P2=IMU_ADDR_SEL,
+)
+
+Resistor(
+    name="R18",
+    package="0402",
+    value="10k",
+    P1=IMU_ADDR_SEL,
+    P2=GND,
+)
+
+BNO055(
+    name="U4",
+    CAP=NET_U4_CAP,
+    COM0=IMU_BNO_SDA,
+    COM1=IMU_BNO_SCL,
+    COM2=GND,
+    COM3=IMU_ADDR_SEL,
+    GND=GND,
+    GNDIO=GND,
+    INT=IMU_IMU_INT,
+    NBOOT_LOAD_PIN=NET_U4_NBOOT_LOAD_PIN,
+    NRESET=IMU_IMU_NRST,
+    PIN10=NotConnected(),
+    PIN15=NotConnected(),
+    PIN16=NotConnected(),
+    PS0=GND,
+    PS1=GND,
+    VDD=NET_3_3V,
+    VDDIO=NET_3_3V,
+    XIN32=IMU_XTAL,
+    XOUT32=IMU_XTAL_2,
+)
+
+_32KHZ(name="Y1", P1=IMU_XTAL, P2=IMU_XTAL_2)
+
+
+# pcb:sch C10.C x=1667.7800 y=1586.5000 rot=0
+# pcb:sch C11.C x=1794.7800 y=1662.7000 rot=270
+# pcb:sch C12.C x=2099.5800 y=1662.7000 rot=270
+# pcb:sch C13.C x=2518.6800 y=1307.1000 rot=180
+# pcb:sch C19.C x=2213.8800 y=1192.8000 rot=270 mirror=x
+# pcb:sch C25.C x=2213.8800 y=1142.0000 rot=270 mirror=x
+# pcb:sch GND.0 x=2399.3000 y=1688.1000 rot=0
+# pcb:sch GND.1 x=2221.5000 y=1751.6000 rot=0
+# pcb:sch GND.2 x=1726.2000 y=1269.0000 rot=90
+# pcb:sch GND.3 x=1675.4000 y=1751.6000 rot=0
+# pcb:sch GND.4 x=2297.7000 y=1230.9000 rot=270
+# pcb:sch GND.5 x=2526.3000 y=1396.0000 rot=0
+# pcb:sch GND.6 x=1688.1000 y=1472.2000 rot=90
+# pcb:sch NET_3_3V.0 x=2531.3800 y=1205.5000 rot=0
+# pcb:sch NET_3_3V.1 x=1401.0800 y=1218.2000 rot=0
+# pcb:sch NET_3_3V.2 x=2404.3800 y=1459.5000 rot=0
+# pcb:sch NET_3_3V.3 x=1540.7800 y=1218.2000 rot=0
+# pcb:sch NET_3_3V.4 x=2163.0800 y=1129.3000 rot=0
+# pcb:sch R14.R x=1398.5400 y=1256.3000 rot=0
+# pcb:sch R15.R x=1538.2400 y=1256.3000 rot=0
+# pcb:sch R17.R x=2401.8400 y=1497.6000 rot=0
+# pcb:sch R18.DNP x=2401.8400 y=1599.2000 rot=0
+# pcb:sch U4.BNO055 x=1764.3000 y=1243.6000 rot=0
+# pcb:sch Y1.32kHz x=1929.4000 y=1675.4000 rot=0

@@ -1,0 +1,130 @@
+(footprint "RES-TH_BD2.8_NTC-10K"
+	(version 20260206)
+	(generator "pcb-import")
+	(layer "F.Cu")
+	(descr "RES-TH_BD2.8_NTC-10K footprint")
+	(tags "RES-TH_BD2.8_NTC-10K footprint C394023")
+	(property "Reference" "REF**"
+		(at 3 -0.15 0)
+		(layer "F.SilkS")
+		(effects
+			(font
+				(size 0.65 0.65)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "10k"
+		(at 0 2 0)
+		(layer "F.Fab")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" "Temperature dependent resistor"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property ki_fp_filters "R_* RV_*")
+	(units
+		(unit
+			(name "A")
+			(pins "1" "2")
+		)
+	)
+	(attr through_hole)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_arc
+		(start -1.270003 -0.762002)
+		(mid 0 -1.481054)
+		(end 1.270003 -0.762001)
+		(stroke
+			(width 0.254001)
+			(type solid)
+		)
+		(layer "F.SilkS")
+	)
+	(fp_arc
+		(start 1.255931 0.784963)
+		(mid -0.013467 1.480985)
+		(end -1.270002 0.762001)
+		(stroke
+			(width 0.254001)
+			(type solid)
+		)
+		(layer "F.SilkS")
+	)
+	(fp_circle
+		(center -1.420117 1.400051)
+		(end -1.390145 1.400051)
+		(stroke
+			(width 0.059995)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+	)
+	(fp_poly
+		(pts
+			(xy -1.4 0) (xy -1.373099 -0.273126) (xy -1.293431 -0.535757) (xy -1.164057 -0.777798) (xy -0.989949 -0.989949)
+			(xy -0.777798 -1.164057) (xy -0.535757 -1.293431) (xy -0.273126 -1.373099) (xy 0 -1.4) (xy 0.273126 -1.373099)
+			(xy 0.535757 -1.293431) (xy 0.777798 -1.164057) (xy 0.989949 -0.989949) (xy 1.164057 -0.777798)
+			(xy 1.293431 -0.535757) (xy 1.373099 -0.273126) (xy 1.4 0) (xy 1.373099 0.273126) (xy 1.293431 0.535757)
+			(xy 1.164057 0.777798) (xy 0.989949 0.989949) (xy 0.777798 1.164057) (xy 0.535757 1.293431) (xy 0.273126 1.373099)
+			(xy 0 1.4) (xy -0.273126 1.373099) (xy -0.535757 1.293431) (xy -0.777798 1.164057) (xy -0.989949 0.989949)
+			(xy -1.164057 0.777798) (xy -1.293431 0.535757) (xy -1.373099 0.273126) (xy -1.4 0)
+		)
+		(stroke
+			(width 0.15)
+			(type solid)
+		)
+		(fill yes)
+		(layer "F.CrtYd")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(effects
+			(font
+				(size 0.65 0.65)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" thru_hole circle
+		(at -1.270003 0)
+		(size 1.2 1.2)
+		(drill 0.550013)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(pintype "passive")
+	)
+	(pad "2" thru_hole circle
+		(at 1.270003 0)
+		(size 1.2 1.2)
+		(drill 0.550013)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(pintype "passive")
+	)
+	(embedded_fonts no)
+)

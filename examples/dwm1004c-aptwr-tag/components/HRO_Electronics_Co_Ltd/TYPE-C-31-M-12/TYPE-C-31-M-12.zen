@@ -1,0 +1,65 @@
+"""
+TYPE-C-31-M-12
+
+Auto-generated using `pcb import`.
+"""
+
+CC1 = io(Net)
+CC2 = io(Net)
+DN1 = io(Net)
+DN2 = io(Net)
+DP1 = io(Net)
+DP2 = io(Net)
+GND_A1_B12 = io(Net)
+GND_B1_A12 = io(Net)
+SBU1 = io(Net)
+SBU2 = io(Net)
+SHIELD_S1 = io(Net)
+SHIELD_S2 = io(Net)
+SHIELD_S3 = io(Net)
+SHIELD_S4 = io(Net)
+VBUS_A4_B9 = io(Net)
+VBUS_B4_A9 = io(Net)
+
+Component(
+    name="TYPE-C-31-M-12",
+    part=Part(mpn="TYPE", manufacturer="HRO"),
+    footprint=File("HRO_TYPE-C-31-M-12.kicad_mod"),
+    symbol=Symbol(library="TYPE-C-31-M-12.kicad_sym"),
+    pin_defs={
+        "GND__A1_B12": "A1_B12",
+        "VBUS__A4_B9": "A4_B9",
+        "CC1": "A5",
+        "DP1": "A6",
+        "DN1": "A7",
+        "SBU1": "A8",
+        "GND__B1_A12": "B1_A12",
+        "VBUS__B4_A9": "B4_A9",
+        "CC2": "B5",
+        "DP2": "B6",
+        "DN2": "B7",
+        "SBU2": "B8",
+        "SHIELD__S1": "S1",
+        "SHIELD__S2": "S2",
+        "SHIELD__S3": "S3",
+        "SHIELD__S4": "S4",
+    },
+    pins={
+        "GND__A1_B12": GND_A1_B12,
+        "VBUS__A4_B9": VBUS_A4_B9,
+        "CC1": CC1,
+        "DP1": DP1,
+        "DN1": DN1,
+        "SBU1": SBU1,
+        "GND__B1_A12": GND_B1_A12,
+        "VBUS__B4_A9": VBUS_B4_A9,
+        "CC2": CC2,
+        "DP2": DP2,
+        "DN2": DN2,
+        "SBU2": SBU2,
+        "SHIELD__S1": SHIELD_S1,
+        "SHIELD__S2": SHIELD_S2,
+        "SHIELD__S3": SHIELD_S3,
+        "SHIELD__S4": SHIELD_S4,
+    },
+)

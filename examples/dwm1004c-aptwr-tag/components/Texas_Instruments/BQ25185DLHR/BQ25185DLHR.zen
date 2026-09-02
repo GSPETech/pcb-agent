@@ -1,0 +1,56 @@
+"""
+BQ25185DLHR
+
+Auto-generated using `pcb import`.
+"""
+
+BAT = io(Net)
+GND = io(Net)
+ILIM_VSET = io(Net)
+IN = io(Net)
+ISET = io(Net)
+N_CE = io(Net)
+PAD1 = io(Net)
+PAD2 = io(Net)
+STAT1 = io(Net)
+STAT2 = io(Net)
+SYS = io(Net)
+THERMAL_PAD = io(Net)
+TS_MR = io(Net)
+
+Component(
+    name="BQ25185DLHR",
+    part=Part(mpn="BQ25185DLHR", manufacturer="TI"),
+    footprint=File("IC_BQ25185DLHR.kicad_mod"),
+    symbol=Symbol(library="BQ25185DLHR.kicad_sym"),
+    pin_defs={
+        "SYS": "1",
+        "IN": "10",
+        "THERMAL_PAD": "11",
+        "PAD1": "12",
+        "PAD2": "13",
+        "BAT": "2",
+        "STAT2": "3",
+        "~{CE}": "4",
+        "GND": "5",
+        "TS/MR": "6",
+        "ILIM/VSET": "7",
+        "ISET": "8",
+        "STAT1": "9",
+    },
+    pins={
+        "SYS": SYS,
+        "IN": IN,
+        "THERMAL_PAD": THERMAL_PAD,
+        "PAD1": PAD1,
+        "PAD2": PAD2,
+        "BAT": BAT,
+        "STAT2": STAT2,
+        "~{CE}": N_CE,
+        "GND": GND,
+        "TS/MR": TS_MR,
+        "ILIM/VSET": ILIM_VSET,
+        "ISET": ISET,
+        "STAT1": STAT1,
+    },
+)

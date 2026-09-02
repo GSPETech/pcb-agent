@@ -1,0 +1,17 @@
+"""
+STAT2
+
+Auto-generated using `pcb import`.
+"""
+
+A = io(Net)
+K = io(Net)
+
+Component(
+    name="STAT2",
+    footprint=File("@stdlib/kicad-footprints/LED_SMD.pretty/LED_0805_2012Metric.kicad_mod"),
+    part=Part(mpn="KT", manufacturer="Hubei KENTO Elec"),
+    symbol=Symbol(library="STAT2.kicad_sym"),
+    pin_defs={"K": "1", "A": "2"},
+    pins={"K": K, "A": A},
+)

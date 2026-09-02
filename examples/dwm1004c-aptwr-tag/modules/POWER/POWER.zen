@@ -1,0 +1,419 @@
+"""
+dwm1004c_aptwr_tag sheet module: POWER (/63611dec-18fc-4bc9-ad6d-c45ef46feab7/)
+"""
+
+load("@stdlib/interfaces.zen", "NotConnected", "Power", "Ground")
+
+NET_3_3V = io("NET_3_3V", Power)
+IMU_BNO_SCL = io("IMU_BNO_SCL", Net)
+IMU_BNO_SDA = io("IMU_BNO_SDA", Net)
+POWER_GPOUT = io("POWER_GPOUT", Net)
+GND = io("GND", Ground)
+
+POWER_BAT = Net("POWER_BAT_P")
+POWER_BIN = Net("POWER_BIN")
+POWER_EN = Net("POWER_EN")
+POWER_LX1 = Net("POWER_LX1")
+POWER_LX2 = Net("POWER_LX2")
+POWER_MODE = Net("POWER_MODE")
+POWER_SRN = Net("POWER_SRN")
+POWER_STAT1 = Net("POWER_STAT1")
+POWER_STAT2 = Net("POWER_STAT2")
+NET_D2_A = Net("NET_D2_A")
+NET_D3_A = Net("NET_D3_A")
+NET_J3_CC1 = Net("NET_J3_CC1")
+NET_J3_CC2 = Net("NET_J3_CC2")
+NET_R25_PAD2 = Net("NET_R25_Pad2")
+NET_U1_FB = Net("NET_U1_FB")
+NET_U1_VOUT = Net("NET_U1_VOUT")
+NET_U2_VDD = Net("NET_U2_VDD")
+NET_U6_ILIM_SLASH_VSET = Net("NET_U6_ILIM_VSET")
+NET_U6_ISET = Net("NET_U6_ISET")
+NET_U6_TS_SLASH_MR = Net("NET_U6_TS_MR")
+NET_U6_CE = Net("NET_U6_CE")
+VBUS = Power("VBUS")
+VCC = Power("VCC")
+
+Capacitor = Module("@stdlib/generics/Capacitor.zen")
+Resistor = Module("@stdlib/generics/Resistor.zen")
+
+BAT = Module("../../components/BAT/BAT.zen")
+BQ25185DLHR = Module("../../components/Texas_Instruments/BQ25185DLHR/BQ25185DLHR.zen")
+BQ27441DRZR_G1A = Module("../../components/BQ27441DRZR-G1A/BQ27441DRZR-G1A.zen")
+DNP = Module("../../components/DNP/DNP.zen")
+ESD9B5_0ST5G = Module("../../components/ESD9B5_0ST5G/ESD9B5_0ST5G.zen")
+JS102011SAQN = Module("../../components/C_K/JS102011SAQN/JS102011SAQN.zen")
+STAT1 = Module("../../components/STAT1/STAT1.zen")
+STAT2 = Module("../../components/STAT2/STAT2.zen")
+TPS631000DRLR = Module("../../components/Texas_Instruments/TPS631000DRLR/TPS631000DRLR.zen")
+TYPE_C_31_M_12 = Module("../../components/HRO_Electronics_Co_Ltd/TYPE-C-31-M-12/TYPE-C-31-M-12.zen")
+_0_01 = Module("../../components/0_01/0_01.zen")
+_10K = Module("../../components/10k/10k.zen")
+_120 = Module("../../components/120/120.zen")
+_1UH = Module("../../components/1uH/1uH.zen")
+_600 = Module("../../components/600/600.zen")
+
+Capacitor(
+    name="C1",
+    package="0603",
+    value="1uF",
+    P1=VBUS,
+    P2=GND,
+)
+
+Capacitor(
+    name="C2",
+    package="0603",
+    value="0.1uF",
+    P1=NET_U1_VOUT,
+    P2=GND,
+)
+
+Capacitor(
+    name="C20",
+    package="0805",
+    value="22uF",
+    P1=VCC,
+    P2=GND,
+)
+
+Capacitor(
+    name="C21",
+    package="0805",
+    value="22uF",
+    P1=VCC,
+    P2=GND,
+)
+
+Capacitor(
+    name="C22",
+    package="0805",
+    value="22uF",
+    P1=NET_U1_VOUT,
+    P2=GND,
+)
+
+Capacitor(
+    name="C23",
+    package="0805",
+    value="22uF",
+    P1=NET_U1_VOUT,
+    P2=GND,
+)
+
+Capacitor(
+    name="C24",
+    package="0603",
+    value="1uF",
+    P1=POWER_SRN,
+    P2=GND,
+)
+
+Capacitor(
+    name="C3",
+    package="0603",
+    value="0.1uF",
+    P1=POWER_GPOUT,
+    P2=GND,
+)
+
+Capacitor(
+    name="C4",
+    package="0603",
+    value="1uF",
+    P1=POWER_BAT,
+    P2=GND,
+)
+
+Capacitor(
+    name="C5",
+    package="0603",
+    value="0.47uF",
+    P1=GND,
+    P2=NET_U2_VDD,
+)
+
+Capacitor(
+    name="C6",
+    package="0603",
+    value="100nF",
+    P1=POWER_EN,
+    P2=GND,
+)
+
+Capacitor(
+    name="C8",
+    package="0603",
+    value="0.1uF",
+    P1=VBUS,
+    P2=GND,
+)
+
+Capacitor(
+    name="C9",
+    package="0603",
+    value="10uF",
+    P1=VCC,
+    P2=GND,
+)
+
+ESD9B5_0ST5G(name="D1", A1=GND, A2=VBUS)
+
+STAT2(name="D2", A=NET_D2_A, K=POWER_STAT2)
+
+STAT1(name="D3", A=NET_D3_A, K=POWER_STAT1)
+
+_120(name="FB1", P1=NET_U1_VOUT, P2=NET_3_3V)
+
+BAT(name="J2", PIN_1=POWER_BAT, PIN_2=GND)
+
+TYPE_C_31_M_12(
+    name="J3",
+    CC1=NET_J3_CC1,
+    CC2=NET_J3_CC2,
+    DN1=NotConnected(),
+    DN2=NotConnected(),
+    DP1=NotConnected(),
+    DP2=NotConnected(),
+    GND_A1_B12=GND,
+    GND_B1_A12=GND,
+    SBU1=NotConnected(),
+    SBU2=NotConnected(),
+    SHIELD_S1=GND,
+    SHIELD_S2=GND,
+    SHIELD_S3=GND,
+    SHIELD_S4=GND,
+    VBUS_A4_B9=VBUS,
+    VBUS_B4_A9=VBUS,
+)
+
+_1UH(name="L1", P1=POWER_LX1, P2=POWER_LX2)
+
+_600(name="R1", P1=GND, P2=NET_U6_ISET)
+
+Resistor(
+    name="R11",
+    package="0402",
+    value="10k",
+    P1=NET_3_3V,
+    P2=POWER_GPOUT,
+)
+
+Resistor(
+    name="R16",
+    package="0402",
+    value="5.1k",
+    P1=GND,
+    P2=NET_J3_CC2,
+)
+
+Resistor(
+    name="R19",
+    package="0402",
+    value="5.1k",
+    P1=GND,
+    P2=NET_J3_CC1,
+)
+
+Resistor(
+    name="R2",
+    package="0402",
+    value="18k",
+    P1=GND,
+    P2=NET_U6_ILIM_SLASH_VSET,
+)
+
+DNP(name="R22", P1=NET_U6_TS_SLASH_MR, P2=GND)
+
+Resistor(
+    name="R25",
+    package="0402",
+    value="10k",
+    P1=VCC,
+    P2=NET_R25_PAD2,
+)
+
+Resistor(
+    name="R26",
+    package="0402",
+    value="10k",
+    P1=POWER_MODE,
+    P2=GND,
+)
+
+Resistor(
+    name="R27",
+    package="0402",
+    value="100k",
+    P1=GND,
+    P2=POWER_EN,
+)
+
+Resistor(
+    name="R3",
+    package="0402",
+    value="10k",
+    P1=GND,
+    P2=NET_U6_CE,
+)
+
+Resistor(
+    name="R4",
+    package="0402",
+    value="10k",
+    P1=POWER_BIN,
+    P2=GND,
+)
+
+_0_01(name="R5", P1=POWER_BAT, P2=POWER_SRN)
+
+Resistor(
+    name="R6",
+    package="0402",
+    value="1k",
+    P1=NET_D2_A,
+    P2=VCC,
+)
+
+Resistor(
+    name="R7",
+    package="0402",
+    value="511k",
+    P1=NET_U1_VOUT,
+    P2=NET_U1_FB,
+)
+
+Resistor(
+    name="R8",
+    package="0402",
+    value="1k",
+    P1=NET_D3_A,
+    P2=VCC,
+)
+
+Resistor(
+    name="R9",
+    package="0402",
+    value="91k",
+    P1=NET_U1_FB,
+    P2=GND,
+)
+
+JS102011SAQN(
+    name="S1",
+    P1=GND,
+    P2=POWER_EN,
+    P3=NET_R25_PAD2,
+)
+
+_10K(name="TH1", P1=NET_U6_TS_SLASH_MR, P2=GND)
+
+TPS631000DRLR(
+    name="U1",
+    EN=POWER_EN,
+    FB=NET_U1_FB,
+    GND=GND,
+    LX1=POWER_LX1,
+    LX2=POWER_LX2,
+    MODE=POWER_MODE,
+    VIN=VCC,
+    VOUT=NET_U1_VOUT,
+)
+
+BQ27441DRZR_G1A(
+    name="U2",
+    BAT=POWER_BAT,
+    BIN=POWER_BIN,
+    EP=GND,
+    GPOUT=POWER_GPOUT,
+    NC_11=NotConnected(),
+    NC_4=NotConnected(),
+    NC_9=NotConnected(),
+    SCL=IMU_BNO_SCL,
+    SDA=IMU_BNO_SDA,
+    SRN=POWER_SRN,
+    SRP=POWER_BAT,
+    VDD=NET_U2_VDD,
+    VSS=GND,
+)
+
+BQ25185DLHR(
+    name="U6",
+    BAT=POWER_SRN,
+    GND=GND,
+    ILIM_VSET=NET_U6_ILIM_SLASH_VSET,
+    IN=VBUS,
+    ISET=NET_U6_ISET,
+    N_CE=NET_U6_CE,
+    PAD1=GND,
+    PAD2=GND,
+    STAT1=POWER_STAT1,
+    STAT2=POWER_STAT2,
+    SYS=VCC,
+    THERMAL_PAD=GND,
+    TS_MR=NET_U6_TS_SLASH_MR,
+)
+
+
+# pcb:sch C1.C x=1693.1800 y=2564.4000 rot=0
+# pcb:sch C2.C x=2683.7800 y=1383.3000 rot=0
+# pcb:sch C20.C x=1756.6800 y=1319.8000 rot=0
+# pcb:sch C21.C x=1858.2800 y=1319.8000 rot=0
+# pcb:sch C22.C x=2620.2800 y=1383.3000 rot=0
+# pcb:sch C23.C x=2556.7800 y=1383.3000 rot=0
+# pcb:sch C24.C x=2709.1800 y=2462.8000 rot=0
+# pcb:sch C3.C x=4309.3800 y=2488.2000 rot=180
+# pcb:sch C4.C x=3725.1800 y=2602.5000 rot=180
+# pcb:sch C5.C x=3801.3800 y=2602.5000 rot=0
+# pcb:sch C6.C x=1578.8800 y=1357.9000 rot=0
+# pcb:sch C8.C x=1782.0800 y=2564.4000 rot=0
+# pcb:sch C9.C x=2785.3800 y=2462.8000 rot=0
+# pcb:sch D1.ESD9B5_0ST5G x=1599.2000 y=2589.8000 rot=270
+# pcb:sch D2.STAT2 x=2493.2800 y=2983.5000 rot=0 mirror=y
+# pcb:sch D3.STAT1 x=2493.2800 y=2881.9000 rot=0 mirror=y
+# pcb:sch FB1.120 x=2704.1000 y=1294.2200 rot=0
+# pcb:sch GND.0 x=3694.7000 y=2932.7000 rot=0
+# pcb:sch GND.1 x=3491.5000 y=2742.2000 rot=0
+# pcb:sch GND.10 x=4317.0000 y=2488.2000 rot=180
+# pcb:sch GND.2 x=4215.4000 y=2539.0000 rot=270
+# pcb:sch GND.3 x=1624.6000 y=2704.1000 rot=0
+# pcb:sch GND.4 x=2297.7000 y=1713.5000 rot=270
+# pcb:sch GND.5 x=2526.3000 y=2653.3000 rot=0
+# pcb:sch GND.6 x=1764.3000 y=1434.1000 rot=0
+# pcb:sch GND.7 x=1459.5000 y=1446.8000 rot=0
+# pcb:sch GND.8 x=2475.5000 y=1548.4000 rot=0
+# pcb:sch GND.9 x=1865.9000 y=1434.1000 rot=0
+# pcb:sch J2.BAT x=3732.8000 y=2856.5000 rot=0
+# pcb:sch J3.TYPE-C-31-M-12 x=1040.4000 y=2361.2000 rot=0
+# pcb:sch L1.1uH x=2246.9000 y=1561.1000 rot=270
+# pcb:sch NET_3_3V.0 x=2569.4800 y=1688.1000 rot=270
+# pcb:sch NET_3_3V.1 x=2836.1800 y=1243.6000 rot=0
+# pcb:sch NET_3_3V.2 x=4601.4800 y=2500.9000 rot=0
+# pcb:sch R1.600 x=2020.8400 y=2602.5000 rot=180
+# pcb:sch R11.R x=4598.9400 y=2551.7000 rot=0
+# pcb:sch R16.R x=1538.2400 y=2564.4000 rot=180
+# pcb:sch R19.R x=992.1400 y=2564.4000 rot=180
+# pcb:sch R2.R x=1944.6400 y=2564.4000 rot=180
+# pcb:sch R22.DNP x=2528.8400 y=2526.3000 rot=0
+# pcb:sch R25.R x=1309.6400 y=1269.0000 rot=270
+# pcb:sch R26.R x=2236.7400 y=1675.4000 rot=270
+# pcb:sch R27.R x=1538.2400 y=1357.9000 rot=180
+# pcb:sch R3.R x=1868.4400 y=2564.4000 rot=180
+# pcb:sch R4.R x=3494.0400 y=2589.8000 rot=0
+# pcb:sch R5.0_01 x=3379.7400 y=2589.8000 rot=0
+# pcb:sch R6.R x=2427.2400 y=2958.1000 rot=90
+# pcb:sch R7.R x=2478.0400 y=1319.8000 rot=0
+# pcb:sch R8.R x=2427.2400 y=2856.5000 rot=90
+# pcb:sch R9.R x=2478.0400 y=1446.8000 rot=0
+# pcb:sch S1.JS102011SAQN x=1370.6000 y=1301.4200 rot=0 mirror=x
+# pcb:sch TH1.10k x=2621.5500 y=2513.6000 rot=0
+# pcb:sch U1.TPS631000DRLR x=2081.8000 y=1269.0000 rot=0
+# pcb:sch U2.BQ27441DRZR-G1A x=3999.5000 y=2513.6000 rot=0
+# pcb:sch U6.BQ25185DLHR x=2119.9000 y=2361.2000 rot=0
+# pcb:sch VBUS.0 x=1629.6800 y=2361.2000 rot=0
+# pcb:sch VBUS.1 x=1134.3800 y=2958.1000 rot=270
+# pcb:sch VCC.0 x=2328.1800 y=2920.0000 rot=270
+# pcb:sch VCC.1 x=1134.3800 y=2996.2000 rot=270
+# pcb:sch VCC.2 x=2836.1800 y=2361.2000 rot=0
+# pcb:sch VCC.3 x=1235.9800 y=1269.0000 rot=0
+# pcb:sch VCC.4 x=1769.3800 y=1243.6000 rot=0

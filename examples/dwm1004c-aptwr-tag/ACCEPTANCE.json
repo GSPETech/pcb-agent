@@ -1,0 +1,336 @@
+{
+  "schema_version": "1",
+  "checks": [
+    {
+      "id": "ACC-001",
+      "requirement": "REQ-001",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-002",
+      "requirement": "REQ-002",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-003",
+      "requirement": "REQ-003",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-004",
+      "requirement": "REQ-004",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-005",
+      "requirement": "REQ-005",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-006",
+      "requirement": "REQ-006",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-007",
+      "requirement": "REQ-007",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-008",
+      "requirement": "REQ-008",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-009",
+      "requirement": "REQ-009",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-010",
+      "requirement": "REQ-010",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-011",
+      "requirement": "REQ-011",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-012",
+      "requirement": "REQ-012",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-013",
+      "requirement": "REQ-013",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-014",
+      "requirement": "REQ-014",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-015",
+      "requirement": "REQ-015",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-016",
+      "requirement": "REQ-016",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-017",
+      "requirement": "REQ-017",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-018",
+      "requirement": "REQ-018",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-019",
+      "requirement": "REQ-019",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-020",
+      "requirement": "REQ-020",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-021",
+      "requirement": "REQ-021",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-022",
+      "requirement": "REQ-022",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-023",
+      "requirement": "REQ-023",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-024",
+      "requirement": "REQ-024",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-025",
+      "requirement": "REQ-025",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-026",
+      "requirement": "REQ-026",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-027",
+      "requirement": "REQ-027",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-028",
+      "requirement": "REQ-028",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-029",
+      "requirement": "REQ-029",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-030",
+      "requirement": "REQ-030",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-031",
+      "requirement": "REQ-031",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-032",
+      "requirement": "REQ-032",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-033",
+      "requirement": "REQ-033",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-034",
+      "requirement": "REQ-034",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-035",
+      "requirement": "REQ-035",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-036",
+      "requirement": "REQ-036",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-037",
+      "requirement": "REQ-037",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-038",
+      "requirement": "REQ-038",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-039",
+      "requirement": "REQ-039",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-040",
+      "requirement": "REQ-040",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-041",
+      "requirement": "REQ-041",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-042",
+      "requirement": "REQ-042",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-043",
+      "requirement": "REQ-043",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-044",
+      "requirement": "REQ-044",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-045",
+      "requirement": "REQ-045",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-046",
+      "requirement": "REQ-046",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    },
+    {
+      "id": "ACC-047",
+      "requirement": "REQ-047",
+      "kind": "zener_test",
+      "expected": "PASS",
+      "test": "DwmTest.component_package"
+    }
+  ],
+  "production_ready": false,
+  "fabrication_approved": false
+}

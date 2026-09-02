@@ -1,0 +1,21 @@
+"""
+Conn_01x06
+
+Auto-generated using `pcb import`.
+"""
+
+PIN_1 = io(Net)
+PIN_2 = io(Net)
+PIN_3 = io(Net)
+PIN_4 = io(Net)
+PIN_5 = io(Net)
+PIN_6 = io(Net)
+
+Component(
+    name="Conn_01x06",
+    footprint=File("@stdlib/kicad-footprints/Connector_PinHeader_2.54mm.pretty/PinHeader_1x06_P2.54mm_Horizontal.kicad_mod"),
+    part=Part(mpn="PZ254R", manufacturer="BOOMELE"),
+    symbol=Symbol(library="Conn_01x06.kicad_sym"),
+    pin_defs={"Pin_1": "1", "Pin_2": "2", "Pin_3": "3", "Pin_4": "4", "Pin_5": "5", "Pin_6": "6"},
+    pins={"Pin_1": PIN_1, "Pin_2": PIN_2, "Pin_3": PIN_3, "Pin_4": PIN_4, "Pin_5": PIN_5, "Pin_6": PIN_6},
+)

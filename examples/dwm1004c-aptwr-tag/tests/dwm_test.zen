@@ -1,0 +1,37 @@
+Dwm = Module("../dwm1004c_aptwr_tag.zen")
+
+def component_package(module, inputs):
+    """Assert packages for representative passives declared in SPEC.json.
+
+    The harness-owned generated TestBench performs the exhaustive contract
+    check. This locked bench exists so ZENER_TEST carries a human-reviewable
+    assertion of its own.
+    """
+    components = module.components()
+
+    check("IMU.R17.R" in components, "R17 resistor must exist")
+    check("IMU.R18.R" in components, "R18 resistor must exist")
+    check("IMU.C10.C" in components, "C10 capacitor must exist")
+    check("POWER.R2.R" in components, "R2 resistor must exist")
+    check("POWER.C1.C" in components, "C1 capacitor must exist")
+
+    check(components["IMU.R17.R"].type == "resistor", "R17 must be a resistor")
+    check(components["IMU.R18.R"].type == "resistor", "R18 must be a resistor")
+    check(components["IMU.C10.C"].type == "capacitor", "C10 must be a capacitor")
+
+    check(components["IMU.R17.R"].properties["package"].value == "0402",
+          "R17 package must be 0402")
+    check(components["IMU.R18.R"].properties["package"].value == "0402",
+          "R18 package must be 0402")
+    check(components["IMU.C10.C"].properties["package"].value == "0603",
+          "C10 package must be 0603")
+
+    check(components["IMU.R17.R"].resistance.matches("10k"), "R17 must be 10k")
+    check(components["IMU.R18.R"].resistance.matches("10k"), "R18 must be 10k")
+
+TestBench(
+    name = "DwmTest",
+    module = Dwm,
+    test_cases = {"default": {}},
+    checks = [component_package],
+)

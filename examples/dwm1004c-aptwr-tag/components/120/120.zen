@@ -1,0 +1,17 @@
+"""
+120
+
+Auto-generated using `pcb import`.
+"""
+
+P1 = io(Net)
+P2 = io(Net)
+
+Component(
+    name="120",
+    part=Part(mpn="BLM18PG121SN1D", manufacturer="muRata"),
+    footprint=File("L0603.kicad_mod"),
+    symbol=Symbol(library="120.kicad_sym"),
+    pin_defs={"1": "1", "2": "2"},
+    pins={"1": P1, "2": P2},
+)

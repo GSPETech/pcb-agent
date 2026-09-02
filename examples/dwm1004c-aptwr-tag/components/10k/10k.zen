@@ -1,0 +1,17 @@
+"""
+10k
+
+Auto-generated using `pcb import`.
+"""
+
+P1 = io(Net)
+P2 = io(Net)
+
+Component(
+    name="10k",
+    part=Part(mpn="MF52A103F3435", manufacturer="NTC"),
+    footprint=File("RES-TH_BD2.8_NTC-10K.kicad_mod"),
+    symbol=Symbol(library="10k.kicad_sym"),
+    pin_defs={"1": "1", "2": "2"},
+    pins={"1": P1, "2": P2},
+)

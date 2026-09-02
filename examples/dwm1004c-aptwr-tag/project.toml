@@ -1,0 +1,12 @@
+[project]
+name = "dwm1004c-aptwr-tag"
+profile = "layout"
+source = "dwm1004c_aptwr_tag.zen"
+test = "tests/dwm_test.zen"
+
+[toolchain]
+pcb_version = "0.4"
+
+[layout]
+required = true
+board = "layout/dwm1004c_aptwr_tag/layout.kicad_pcb"

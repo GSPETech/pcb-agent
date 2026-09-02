@@ -1,0 +1,1825 @@
+{
+    "$schema": "https://schemas.kicad.org/drc.v1.json",
+    "coordinate_units": "mm",
+    "date": "2026-09-02T00:07:38",
+    "ignored_checks": [
+        {
+            "description": "Footprint has no courtyard defined",
+            "key": "missing_courtyard"
+        },
+        {
+            "description": "Track endpoint not centered on via",
+            "key": "track_not_centered_on_via"
+        },
+        {
+            "description": "Tuning profile track geometries",
+            "key": "tuning_profile_track_geometries"
+        },
+        {
+            "description": "Footprint doesn't match symbol's footprint filters",
+            "key": "footprint_filters_mismatch"
+        },
+        {
+            "description": "Footprint component type doesn't match footprint pads",
+            "key": "footprint_type_mismatch"
+        }
+    ],
+    "included_severities": [
+        "error",
+        "warning",
+        "exclusion"
+    ],
+    "kicad_version": "10.0.5",
+    "schematic_parity": [],
+    "source": "layout.kicad_pcb",
+    "unconnected_items": [
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "Pad B4_A9 [POWER.VBUS] of J3 on F.Cu",
+                    "pos": {
+                        "x": 25.685,
+                        "y": 66.88
+                    },
+                    "uuid": "153dc39c-da33-4df2-a0d2-6808fd14c559"
+                },
+                {
+                    "description": "Pad A4_B9 [POWER.VBUS] of J3 on F.Cu",
+                    "pos": {
+                        "x": 20.885,
+                        "y": 66.88
+                    },
+                    "uuid": "1101b897-541f-4ffd-b59c-f040330dd0b5"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "Track [POWER.VBUS] on F.Cu, length 2.1192 mm",
+                    "pos": {
+                        "x": 32.465,
+                        "y": 61.778
+                    },
+                    "uuid": "4a53c96c-088e-4090-b17d-c5880ee802a9"
+                },
+                {
+                    "description": "Pad B4_A9 [POWER.VBUS] of J3 on F.Cu",
+                    "pos": {
+                        "x": 25.685,
+                        "y": 66.88
+                    },
+                    "uuid": "153dc39c-da33-4df2-a0d2-6808fd14c559"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "Pad 1 [IMU_BNO_SDA] of U2 on F.Cu",
+                    "pos": {
+                        "x": 25.3601,
+                        "y": 86.854981
+                    },
+                    "uuid": "c322755b-3b66-40f8-aafd-313941c62033"
+                },
+                {
+                    "description": "Track [IMU_BNO_SDA] on B.Cu, length 14.1962 mm",
+                    "pos": {
+                        "x": 43.2784,
+                        "y": 35.6854
+                    },
+                    "uuid": "be91dece-8578-44e9-ba22-61f09916fa6f"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "Pad 2 [POWER.NET_J3_CC2] of R16 on F.Cu",
+                    "pos": {
+                        "x": 11.16,
+                        "y": 80.41
+                    },
+                    "uuid": "4bb52ca1-8753-4eee-84ed-d433923d745b"
+                },
+                {
+                    "description": "Pad B5 [POWER.NET_J3_CC2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 25.035,
+                        "y": 66.88
+                    },
+                    "uuid": "5ff48fe4-119c-480f-aa4a-a31aefdf2fba"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "Track [IMU_BNO_SCL] on B.Cu, length 17.1415 mm",
+                    "pos": {
+                        "x": 40.2864,
+                        "y": 36.0778
+                    },
+                    "uuid": "17366c76-3756-4b89-9b5e-35faade6f6a7"
+                },
+                {
+                    "description": "Pad 2 [IMU_BNO_SCL] of U2 on F.Cu",
+                    "pos": {
+                        "x": 25.760151,
+                        "y": 86.854981
+                    },
+                    "uuid": "3ce9dcaf-7a8d-465b-9a19-df11c8ce19c1"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "Pad 2 [POWER.NET_J3_CC1] of R19 on F.Cu",
+                    "pos": {
+                        "x": 15.02,
+                        "y": 80.41
+                    },
+                    "uuid": "1508de93-10e2-4853-a465-a32131b4936e"
+                },
+                {
+                    "description": "Pad A5 [POWER.NET_J3_CC1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 22.035,
+                        "y": 66.88
+                    },
+                    "uuid": "c2f24cb4-58c4-4efa-9836-bfbc59f20f98"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        }
+    ],
+    "violations": [
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Pad 1 [GND] of S1 on F.Cu",
+                    "pos": {
+                        "x": 7.26,
+                        "y": 84.13
+                    },
+                    "uuid": "7b75e09f-b687-4dc5-be51-350ca5c6d2dc"
+                },
+                {
+                    "description": "Pad 2 [POWER.POWER_EN] of S1 on F.Cu",
+                    "pos": {
+                        "x": 9.76,
+                        "y": 84.13
+                    },
+                    "uuid": "cb69ca7a-1cc3-483d-ab62-e02dcc54a322"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Pad 2 [POWER.POWER_EN] of S1 on F.Cu",
+                    "pos": {
+                        "x": 9.76,
+                        "y": 84.13
+                    },
+                    "uuid": "cb69ca7a-1cc3-483d-ab62-e02dcc54a322"
+                },
+                {
+                    "description": "Pad 3 [POWER.NET_R25_Pad2] of S1 on F.Cu",
+                    "pos": {
+                        "x": 12.26,
+                        "y": 84.13
+                    },
+                    "uuid": "47d93def-1896-4fb5-9305-e68ff724c0db"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 19.735,
+                        "y": 66.26
+                    },
+                    "uuid": "6710c172-0d7f-46f8-b68d-ee43c6ab7af9"
+                },
+                {
+                    "description": "Pad A1_B12 [GND] of J3 on F.Cu",
+                    "pos": {
+                        "x": 20.085,
+                        "y": 66.88
+                    },
+                    "uuid": "0a64d268-9e84-4e44-beb7-c88d8d45a220"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 19.735,
+                        "y": 66.26
+                    },
+                    "uuid": "6710c172-0d7f-46f8-b68d-ee43c6ab7af9"
+                },
+                {
+                    "description": "Track [GND] on F.Cu, length 0.5450 mm",
+                    "pos": {
+                        "x": 19.2102,
+                        "y": 67.2098
+                    },
+                    "uuid": "aa1404d2-62b7-41de-9341-1fc5ab19d40f"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 19.735,
+                        "y": 66.26
+                    },
+                    "uuid": "6710c172-0d7f-46f8-b68d-ee43c6ab7af9"
+                },
+                {
+                    "description": "PTH pad S1 [GND] of J3",
+                    "pos": {
+                        "x": 18.96,
+                        "y": 67.46
+                    },
+                    "uuid": "02641163-8ff5-41e0-a57b-238060650a17"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 20.535,
+                        "y": 66.26
+                    },
+                    "uuid": "51ed0cd3-e081-4c61-94da-1a353a57a1e3"
+                },
+                {
+                    "description": "Pad A1_B12 [GND] of J3 on F.Cu",
+                    "pos": {
+                        "x": 20.085,
+                        "y": 66.88
+                    },
+                    "uuid": "0a64d268-9e84-4e44-beb7-c88d8d45a220"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 20.535,
+                        "y": 66.26
+                    },
+                    "uuid": "51ed0cd3-e081-4c61-94da-1a353a57a1e3"
+                },
+                {
+                    "description": "Pad B8 [POWER.J3.NC_TYPE-C-31-M-12_SBU2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 21.535,
+                        "y": 66.88
+                    },
+                    "uuid": "175741f6-e3dd-41c1-9729-989ac7fb5511"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 21.335,
+                        "y": 66.26
+                    },
+                    "uuid": "6e18a5a6-7ef8-48b6-a32c-c9e5117b2aaf"
+                },
+                {
+                    "description": "Pad A4_B9 [POWER.VBUS] of J3 on F.Cu",
+                    "pos": {
+                        "x": 20.885,
+                        "y": 66.88
+                    },
+                    "uuid": "1101b897-541f-4ffd-b59c-f040330dd0b5"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 21.335,
+                        "y": 66.26
+                    },
+                    "uuid": "6e18a5a6-7ef8-48b6-a32c-c9e5117b2aaf"
+                },
+                {
+                    "description": "Pad B8 [POWER.J3.NC_TYPE-C-31-M-12_SBU2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 21.535,
+                        "y": 66.88
+                    },
+                    "uuid": "175741f6-e3dd-41c1-9729-989ac7fb5511"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 22.335,
+                        "y": 66.26
+                    },
+                    "uuid": "c1788718-c338-4b76-ae00-52d4b89b139b"
+                },
+                {
+                    "description": "Pad A5 [POWER.NET_J3_CC1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 22.035,
+                        "y": 66.88
+                    },
+                    "uuid": "c2f24cb4-58c4-4efa-9836-bfbc59f20f98"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 22.335,
+                        "y": 66.26
+                    },
+                    "uuid": "c1788718-c338-4b76-ae00-52d4b89b139b"
+                },
+                {
+                    "description": "Pad B7 [POWER.J3.NC_TYPE-C-31-M-12_DN2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 22.535,
+                        "y": 66.88
+                    },
+                    "uuid": "ca240f1a-253d-44bd-ac41-77aed74adee7"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 22.835,
+                        "y": 66.26
+                    },
+                    "uuid": "6b34a6c1-90ee-4e6c-b093-d91d27b5c281"
+                },
+                {
+                    "description": "Pad A6 [POWER.J3.NC_TYPE-C-31-M-12_DP1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 23.035,
+                        "y": 66.88
+                    },
+                    "uuid": "f7cfd807-fba4-4087-b6f1-3d8ae5acc8b4"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 22.835,
+                        "y": 66.26
+                    },
+                    "uuid": "6b34a6c1-90ee-4e6c-b093-d91d27b5c281"
+                },
+                {
+                    "description": "Pad B7 [POWER.J3.NC_TYPE-C-31-M-12_DN2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 22.535,
+                        "y": 66.88
+                    },
+                    "uuid": "ca240f1a-253d-44bd-ac41-77aed74adee7"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 23.335,
+                        "y": 66.26
+                    },
+                    "uuid": "1e6e5e25-0fdc-407d-9d8c-409494fa5a95"
+                },
+                {
+                    "description": "Pad A6 [POWER.J3.NC_TYPE-C-31-M-12_DP1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 23.035,
+                        "y": 66.88
+                    },
+                    "uuid": "f7cfd807-fba4-4087-b6f1-3d8ae5acc8b4"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 23.335,
+                        "y": 66.26
+                    },
+                    "uuid": "1e6e5e25-0fdc-407d-9d8c-409494fa5a95"
+                },
+                {
+                    "description": "Pad B6 [POWER.J3.NC_TYPE-C-31-M-12_DP2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 24.035,
+                        "y": 66.88
+                    },
+                    "uuid": "49dc9a68-5c63-4ade-9759-d3fe690146b0"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 23.835,
+                        "y": 66.26
+                    },
+                    "uuid": "7d98f5c1-9dfe-4ce9-b063-1a32534900d5"
+                },
+                {
+                    "description": "Pad A7 [POWER.J3.NC_TYPE-C-31-M-12_DN1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 23.535,
+                        "y": 66.88
+                    },
+                    "uuid": "605a9dbe-c78b-407b-b588-1b1c6aabdd08"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 23.835,
+                        "y": 66.26
+                    },
+                    "uuid": "7d98f5c1-9dfe-4ce9-b063-1a32534900d5"
+                },
+                {
+                    "description": "Pad B6 [POWER.J3.NC_TYPE-C-31-M-12_DP2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 24.035,
+                        "y": 66.88
+                    },
+                    "uuid": "49dc9a68-5c63-4ade-9759-d3fe690146b0"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 26.135,
+                        "y": 66.26
+                    },
+                    "uuid": "dd4ba152-85d3-4d67-b0e9-026cb046a0dd"
+                },
+                {
+                    "description": "Track [GND] on F.Cu, length 0.4664 mm",
+                    "pos": {
+                        "x": 26.8148,
+                        "y": 67.2098
+                    },
+                    "uuid": "d8d3c539-e1ae-44fd-ba1e-5997b52e1a68"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 26.135,
+                        "y": 66.26
+                    },
+                    "uuid": "dd4ba152-85d3-4d67-b0e9-026cb046a0dd"
+                },
+                {
+                    "description": "Pad B1_A12 [GND] of J3 on F.Cu",
+                    "pos": {
+                        "x": 26.485,
+                        "y": 66.88
+                    },
+                    "uuid": "27eb13e3-b9d4-4053-94db-a7a78b6e22c0"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 26.135,
+                        "y": 66.26
+                    },
+                    "uuid": "dd4ba152-85d3-4d67-b0e9-026cb046a0dd"
+                },
+                {
+                    "description": "PTH pad S2 [GND] of J3",
+                    "pos": {
+                        "x": 27.61,
+                        "y": 67.46
+                    },
+                    "uuid": "07bf0faa-4340-48ca-aec4-716bf7514578"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 25.335,
+                        "y": 66.26
+                    },
+                    "uuid": "039141f4-a41c-49eb-98a6-f4eca5854a29"
+                },
+                {
+                    "description": "Pad B1_A12 [GND] of J3 on F.Cu",
+                    "pos": {
+                        "x": 26.485,
+                        "y": 66.88
+                    },
+                    "uuid": "27eb13e3-b9d4-4053-94db-a7a78b6e22c0"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 25.335,
+                        "y": 66.26
+                    },
+                    "uuid": "039141f4-a41c-49eb-98a6-f4eca5854a29"
+                },
+                {
+                    "description": "Pad B5 [POWER.NET_J3_CC2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 25.035,
+                        "y": 66.88
+                    },
+                    "uuid": "5ff48fe4-119c-480f-aa4a-a31aefdf2fba"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 24.835,
+                        "y": 66.26
+                    },
+                    "uuid": "d10a9d8e-b665-4b95-b93c-380f695c94b7"
+                },
+                {
+                    "description": "Pad A8 [POWER.J3.NC_TYPE-C-31-M-12_SBU1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 24.535,
+                        "y": 66.88
+                    },
+                    "uuid": "de40d390-643e-4321-9c30-a97b5bfae465"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 24.835,
+                        "y": 66.26
+                    },
+                    "uuid": "d10a9d8e-b665-4b95-b93c-380f695c94b7"
+                },
+                {
+                    "description": "Pad B5 [POWER.NET_J3_CC2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 25.035,
+                        "y": 66.88
+                    },
+                    "uuid": "5ff48fe4-119c-480f-aa4a-a31aefdf2fba"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 25.335,
+                        "y": 66.26
+                    },
+                    "uuid": "039141f4-a41c-49eb-98a6-f4eca5854a29"
+                },
+                {
+                    "description": "Pad B1_A12 [GND] of J3 on F.Cu",
+                    "pos": {
+                        "x": 26.485,
+                        "y": 66.88
+                    },
+                    "uuid": "27eb13e3-b9d4-4053-94db-a7a78b6e22c0"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 24.335,
+                        "y": 66.26
+                    },
+                    "uuid": "5003535b-d055-4708-9e04-4f1fb5519242"
+                },
+                {
+                    "description": "Pad A8 [POWER.J3.NC_TYPE-C-31-M-12_SBU1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 24.535,
+                        "y": 66.88
+                    },
+                    "uuid": "de40d390-643e-4321-9c30-a97b5bfae465"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 24.335,
+                        "y": 66.26
+                    },
+                    "uuid": "5003535b-d055-4708-9e04-4f1fb5519242"
+                },
+                {
+                    "description": "Pad B6 [POWER.J3.NC_TYPE-C-31-M-12_DP2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 24.035,
+                        "y": 66.88
+                    },
+                    "uuid": "49dc9a68-5c63-4ade-9759-d3fe690146b0"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 24.835,
+                        "y": 66.26
+                    },
+                    "uuid": "d10a9d8e-b665-4b95-b93c-380f695c94b7"
+                },
+                {
+                    "description": "Pad A8 [POWER.J3.NC_TYPE-C-31-M-12_SBU1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 24.535,
+                        "y": 66.88
+                    },
+                    "uuid": "de40d390-643e-4321-9c30-a97b5bfae465"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 23.335,
+                        "y": 66.26
+                    },
+                    "uuid": "1e6e5e25-0fdc-407d-9d8c-409494fa5a95"
+                },
+                {
+                    "description": "Pad A6 [POWER.J3.NC_TYPE-C-31-M-12_DP1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 23.035,
+                        "y": 66.88
+                    },
+                    "uuid": "f7cfd807-fba4-4087-b6f1-3d8ae5acc8b4"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 23.835,
+                        "y": 66.26
+                    },
+                    "uuid": "7d98f5c1-9dfe-4ce9-b063-1a32534900d5"
+                },
+                {
+                    "description": "Pad A7 [POWER.J3.NC_TYPE-C-31-M-12_DN1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 23.535,
+                        "y": 66.88
+                    },
+                    "uuid": "605a9dbe-c78b-407b-b588-1b1c6aabdd08"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 24.335,
+                        "y": 66.26
+                    },
+                    "uuid": "5003535b-d055-4708-9e04-4f1fb5519242"
+                },
+                {
+                    "description": "Pad A8 [POWER.J3.NC_TYPE-C-31-M-12_SBU1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 24.535,
+                        "y": 66.88
+                    },
+                    "uuid": "de40d390-643e-4321-9c30-a97b5bfae465"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 21.835,
+                        "y": 66.26
+                    },
+                    "uuid": "bf11963f-7386-484c-a606-6eaadf1d035e"
+                },
+                {
+                    "description": "Pad A5 [POWER.NET_J3_CC1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 22.035,
+                        "y": 66.88
+                    },
+                    "uuid": "c2f24cb4-58c4-4efa-9836-bfbc59f20f98"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 21.835,
+                        "y": 66.26
+                    },
+                    "uuid": "bf11963f-7386-484c-a606-6eaadf1d035e"
+                },
+                {
+                    "description": "Pad B8 [POWER.J3.NC_TYPE-C-31-M-12_SBU2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 21.535,
+                        "y": 66.88
+                    },
+                    "uuid": "175741f6-e3dd-41c1-9729-989ac7fb5511"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 22.335,
+                        "y": 66.26
+                    },
+                    "uuid": "c1788718-c338-4b76-ae00-52d4b89b139b"
+                },
+                {
+                    "description": "Pad A5 [POWER.NET_J3_CC1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 22.035,
+                        "y": 66.88
+                    },
+                    "uuid": "c2f24cb4-58c4-4efa-9836-bfbc59f20f98"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 22.835,
+                        "y": 66.26
+                    },
+                    "uuid": "6b34a6c1-90ee-4e6c-b093-d91d27b5c281"
+                },
+                {
+                    "description": "Pad A6 [POWER.J3.NC_TYPE-C-31-M-12_DP1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 23.035,
+                        "y": 66.88
+                    },
+                    "uuid": "f7cfd807-fba4-4087-b6f1-3d8ae5acc8b4"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 20.535,
+                        "y": 66.26
+                    },
+                    "uuid": "51ed0cd3-e081-4c61-94da-1a353a57a1e3"
+                },
+                {
+                    "description": "Pad A1_B12 [GND] of J3 on F.Cu",
+                    "pos": {
+                        "x": 20.085,
+                        "y": 66.88
+                    },
+                    "uuid": "0a64d268-9e84-4e44-beb7-c88d8d45a220"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 21.335,
+                        "y": 66.26
+                    },
+                    "uuid": "6e18a5a6-7ef8-48b6-a32c-c9e5117b2aaf"
+                },
+                {
+                    "description": "Pad A4_B9 [POWER.VBUS] of J3 on F.Cu",
+                    "pos": {
+                        "x": 20.885,
+                        "y": 66.88
+                    },
+                    "uuid": "1101b897-541f-4ffd-b59c-f040330dd0b5"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "Polygon of J3 on F.Mask",
+                    "pos": {
+                        "x": 21.835,
+                        "y": 66.26
+                    },
+                    "uuid": "bf11963f-7386-484c-a606-6eaadf1d035e"
+                },
+                {
+                    "description": "Pad A5 [POWER.NET_J3_CC1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 22.035,
+                        "y": 66.88
+                    },
+                    "uuid": "c2f24cb4-58c4-4efa-9836-bfbc59f20f98"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Items shorting two nets (nets GND and POWER.POWER_EN)",
+            "items": [
+                {
+                    "description": "Pad 1 [GND] of S1 on F.Cu",
+                    "pos": {
+                        "x": 7.26,
+                        "y": 84.13
+                    },
+                    "uuid": "7b75e09f-b687-4dc5-be51-350ca5c6d2dc"
+                },
+                {
+                    "description": "Pad 2 [POWER.POWER_EN] of S1 on F.Cu",
+                    "pos": {
+                        "x": 9.76,
+                        "y": 84.13
+                    },
+                    "uuid": "cb69ca7a-1cc3-483d-ab62-e02dcc54a322"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets GND and POWER.VBUS)",
+            "items": [
+                {
+                    "description": "Pad A1_B12 [GND] of J3 on F.Cu",
+                    "pos": {
+                        "x": 20.085,
+                        "y": 66.88
+                    },
+                    "uuid": "0a64d268-9e84-4e44-beb7-c88d8d45a220"
+                },
+                {
+                    "description": "Pad A4_B9 [POWER.VBUS] of J3 on F.Cu",
+                    "pos": {
+                        "x": 20.885,
+                        "y": 66.88
+                    },
+                    "uuid": "1101b897-541f-4ffd-b59c-f040330dd0b5"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets POWER.POWER_EN and POWER.NET_R25_Pad2)",
+            "items": [
+                {
+                    "description": "Pad 2 [POWER.POWER_EN] of S1 on F.Cu",
+                    "pos": {
+                        "x": 9.76,
+                        "y": 84.13
+                    },
+                    "uuid": "cb69ca7a-1cc3-483d-ab62-e02dcc54a322"
+                },
+                {
+                    "description": "Pad 3 [POWER.NET_R25_Pad2] of S1 on F.Cu",
+                    "pos": {
+                        "x": 12.26,
+                        "y": 84.13
+                    },
+                    "uuid": "47d93def-1896-4fb5-9305-e68ff724c0db"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets POWER.VBUS and POWER.J3.NC_TYPE-C-31-M-12_SBU2)",
+            "items": [
+                {
+                    "description": "Pad A4_B9 [POWER.VBUS] of J3 on F.Cu",
+                    "pos": {
+                        "x": 20.885,
+                        "y": 66.88
+                    },
+                    "uuid": "1101b897-541f-4ffd-b59c-f040330dd0b5"
+                },
+                {
+                    "description": "Pad B8 [POWER.J3.NC_TYPE-C-31-M-12_SBU2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 21.535,
+                        "y": 66.88
+                    },
+                    "uuid": "175741f6-e3dd-41c1-9729-989ac7fb5511"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Clearance violation (netclass 'Default' clearance 0.1600 mm; actual 0.0100 mm)",
+            "items": [
+                {
+                    "description": "Pad A4_B9 [POWER.VBUS] of J3 on F.Cu",
+                    "pos": {
+                        "x": 20.885,
+                        "y": 66.88
+                    },
+                    "uuid": "1101b897-541f-4ffd-b59c-f040330dd0b5"
+                },
+                {
+                    "description": "Pad A5 [POWER.NET_J3_CC1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 22.035,
+                        "y": 66.88
+                    },
+                    "uuid": "c2f24cb4-58c4-4efa-9836-bfbc59f20f98"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Items shorting two nets (nets POWER.NET_J3_CC1 and POWER.J3.NC_TYPE-C-31-M-12_SBU2)",
+            "items": [
+                {
+                    "description": "Pad A5 [POWER.NET_J3_CC1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 22.035,
+                        "y": 66.88
+                    },
+                    "uuid": "c2f24cb4-58c4-4efa-9836-bfbc59f20f98"
+                },
+                {
+                    "description": "Pad B8 [POWER.J3.NC_TYPE-C-31-M-12_SBU2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 21.535,
+                        "y": 66.88
+                    },
+                    "uuid": "175741f6-e3dd-41c1-9729-989ac7fb5511"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets POWER.NET_J3_CC1 and POWER.J3.NC_TYPE-C-31-M-12_DP1)",
+            "items": [
+                {
+                    "description": "Pad A5 [POWER.NET_J3_CC1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 22.035,
+                        "y": 66.88
+                    },
+                    "uuid": "c2f24cb4-58c4-4efa-9836-bfbc59f20f98"
+                },
+                {
+                    "description": "Pad A6 [POWER.J3.NC_TYPE-C-31-M-12_DP1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 23.035,
+                        "y": 66.88
+                    },
+                    "uuid": "f7cfd807-fba4-4087-b6f1-3d8ae5acc8b4"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets POWER.NET_J3_CC1 and POWER.J3.NC_TYPE-C-31-M-12_DN2)",
+            "items": [
+                {
+                    "description": "Pad A5 [POWER.NET_J3_CC1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 22.035,
+                        "y": 66.88
+                    },
+                    "uuid": "c2f24cb4-58c4-4efa-9836-bfbc59f20f98"
+                },
+                {
+                    "description": "Pad B7 [POWER.J3.NC_TYPE-C-31-M-12_DN2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 22.535,
+                        "y": 66.88
+                    },
+                    "uuid": "ca240f1a-253d-44bd-ac41-77aed74adee7"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets POWER.J3.NC_TYPE-C-31-M-12_DP1 and POWER.J3.NC_TYPE-C-31-M-12_DN1)",
+            "items": [
+                {
+                    "description": "Pad A6 [POWER.J3.NC_TYPE-C-31-M-12_DP1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 23.035,
+                        "y": 66.88
+                    },
+                    "uuid": "f7cfd807-fba4-4087-b6f1-3d8ae5acc8b4"
+                },
+                {
+                    "description": "Pad A7 [POWER.J3.NC_TYPE-C-31-M-12_DN1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 23.535,
+                        "y": 66.88
+                    },
+                    "uuid": "605a9dbe-c78b-407b-b588-1b1c6aabdd08"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets POWER.J3.NC_TYPE-C-31-M-12_DP1 and POWER.J3.NC_TYPE-C-31-M-12_DP2)",
+            "items": [
+                {
+                    "description": "Pad A6 [POWER.J3.NC_TYPE-C-31-M-12_DP1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 23.035,
+                        "y": 66.88
+                    },
+                    "uuid": "f7cfd807-fba4-4087-b6f1-3d8ae5acc8b4"
+                },
+                {
+                    "description": "Pad B6 [POWER.J3.NC_TYPE-C-31-M-12_DP2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 24.035,
+                        "y": 66.88
+                    },
+                    "uuid": "49dc9a68-5c63-4ade-9759-d3fe690146b0"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets POWER.J3.NC_TYPE-C-31-M-12_DP1 and POWER.J3.NC_TYPE-C-31-M-12_DN2)",
+            "items": [
+                {
+                    "description": "Pad A6 [POWER.J3.NC_TYPE-C-31-M-12_DP1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 23.035,
+                        "y": 66.88
+                    },
+                    "uuid": "f7cfd807-fba4-4087-b6f1-3d8ae5acc8b4"
+                },
+                {
+                    "description": "Pad B7 [POWER.J3.NC_TYPE-C-31-M-12_DN2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 22.535,
+                        "y": 66.88
+                    },
+                    "uuid": "ca240f1a-253d-44bd-ac41-77aed74adee7"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets POWER.J3.NC_TYPE-C-31-M-12_DN1 and POWER.J3.NC_TYPE-C-31-M-12_DP2)",
+            "items": [
+                {
+                    "description": "Pad A7 [POWER.J3.NC_TYPE-C-31-M-12_DN1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 23.535,
+                        "y": 66.88
+                    },
+                    "uuid": "605a9dbe-c78b-407b-b588-1b1c6aabdd08"
+                },
+                {
+                    "description": "Pad B6 [POWER.J3.NC_TYPE-C-31-M-12_DP2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 24.035,
+                        "y": 66.88
+                    },
+                    "uuid": "49dc9a68-5c63-4ade-9759-d3fe690146b0"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets POWER.J3.NC_TYPE-C-31-M-12_DN1 and POWER.J3.NC_TYPE-C-31-M-12_DN2)",
+            "items": [
+                {
+                    "description": "Pad A7 [POWER.J3.NC_TYPE-C-31-M-12_DN1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 23.535,
+                        "y": 66.88
+                    },
+                    "uuid": "605a9dbe-c78b-407b-b588-1b1c6aabdd08"
+                },
+                {
+                    "description": "Pad B7 [POWER.J3.NC_TYPE-C-31-M-12_DN2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 22.535,
+                        "y": 66.88
+                    },
+                    "uuid": "ca240f1a-253d-44bd-ac41-77aed74adee7"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets POWER.J3.NC_TYPE-C-31-M-12_DN1 and POWER.J3.NC_TYPE-C-31-M-12_SBU1)",
+            "items": [
+                {
+                    "description": "Pad A7 [POWER.J3.NC_TYPE-C-31-M-12_DN1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 23.535,
+                        "y": 66.88
+                    },
+                    "uuid": "605a9dbe-c78b-407b-b588-1b1c6aabdd08"
+                },
+                {
+                    "description": "Pad A8 [POWER.J3.NC_TYPE-C-31-M-12_SBU1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 24.535,
+                        "y": 66.88
+                    },
+                    "uuid": "de40d390-643e-4321-9c30-a97b5bfae465"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets POWER.J3.NC_TYPE-C-31-M-12_SBU1 and POWER.J3.NC_TYPE-C-31-M-12_DP2)",
+            "items": [
+                {
+                    "description": "Pad A8 [POWER.J3.NC_TYPE-C-31-M-12_SBU1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 24.535,
+                        "y": 66.88
+                    },
+                    "uuid": "de40d390-643e-4321-9c30-a97b5bfae465"
+                },
+                {
+                    "description": "Pad B6 [POWER.J3.NC_TYPE-C-31-M-12_DP2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 24.035,
+                        "y": 66.88
+                    },
+                    "uuid": "49dc9a68-5c63-4ade-9759-d3fe690146b0"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Clearance violation (netclass 'Default' clearance 0.1600 mm; actual 0.0100 mm)",
+            "items": [
+                {
+                    "description": "Pad A8 [POWER.J3.NC_TYPE-C-31-M-12_SBU1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 24.535,
+                        "y": 66.88
+                    },
+                    "uuid": "de40d390-643e-4321-9c30-a97b5bfae465"
+                },
+                {
+                    "description": "Pad B4_A9 [POWER.VBUS] of J3 on F.Cu",
+                    "pos": {
+                        "x": 25.685,
+                        "y": 66.88
+                    },
+                    "uuid": "153dc39c-da33-4df2-a0d2-6808fd14c559"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Items shorting two nets (nets POWER.J3.NC_TYPE-C-31-M-12_SBU1 and POWER.NET_J3_CC2)",
+            "items": [
+                {
+                    "description": "Pad A8 [POWER.J3.NC_TYPE-C-31-M-12_SBU1] of J3 on F.Cu",
+                    "pos": {
+                        "x": 24.535,
+                        "y": 66.88
+                    },
+                    "uuid": "de40d390-643e-4321-9c30-a97b5bfae465"
+                },
+                {
+                    "description": "Pad B5 [POWER.NET_J3_CC2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 25.035,
+                        "y": 66.88
+                    },
+                    "uuid": "5ff48fe4-119c-480f-aa4a-a31aefdf2fba"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets GND and POWER.VBUS)",
+            "items": [
+                {
+                    "description": "Pad B1_A12 [GND] of J3 on F.Cu",
+                    "pos": {
+                        "x": 26.485,
+                        "y": 66.88
+                    },
+                    "uuid": "27eb13e3-b9d4-4053-94db-a7a78b6e22c0"
+                },
+                {
+                    "description": "Pad B4_A9 [POWER.VBUS] of J3 on F.Cu",
+                    "pos": {
+                        "x": 25.685,
+                        "y": 66.88
+                    },
+                    "uuid": "153dc39c-da33-4df2-a0d2-6808fd14c559"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets POWER.VBUS and POWER.NET_J3_CC2)",
+            "items": [
+                {
+                    "description": "Pad B4_A9 [POWER.VBUS] of J3 on F.Cu",
+                    "pos": {
+                        "x": 25.685,
+                        "y": 66.88
+                    },
+                    "uuid": "153dc39c-da33-4df2-a0d2-6808fd14c559"
+                },
+                {
+                    "description": "Pad B5 [POWER.NET_J3_CC2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 25.035,
+                        "y": 66.88
+                    },
+                    "uuid": "5ff48fe4-119c-480f-aa4a-a31aefdf2fba"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets POWER.NET_J3_CC2 and POWER.J3.NC_TYPE-C-31-M-12_DP2)",
+            "items": [
+                {
+                    "description": "Pad B5 [POWER.NET_J3_CC2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 25.035,
+                        "y": 66.88
+                    },
+                    "uuid": "5ff48fe4-119c-480f-aa4a-a31aefdf2fba"
+                },
+                {
+                    "description": "Pad B6 [POWER.J3.NC_TYPE-C-31-M-12_DP2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 24.035,
+                        "y": 66.88
+                    },
+                    "uuid": "49dc9a68-5c63-4ade-9759-d3fe690146b0"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Items shorting two nets (nets POWER.J3.NC_TYPE-C-31-M-12_DN2 and POWER.J3.NC_TYPE-C-31-M-12_SBU2)",
+            "items": [
+                {
+                    "description": "Pad B7 [POWER.J3.NC_TYPE-C-31-M-12_DN2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 22.535,
+                        "y": 66.88
+                    },
+                    "uuid": "ca240f1a-253d-44bd-ac41-77aed74adee7"
+                },
+                {
+                    "description": "Pad B8 [POWER.J3.NC_TYPE-C-31-M-12_SBU2] of J3 on F.Cu",
+                    "pos": {
+                        "x": 21.535,
+                        "y": 66.88
+                    },
+                    "uuid": "175741f6-e3dd-41c1-9729-989ac7fb5511"
+                }
+            ],
+            "severity": "error",
+            "type": "shorting_items"
+        },
+        {
+            "description": "Silkscreen clearance (board setup constraints silk clearance 0.1000 mm; actual 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Reference field of R1",
+                    "pos": {
+                        "x": 38.84,
+                        "y": 65.36
+                    },
+                    "uuid": "4d94ff33-964d-4362-a521-fd6e3e4d012d"
+                },
+                {
+                    "description": "Segment of L2 on F.Silkscreen",
+                    "pos": {
+                        "x": 37.915003,
+                        "y": 65.059913
+                    },
+                    "uuid": "7b30732b-c902-40bb-9fc6-13ad5aab23dc"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance (board setup constraints silk clearance 0.1000 mm; actual 0.0338 mm)",
+            "items": [
+                {
+                    "description": "Segment of L2 on F.Silkscreen",
+                    "pos": {
+                        "x": 37.91706,
+                        "y": 65.059913
+                    },
+                    "uuid": "1c606c06-7a57-44a1-a5c3-e7b12edb2cfa"
+                },
+                {
+                    "description": "Reference field of R1",
+                    "pos": {
+                        "x": 38.84,
+                        "y": 65.36
+                    },
+                    "uuid": "4d94ff33-964d-4362-a521-fd6e3e4d012d"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance (board setup constraints silk clearance 0.1000 mm; actual 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Reference field of R1",
+                    "pos": {
+                        "x": 38.84,
+                        "y": 65.36
+                    },
+                    "uuid": "4d94ff33-964d-4362-a521-fd6e3e4d012d"
+                },
+                {
+                    "description": "Segment of L2 on F.Silkscreen",
+                    "pos": {
+                        "x": 38.069155,
+                        "y": 65.210916
+                    },
+                    "uuid": "f80da9a5-10d0-4e0e-8caf-99dd98e438d6"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance (board setup constraints silk clearance 0.1000 mm; actual 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Reference field of U61",
+                    "pos": {
+                        "x": 28.3201,
+                        "y": 84.17
+                    },
+                    "uuid": "535df93f-5573-42ee-9a03-d0fd7739f583"
+                },
+                {
+                    "description": "Segment of U2 on F.Silkscreen",
+                    "pos": {
+                        "x": 28.010824,
+                        "y": 85.700828
+                    },
+                    "uuid": "61574f8a-185a-49e7-870f-27f7a0d35b6a"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance (board setup constraints silk clearance 0.1000 mm; actual 0.0946 mm)",
+            "items": [
+                {
+                    "description": "Reference field of U1",
+                    "pos": {
+                        "x": 21.8101,
+                        "y": 82.620001
+                    },
+                    "uuid": "1b230a4e-37a8-40f0-8686-14f96c0074fb"
+                },
+                {
+                    "description": "Segment of U1 on F.Silkscreen",
+                    "pos": {
+                        "x": 21.7101,
+                        "y": 83.13
+                    },
+                    "uuid": "7138fd6a-889a-4233-a8c7-63e41981e5aa"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance (board setup constraints silk clearance 0.1000 mm; actual 0.0154 mm)",
+            "items": [
+                {
+                    "description": "Segment of R21 on F.Silkscreen",
+                    "pos": {
+                        "x": 38.876359,
+                        "y": 25.05
+                    },
+                    "uuid": "19cbc1ef-8813-4323-ab2b-dde08705f173"
+                },
+                {
+                    "description": "Reference field of TP2",
+                    "pos": {
+                        "x": 38.82,
+                        "y": 25.742
+                    },
+                    "uuid": "6a15b239-febb-4222-9370-401bc13fdea1"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clearance (board setup constraints silk clearance 0.1000 mm; actual 0.0118 mm)",
+            "items": [
+                {
+                    "description": "Segment of R20 on F.Silkscreen",
+                    "pos": {
+                        "x": 35.016359,
+                        "y": 25.05
+                    },
+                    "uuid": "2ad72b90-b66a-4700-b37d-089c9027e6d9"
+                },
+                {
+                    "description": "Reference field of TP1",
+                    "pos": {
+                        "x": 35.82,
+                        "y": 25.742
+                    },
+                    "uuid": "8852677e-9336-402f-9ee1-052a7dda9527"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Segment of L2 on F.Silkscreen",
+                    "pos": {
+                        "x": 38.069155,
+                        "y": 65.210916
+                    },
+                    "uuid": "f80da9a5-10d0-4e0e-8caf-99dd98e438d6"
+                },
+                {
+                    "description": "Pad 1 [GND] of R1 on F.Cu",
+                    "pos": {
+                        "x": 38.33,
+                        "y": 66.53
+                    },
+                    "uuid": "ef87eb04-b694-4b66-9cba-e3145abc3e5a"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Segment of L2 on F.Silkscreen",
+                    "pos": {
+                        "x": 38.069155,
+                        "y": 66.22735
+                    },
+                    "uuid": "c9f51c20-04e3-43d6-96de-272c5c8f9144"
+                },
+                {
+                    "description": "Pad 1 [GND] of R1 on F.Cu",
+                    "pos": {
+                        "x": 38.33,
+                        "y": 66.53
+                    },
+                    "uuid": "ef87eb04-b694-4b66-9cba-e3145abc3e5a"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Reference field of U61",
+                    "pos": {
+                        "x": 28.3201,
+                        "y": 84.17
+                    },
+                    "uuid": "535df93f-5573-42ee-9a03-d0fd7739f583"
+                },
+                {
+                    "description": "Pad 13 [GND] of U2 on F.Cu",
+                    "pos": {
+                        "x": 26.360354,
+                        "y": 84.880127
+                    },
+                    "uuid": "337977e5-5b47-4190-be02-6a76fce9be50"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Reference field of TH1",
+                    "pos": {
+                        "x": 20.0801,
+                        "y": 84.13
+                    },
+                    "uuid": "82c877a6-4610-43f6-9d01-8668a79ee047"
+                },
+                {
+                    "description": "Polygon of U1 on F.Mask",
+                    "pos": {
+                        "x": 20.6801,
+                        "y": 84.22
+                    },
+                    "uuid": "8aa0036b-a548-4cba-8605-f2059c8ede12"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Reference field of TH1",
+                    "pos": {
+                        "x": 20.0801,
+                        "y": 84.13
+                    },
+                    "uuid": "82c877a6-4610-43f6-9d01-8668a79ee047"
+                },
+                {
+                    "description": "Polygon of U1 on F.Mask",
+                    "pos": {
+                        "x": 20.6801,
+                        "y": 83.72
+                    },
+                    "uuid": "4fe66f4f-2a41-4d1f-8772-b77704645aac"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "Via [IMU_BNO_SDA] on F.Cu - B.Cu",
+                    "pos": {
+                        "x": 24.9508,
+                        "y": 87.5217
+                    },
+                    "uuid": "e539910c-5fb5-4b10-8612-8cf0fbf5823c"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        }
+    ]
+}

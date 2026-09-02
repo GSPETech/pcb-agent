@@ -1,0 +1,18 @@
+"""
+DNP
+
+Auto-generated using `pcb import`.
+"""
+
+P1 = io(Net)
+P2 = io(Net)
+
+Component(
+    name="DNP",
+    footprint=File("@stdlib/kicad-footprints/Resistor_SMD.pretty/R_0402_1005Metric.kicad_mod"),
+    symbol=Symbol(library="DNP.kicad_sym"),
+    pin_defs={"1": "1", "2": "2"},
+    pins={"1": P1, "2": P2},
+    skip_bom=True,
+    dnp=True,
+)

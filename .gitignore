@@ -28,6 +28,11 @@ verify-report.md
 !tests/evidence/
 !tests/evidence/**
 
+# The example board retains one verification report as evidence that the layout
+# gates ran, so it is exempt from the report exclusions above.
+!examples/**/verification/
+!examples/**/verification/**
+
 # Diode transient state
 .pcb/cache/
 .pcb/tmp/
@@ -39,6 +44,11 @@ verify-report.md
 *.kicad_sch-bak
 *.kicad_pcb-bak
 ~*.lck
+
+# The example board keeps its project-local settings so it opens as a complete
+# KiCad project, and one build log as evidence of the run.
+!examples/**/*.kicad_prl
+!examples/**/layout.log
 
 # OS/editor
 .DS_Store
